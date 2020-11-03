@@ -1,0 +1,134 @@
+OpenTDC
+=======
+
+Foreword
+--------
+
+The purpose of this project is to create an open design using the SkyWater PDK.
+There are several constraints and objectives I have defined to create the
+OpenTDC:
+
+* It should be a design that is different between an FPGA and an ASIC.
+  I don't want to simply hard-core an existing design
+
+* It shouldn't very complex because of time constraints.
+
+* It shouldn't need hand-designed gates (at least initially).  I am not an
+  analog designer.  Only standard cells should be used.
+
+* It should contribute to the whole open source SkyWater PDK project.  This
+  project can also be used to characterize some cells.
+
+* It should be useful like a component that could be used in a bigger project.
+
+
+Introduction
+------------
+
+What is a TDC ?  TDC stands for Time to Digital Converter.  It's a device
+that is able to timestamp a pulse (as accurately as possible).
+
+What are the use cases ?  It is used to measure distances using
+time-of-flight of laser pulses, or time-of-flight of particules and
+even in LIDAR.
+
+The first implementation is based only on standard cells, using a naive
+and simple approach.  The purpose of the first implementation is to have
+a working design.
+
+Principle
+---------
+
+There are two parts in the measure: the coarse part and the fine part.
+The coarse part is simply a counter.  Its accuracy is limited by the clock
+frequency.  To go beyond the clock frequency (the fine part), various points
+of a delay line are sampled.
+
+Performances
+------------
+
+The clock will be external.  A PLL/DLL cannot be used as it introduce noise.
+For the first implementation, we assume the clock can be at 100Mhz.
+
+A pulse can be either a positive edge or a negative edge.  Ideally the delay
+should be idenpendant of the value (0 or 1), so the delay cells should be
+balanced (need to use a clock delay cell).  Alternatively, 2 not gates could
+be used as a delay (certainly with a smaller resolution).
+
+It would be nice to be able to measure the width of a pulse.
+
+It would also be nice to have high throughput, but the number of pins is
+very limited.
+
+The result should be as linear as possible, so the structure should be
+as regular as possible.  Maybe part of the design should be manually placed
+and routed.
+
+The delay time depends on many parameters (like PVT: process, voltage,
+temperature, or die, or whatever else).  So the delay line needs to be
+calibrated, but only once but often as the parameters change.  One possibility
+is to calibrate just after an event, but that means the device will be
+temporary blind after a pulse (so it may not detect the pulse width).
+If the event is known, it could be calibrated before an event.  Finally,
+the device may have two lines, one for calibration and the other for the
+measure.
+
+The easiest way to calibrate is the measure the delay of the clock cycle.
+
+Implementation
+--------------
+
+It is naive, simple and based only on standard cells.
+
+The delay element is defined by `opentdc_delay`.  There is an
+implementation for simulation and an simplementation for sky130.  The
+latter uses the clkdlybuf, which is balanced.
+
+To compute the number of elements in the delay line, we need to know the
+delay time of an element.  An esay method is to read the static timing
+analysis report after synthesis (designs/tap_line/runs/XXX/reports/synthesis/opensta.timing.rpt):
+
+```
+  Startpoint: inp_i (input port clocked by vclk)
+  Endpoint: _065_ (rising edge-triggered flip-flop clocked by vclk)
+  Path Group: vclk
+  Path Type: max
+
+    Delay    Time   Description
+  ---------------------------------------------------------
+     0.00    0.00   clock vclk (rise edge)
+     0.00    0.00   clock network delay (ideal)
+     2.00    2.00 v input external delay
+     0.00    2.00 v inp_i (in)
+     0.12    2.12 v gen%0.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.24 v gen%1.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.37 v gen%2.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.49 v gen%3.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.62 v gen%4.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.74 v gen%5.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.86 v gen%6.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    2.99 v gen%7.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    3.11 v gen%8.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    3.24 v gen%9.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12    3.36 v gen%10.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+   ...
+     0.12   12.95 v gen%87.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12   13.07 v gen%88.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.12   13.19 v gen%89.inst.dly/X (sky130_fd_sc_hd__clkdlybuf4s15_2)
+     0.00   13.19 v _065_/D (sky130_fd_sc_hd__dfxtp_4)
+            13.19   data arrival time
+
+    12.00   12.00   clock vclk (rise edge)
+     0.00   12.00   clock network delay (ideal)
+     0.00   12.00   clock reconvergence pessimism
+            12.00 ^ _065_/CLK (sky130_fd_sc_hd__dfxtp_4)
+    -0.07   11.93   library setup time
+            11.93   data required time
+  ---------------------------------------------------------
+            11.93   data required time
+           -13.19   data arrival time
+  ---------------------------------------------------------
+            -1.26   slack (VIOLATED)
+```
+
+Each delay cell adds 120ps.
