@@ -15,28 +15,17 @@ entity opentdc_tapline is
 end opentdc_tapline;
 
 architecture behav of opentdc_tapline is
-  signal tap0, tap1, tap2 : std_logic_vector(length downto 0);
+  signal tap0 : std_logic_vector(length downto 0);
 begin
   tap0 (0) <= inp_i;
+  
   gen: for i in 0 to length - 1 generate
-    --  Delay line
-    inst: entity work.opentdc_delay
-      port map (tap0 (i), tap0 (i + 1));
-
-    --  1st FF
-    process (clks_i (2*i)) is
-    begin
-      if rising_edge(clks_i (2 * i)) then
-        tap1 (i) <= tap0 (i);
-      end if;
-    end process;
-
-    --  2nd FF (for synchronizer)
-    process (clks_i(2*i + 1)) is
-    begin
-      if rising_edge(clks_i (2 * i + 1)) then
-        tap_o (i) <= tap1 (i);
-      end if;
-    end process;
+    inst_tap: entity work.opentdc_tap
+      port map (
+        clk0_i => clks_i (2*i),
+        clk1_i => clks_i (2*i + 1),
+        inp_i => tap0 (i),
+        del_o => tap0 (i + 1),
+        tap_o => tap_o (i));
   end generate;
 end behav;
