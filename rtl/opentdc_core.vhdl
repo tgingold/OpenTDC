@@ -45,31 +45,24 @@ architecture behav of opentdc_core is
 
   signal pulse : std_logic;
   signal trigger : std_logic;
-  signal tap0, tap1, tap2 : std_logic_vector(length downto 0);
+  signal tap : std_logic_vector(length downto 0);
+  signal tap_clks : std_logic_vector(2*length - 1 downto 0);
 begin
+  tap_clks <= (others => clk_i);
+  
+  cmp_tap_line: entity work.opentdc_tapline
+    generic map (
+      length => length)
+    port map (
+      clks_i => tap_clks,
+      inp_i => inp_i,
+      tap_o => tap);
+  
   --  FF at the input to detect pulses (longer than the cycle).
   process (clk_i) is
   begin
     if rising_edge(clk_i) then
-      pulse <= tap2(0);
-    end if;
-  end process;
-
-  --  Delay line
-  tap0 (0) <= inp_i;
-  gen: for i in 0 to length - 1 generate
-    inst: entity work.opentdc_delay
-      port map (tap0 (i), tap0 (i + 1));
-  end generate;
-
-  --  Tap FF (+ synchronizer)
-  process (clk_i) is
-  begin
-    if rising_edge(clk_i) then
-      for i in tap1'range loop
-        tap1 (i) <= tap0 (i);
-        tap2 (i) <= tap1 (i);
-      end loop;
+      pulse <= tap(0);
     end if;
   end process;
 
@@ -79,14 +72,14 @@ begin
     if rising_edge(clk_i) then
       if rst_n_i = '0' then
         trigger <= '0';
-      elsif (pulse xor tap2 (0)) = '1'
+      elsif (pulse xor tap (0)) = '1'
         and (restart_i = '1' or trigger = '0')
       then
         --  A pulse is detected
         --   and not yet triggered or restarted
         trigger <= '1';
         coarse_o <= std_logic_vector(unsigned(cur_cycles_i) - 2);
-        fine_o <= std_logic_vector(to_unsigned(ffs (tap2), 16));
+        fine_o <= std_logic_vector(to_unsigned(ffs (tap), 16));
       elsif restart_i = '1' then
         trigger <= '0';
       end if;
