@@ -19,6 +19,9 @@ entity openfd_core is
     fine_i    : std_logic_vector(15 downto 0);
     valid_i   : std_logic;
 
+    --  Set on valid, cleared on the pulse.
+    busy_o    : out std_logic;
+
     --  Pulse (of clk_i width), delayed by coarse + fine
     out_o     : out std_logic);
 end openfd_core;
@@ -48,6 +51,8 @@ begin
       end if;
     end if;
   end process;
+
+  busy_o <= valid;
 
   process (clk_i)
   begin
