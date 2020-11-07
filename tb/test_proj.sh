@@ -1,0 +1,1 @@
+${GHDL:-ghdl} -c --std=08  ../rtl/opentdc_tap.vhdl ../rtl/opentdc_tapline.vhdl ../rtl/opentdc_time.vhdl ../rtl/opentdc_core.vhdl ../rtl/opentdc_delay.vhdl ../rtl/opentdc_delay-sim.vhdl ../rtl/opentdc_wb.vhdl tb_proj.vhdl -r tb_proj --wave=tb_proj.ghw
