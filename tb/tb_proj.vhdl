@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity tb_proj is
 end tb_proj;
@@ -24,13 +25,13 @@ architecture behav of tb_proj is
 
   signal wbs_out : wb32_master_out;
   signal wbs_in  : wb32_master_in;
-  
+
   signal inp0       : std_logic;
   signal inp1       : std_logic;
   signal rst_time_n : std_logic;
 
   signal done : std_logic := '0';
-  
+
   procedure wb32_write32 (signal clk : std_logic;
                           signal wb_out : out wb32_master_out;
                           signal wb_in  : in  wb32_master_in;
@@ -88,10 +89,10 @@ begin
   wb_rst <= '1', '0' after 40 ns;
 
   process
-    variable d32 : std_logic_vector (31 downto 0);
+    variable d32, d32_a : std_logic_vector (31 downto 0);
   begin
     done <= '0';
-    
+
     rst_time_n <= '1';
     inp0 <= '0';
     inp1 <= '0';
@@ -105,13 +106,64 @@ begin
 
     --  Read id
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0000", d32);
-    assert d32 = x"54_64_63_01" report "bad opentdc id" severity failure;
+    assert d32 = x"54_64_63_01" report "(1) bad opentdc id" severity failure;
+
+    --  Read cycles
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
+    -- report "cycles=" & to_hstring(d32);
+    assert unsigned(d32) < 5 report "(2) bad cycle value" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32_a);
+    assert unsigned(d32_a) > unsigned(d32)
+      report "(3) cycles not increased" severity failure;
+
+    --  Check status
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
+    --  report "status=" & to_hstring(d32);
+    assert d32 = x"0000_0000" report "(4) bad status" severity failure;
+
+    --  Start tdc 0 and 1 (set restart bits).
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0000_0003");
+
+    --  Trigger pulses.
+    wait for 1130 ps;
+    inp0 <= '1';
+    wait until rising_edge(wb_clk);
+    wait for 1530 ps;
+    inp1 <= '1';
+    wait until rising_edge(wb_clk);
+
+    for i in 1 to 3 loop
+      wait until rising_edge(wb_clk);
+    end loop;
+
+    --  Read status
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
+    assert d32 = x"0000_0003" report "(5) bad status" severity failure;
+
+    --  Read tdc0
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0010", d32);
+    report "tdc0 coarse=" & to_hstring(d32);
+    d32_a := d32;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0014", d32);
+    report "tdc0 fine=" & natural'image(to_integer(unsigned(d32)));
+    assert unsigned(d32) = 200 - 12
+      report "(7) bad fine value for tdc0" severity failure;
+
+    --  Read tdc1
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
+    report "tdc1 coarse=" & to_hstring(d32);
+    assert unsigned(d32) = unsigned (d32_a) + 1
+      report "(8) bad coarse value" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_001c", d32);
+    report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
+    assert unsigned(d32) = 200 - 16
+      report "(9) bad fine value for tdc1" severity failure;
 
     report "Test OK" severity note;
     done <= '1';
     wait;
   end process;
-  
+
   --  WB driver
   opentdc_wb_1: entity work.opentdc_wb
     port map (

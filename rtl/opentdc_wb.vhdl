@@ -134,7 +134,7 @@ begin
   --  TDC 0
   i_tdc0: entity work.opentdc_core
     generic map (
-      length => 90)
+      length => 200)
     port map (
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
@@ -148,7 +148,7 @@ begin
   --  TDC 1
   i_tdc1: entity work.opentdc_core
     generic map (
-      length => 90)
+      length => 200)
     port map (
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
@@ -162,7 +162,7 @@ begin
   --  TDC ref
   i_tdc_ref: entity work.opentdc_core
     generic map (
-      length => 90)
+      length => 200)
     port map (
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
