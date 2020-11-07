@@ -101,7 +101,7 @@ begin
       rst_n_i => rst_n_i,
       cur_cycles_i => cur_cycles,
       restart_i => tdc0_restart,
-      inp_i => inp_i,
+      inp_i => inp0_i,
       trigger_o => tdc0_trigger,
       coarse_o => tdc0_coarse,
       fine_o => tdc0_fine);
