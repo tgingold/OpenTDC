@@ -1,6 +1,6 @@
+--  TDC core
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
 entity opentdc_core is
   generic (
@@ -26,66 +26,33 @@ entity opentdc_core is
     fine_o    : out std_logic_vector(15 downto 0));
 end opentdc_core;
 
+--  This core is made of 2 submodules, so that it is easy to harden
+--  the tapline.
 architecture behav of opentdc_core is
-  function ffs (v : std_logic_vector) return natural
-  is
-    alias av : std_logic_vector(v'length - 1 downto 0) is v;
-    constant m : integer := av'length / 2;
-  begin
-    if v'length <= 1 then
-      return 0;
-    else
-      if av (m) = av(0) then
-        return m + ffs (av (av'left downto m));
-      else
-        return ffs (av (m - 1 downto 0));
-      end if;
-    end if;
-  end ffs;
-
-  signal pulse : std_logic;
-  signal trigger : std_logic;
   signal tap : std_logic_vector(length downto 0);
   signal tap_clks : std_logic_vector(2*length - 1 downto 0);
 begin
+  --  Drive the clocks of the tap line.
   tap_clks <= (others => clk_i);
   
-  cmp_tap_line: entity work.opentdc_tapline
+  inst_tap_line: entity work.opentdc_tapline
     generic map (
       length => length)
     port map (
       clks_i => tap_clks,
       inp_i => inp_i,
       tap_o => tap);
-  
-  --  FF at the input to detect pulses (longer than the cycle).
-  process (clk_i) is
-  begin
-    if rising_edge(clk_i) then
-      pulse <= tap(0);
-    end if;
-  end process;
 
-  --  Pulse detector.
-  process (clk_i) is
-  begin
-    if rising_edge(clk_i) then
-      if rst_n_i = '0' then
-        trigger <= '0';
-      elsif (pulse xor tap (0)) = '1'
-        and (restart_i = '1' or trigger = '0')
-      then
-        --  A pulse is detected
-        --   and not yet triggered or restarted
-        trigger <= '1';
-        coarse_o <= std_logic_vector(unsigned(cur_cycles_i) - 2);
-        fine_o <= std_logic_vector(to_unsigned(ffs (tap), 16));
-      elsif restart_i = '1' then
-        trigger <= '0';
-      end if;
-    end if;
-  end process;
-
-  trigger_o <= trigger;
-
+  inst_time: entity work.opentdc_time
+    generic map (
+      length => length)
+    port map (
+      clk_i => clk_i,
+      rst_n_i => rst_n_i,
+      cur_cycles_i => cur_cycles_i,
+      restart_i => restart_i,
+      tap_i => tap,
+      trigger_o => trigger_o,
+      coarse_o => coarse_o,
+      fine_o => fine_o);
 end behav;
