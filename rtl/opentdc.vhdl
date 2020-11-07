@@ -198,5 +198,4 @@ begin
       trigger_o => tdc0_trigger,
       coarse_o => tdc0_coarse,
       fine_o => tdc0_fine);
-
 end behav;
