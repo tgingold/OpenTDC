@@ -83,8 +83,7 @@ begin
 
     --  Read results
     report "coarse: " & to_hstring(coarse_o);
-    report "fine: " & to_hstring(fine_o);
-    report "fine: " & natural'image(fine);
+    report "fine: 0x" & to_hstring(fine_o) & " = " & natural'image(fine);
     --  See above for the value.
     assert coarse_o = x"0000_0003" report "bad coarse value" severity failure;
     assert fine = 85 report "bad fine value" severity failure;
