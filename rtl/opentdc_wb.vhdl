@@ -22,6 +22,9 @@ entity opentdc_wb is
     inp0_i : std_logic;
     inp1_i : std_logic;
 
+    --  Fd output signals
+    out0_o : out std_logic;
+
     rst_time_n_i : std_logic);
 end opentdc_wb;
 
@@ -35,23 +38,21 @@ architecture behav of opentdc_wb is
 
   signal cur_cycles : std_logic_vector(31 downto 0);
 
-  --  tdc0
-  signal tdc0_trigger : std_logic;
-  signal tdc0_restart : std_logic;
-  signal tdc0_coarse : std_logic_vector(31 downto 0);
-  signal tdc0_fine : std_logic_vector(15 downto 0);
+  type tdc_rec is record
+    trigger : std_logic;
+    restart : std_logic;
+    coarse : std_logic_vector(31 downto 0);
+    fine : std_logic_vector(15 downto 0);
+  end record;
 
-  --  tdc1
-  signal tdc1_trigger : std_logic;
-  signal tdc1_restart : std_logic;
-  signal tdc1_coarse : std_logic_vector(31 downto 0);
-  signal tdc1_fine : std_logic_vector(15 downto 0);
-
-  --  tdc ref
-  signal tdcr_trigger : std_logic;
-  signal tdcr_restart : std_logic;
-  signal tdcr_coarse : std_logic_vector(31 downto 0);
-  signal tdcr_fine : std_logic_vector(15 downto 0);
+  --  TDCs
+  signal tdc0, tdc1, tdcr : tdc_rec;
+    
+  --  fd0
+  signal fd0_coarse : std_logic_vector(31 downto 0);
+  signal fd0_fine   : std_logic_vector(15 downto 0);
+  signal fd0_valid  : std_logic;
+  signal fd0_busy  : std_logic;
 begin
   rst_n <= not wb_rst_i;
 
@@ -62,9 +63,9 @@ begin
   begin
     if rising_edge(wb_clk_i) then
       --  Restart is a pulse.
-      tdc0_restart <= '0';
-      tdc1_restart <= '0';
-      tdcr_restart <= '0';
+      tdc0.restart <= '0';
+      tdc1.restart <= '0';
+      tdcr.restart <= '0';
 
       if rst_n = '0' then
         wb_ack <= '0';
@@ -84,31 +85,45 @@ begin
 
             when x"02" =>
               -- status.
-              wbs_dat_o (0) <= tdc0_trigger;
-              wbs_dat_o (1) <= tdc1_trigger;
-              wbs_dat_o (7) <= tdcr_trigger;
+              wbs_dat_o (0) <= tdc0.trigger;
+              wbs_dat_o (1) <= tdc1.trigger;
+              wbs_dat_o (7) <= tdcr.trigger;
+              wbs_dat_o (16) <= fd0_busy;
             when x"03" =>
               -- control.
               if wbs_we_i = '1' and wbs_sel_i (0) = '1' then
-                tdc0_restart <= wbs_dat_i (0);
-                tdc1_restart <= wbs_dat_i (1);
-                tdcr_restart <= wbs_dat_i (7);
+                tdc0.restart <= wbs_dat_i (0);
+                tdc1.restart <= wbs_dat_i (1);
+                tdcr.restart <= wbs_dat_i (7);
               end if;
-
+              if wbs_we_i = '1' and wbs_sel_i (2) = '1' then
+                fd0_valid <= wbs_dat_i (16);
+              end if;
             when x"04" =>
-              wbs_dat_o <= tdc0_coarse;
+              wbs_dat_o <= tdc0.coarse;
             when x"05" =>
-              wbs_dat_o <= x"00_00" & tdc0_fine;
+              wbs_dat_o <= x"00_00" & tdc0.fine;
 
             when x"06" =>
-              wbs_dat_o <= tdc1_coarse;
+              wbs_dat_o <= tdc1.coarse;
             when x"07" =>
-              wbs_dat_o <= x"00_00" & tdc1_fine;
+              wbs_dat_o <= x"00_00" & tdc1.fine;
 
             when x"0e" =>
-              wbs_dat_o <= tdcr_coarse;
+              wbs_dat_o <= tdcr.coarse;
             when x"0f" =>
-              wbs_dat_o <= x"00_00" & tdcr_fine;
+              wbs_dat_o <= x"00_00" & tdcr.fine;
+
+            when x"10" =>
+              wbs_dat_o <= fd0_coarse;
+              if wbs_we_i = '1' then
+                fd0_coarse <= wbs_dat_i;
+              end if;
+            when x"11" =>
+              wbs_dat_o (15 downto 0) <= fd0_fine;
+              if wbs_we_i = '1' then
+                fd0_fine <= wbs_dat_i(15 downto 0);
+              end if;
             when others =>
               report "unhandled address";
               null;
@@ -139,11 +154,11 @@ begin
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
       cur_cycles_i => cur_cycles,
-      restart_i => tdc0_restart,
+      restart_i => tdc0.restart,
       inp_i => inp0_i,
-      trigger_o => tdc0_trigger,
-      coarse_o => tdc0_coarse,
-      fine_o => tdc0_fine);
+      trigger_o => tdc0.trigger,
+      coarse_o => tdc0.coarse,
+      fine_o => tdc0.fine);
 
   --  TDC 1
   i_tdc1: entity work.opentdc_core
@@ -153,11 +168,11 @@ begin
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
       cur_cycles_i => cur_cycles,
-      restart_i => tdc1_restart,
+      restart_i => tdc1.restart,
       inp_i => inp1_i,
-      trigger_o => tdc1_trigger,
-      coarse_o => tdc1_coarse,
-      fine_o => tdc1_fine);
+      trigger_o => tdc1.trigger,
+      coarse_o => tdc1.coarse,
+      fine_o => tdc1.fine);
 
   --  TDC ref
   i_tdc_ref: entity work.opentdc_core
@@ -167,10 +182,23 @@ begin
       clk_i => wb_clk_i,
       rst_n_i => rst_n,
       cur_cycles_i => cur_cycles,
-      restart_i => tdcr_restart,
+      restart_i => tdcr.restart,
       inp_i => wb_clk_i,
-      trigger_o => tdcr_trigger,
-      coarse_o => tdcr_coarse,
-      fine_o => tdcr_fine);
+      trigger_o => tdcr.trigger,
+      coarse_o => tdcr.coarse,
+      fine_o => tdcr.fine);
 
+  --  FD0
+  inst_fd0: entity work.openfd_core
+    generic map (
+      plen => 8)
+    port map (
+      clk_i => wb_clk_i,
+      rst_n_i => rst_n,
+      cur_cycles_i => cur_cycles,
+      coarse_i     => fd0_coarse,
+      fine_i       => fd0_fine,
+      valid_i      => fd0_valid,
+      busy_o       => fd0_busy,
+      out_o        => out0_o);
 end behav;

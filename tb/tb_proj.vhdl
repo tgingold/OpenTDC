@@ -28,8 +28,11 @@ architecture behav of tb_proj is
 
   signal inp0       : std_logic;
   signal inp1       : std_logic;
+  signal out0       : std_logic;
   signal rst_time_n : std_logic;
 
+  signal fd0_time : time;
+  
   signal done : std_logic := '0';
 
   procedure wb32_write32 (signal clk : std_logic;
@@ -88,6 +91,11 @@ begin
 
   wb_rst <= '1', '0' after 40 ns;
 
+  process (out0)
+  begin
+    fd0_time <= now;
+  end process;
+  
   process
     variable d32, d32_a : std_logic_vector (31 downto 0);
   begin
@@ -179,5 +187,6 @@ begin
       wbs_dat_o    => wbs_in.dati,
       inp0_i       => inp0,
       inp1_i       => inp1,
+      out0_o       => out0,
       rst_time_n_i => rst_time_n);
 end behav;
