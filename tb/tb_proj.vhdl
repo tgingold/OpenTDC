@@ -6,7 +6,9 @@ entity tb_proj is
 end tb_proj;
 
 architecture behav of tb_proj is
-  signal wb_clk     : std_logic := '0';
+  constant cycle : time := 20 ns; --  50 Mhz
+
+  signal wb_clk     : std_logic := '1';
   signal wb_rst     : std_logic;
 
   type wb32_master_out is record
@@ -32,19 +34,20 @@ architecture behav of tb_proj is
   signal rst_time_n : std_logic;
 
   signal fd0_time : time;
-  
+
   signal done : std_logic := '0';
 
   procedure wb32_write32 (signal clk : std_logic;
                           signal wb_out : out wb32_master_out;
                           signal wb_in  : in  wb32_master_in;
                           addr : std_logic_vector(31 downto 0);
-                          dat  : std_logic_vector(31 downto 0)) is
+                          dat  : std_logic_vector(31 downto 0);
+                          sel : std_logic_vector(3 downto 0) := "1111") is
   begin
     wb_out.cyc <= '1';
     wb_out.stb <= '1';
     wb_out.we <= '1';
-    wb_out.sel <= "1111";
+    wb_out.sel <= sel;
     wb_out.adr <= addr;
     wb_out.dato <= dat;
     loop
@@ -77,27 +80,28 @@ architecture behav of tb_proj is
     wait until rising_edge(clk);
   end wb32_read32;
 begin
-  --  Assume 50 Mhz
   process
   begin
-    wb_clk <= '0';
-    wait for 10 ns;
-    wb_clk <= '1';
-    wait for 10 ns;
+    --  Important: start at level 1, so that a rising_edge happen every
+    --  CYCLE.
+    wait for cycle / 2;
+    wb_clk <= not wb_clk;
     if done = '1' then
       wait;
     end if;
   end process;
 
-  wb_rst <= '1', '0' after 40 ns;
+  wb_rst <= '1', '0' after 2 * cycle + cycle / 2;
 
   process (out0)
   begin
     fd0_time <= now;
   end process;
-  
+
   process
     variable d32, d32_a : std_logic_vector (31 downto 0);
+    variable ncycles : natural;
+    variable ndelays : natural;
   begin
     done <= '0';
 
@@ -118,7 +122,7 @@ begin
 
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
-    -- report "cycles=" & to_hstring(d32);
+    report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
     assert unsigned(d32) < 5 report "(2) bad cycle value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32_a);
     assert unsigned(d32_a) > unsigned(d32)
@@ -166,6 +170,27 @@ begin
     report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 16
       report "(9) bad fine value for tdc1" severity failure;
+
+    --  Program fd.
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0044", x"0000_0027");
+    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 6);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", d32);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
+
+    wait on fd0_time for 5 * cycle;
+    wait until rising_edge(wb_clk);
+    ncycles := fd0_time / cycle;
+    ndelays := (fd0_time - ncycles * cycle) / 100 ps;
+    report "fd0 time=" & time'image(fd0_time);
+    report "ncycles=" & natural'image(ncycles)
+      & ", ndelays=" & natural'image(ndelays);
+    report "fd0 coarse=" & to_hstring(d32);
+
+    --  cur_cycle start when now = 2 cycles
+    assert ncycles = to_integer(unsigned(d32) + 2)
+      report "(10) bad coarse time for fd0" severity failure;
+    assert ndelays = 39
+      report "(11) bad fine time for fd0" severity failure;
 
     report "Test OK" severity note;
     done <= '1';
