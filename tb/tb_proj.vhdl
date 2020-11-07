@@ -173,9 +173,14 @@ begin
 
     --  Program fd.
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0044", x"0000_0027");
-    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 6);
+    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 10);
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", d32);
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
+
+    --  Check busy status (before the trigger).
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
+    assert d32_a(16) = '1'
+      report "(10) bad busy value for fd0" severity failure;
 
     wait on fd0_time for 5 * cycle;
     wait until rising_edge(wb_clk);
@@ -188,10 +193,16 @@ begin
 
     --  cur_cycle start when now = 2 cycles
     assert ncycles = to_integer(unsigned(d32) + 2)
-      report "(10) bad coarse time for fd0" severity failure;
+      report "(11) bad coarse time for fd0" severity failure;
     assert ndelays = 39
-      report "(11) bad fine time for fd0" severity failure;
+      report "(12) bad fine time for fd0" severity failure;
 
+    --  Check busy status (before the trigger).
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
+    assert d32_a(16) = '0'
+      report "(13) bad busy value for fd0" severity failure;
+
+    --  OK
     report "Test OK" severity note;
     done <= '1';
     wait;

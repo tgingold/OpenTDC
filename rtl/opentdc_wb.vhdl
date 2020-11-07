@@ -47,7 +47,7 @@ architecture behav of opentdc_wb is
 
   --  TDCs
   signal tdc0, tdc1, tdcr : tdc_rec;
-    
+
   --  fd0
   signal fd0_coarse : std_logic_vector(31 downto 0);
   signal fd0_fine   : std_logic_vector(15 downto 0);
@@ -62,10 +62,13 @@ begin
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
-      --  Restart is a pulse.
+      --  TDC: restart is a pulse.
       tdc0.restart <= '0';
       tdc1.restart <= '0';
       tdcr.restart <= '0';
+
+      --  FD: valid is a pulse
+      fd0_valid <= '0';
 
       if rst_n = '0' then
         wb_ack <= '0';
