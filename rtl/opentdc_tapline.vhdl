@@ -15,15 +15,17 @@ entity opentdc_tapline is
 end opentdc_tapline;
 
 architecture behav of opentdc_tapline is
-  signal tap0 : std_logic_vector(length downto 0);
+  signal tap0 : std_logic_vector(length - 1 downto 0);
 begin
   tap0 (0) <= inp_i;
 
-  gen: for i in 0 to length - 1 generate
-    inst_delay: entity work.opentdc_delay
+  gen_delay: for i in 0 to length - 2 generate
+    inst: entity work.opentdc_delay
       port map (tap0 (i), tap0 (i + 1));
+  end generate;
 
-    inst_sync: entity work.opentdc_sync
+  gen_sync: for i in tap0'range generate
+    inst: entity work.opentdc_sync
       port map (clks_i (2*i), clks_i (2*i + 1), tap0 (i), tap_o (i));
   end generate;
 end behav;
