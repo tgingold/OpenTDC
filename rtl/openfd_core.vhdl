@@ -42,7 +42,7 @@ begin
         coarse <= (others => '0');
         fine <= (others => '0');
         valid <= '0';
-      elsif valid_i then
+      elsif valid_i = '1' then
         coarse <= std_logic_vector (unsigned(coarse_i) - 1);
         fine <= fine_i(fine'range);
         valid <= '1';
