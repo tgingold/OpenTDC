@@ -20,12 +20,10 @@ begin
   tap0 (0) <= inp_i;
 
   gen: for i in 0 to length - 1 generate
-    inst_tap: entity work.opentdc_tap
-      port map (
-        clk0_i => clks_i (2*i),
-        clk1_i => clks_i (2*i + 1),
-        inp_i => tap0 (i),
-        del_o => tap0 (i + 1),
-        tap_o => tap_o (i));
+    inst_delay: entity work.opentdc_delay
+      port map (tap0 (i), tap0 (i + 1));
+
+    inst_sync: entity work.opentdc_sync
+      port map (clks_i (2*i), clks_i (2*i + 1), tap0 (i), tap_o (i));
   end generate;
 end behav;
