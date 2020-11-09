@@ -21,6 +21,7 @@ entity opentdc_wb is
     --  Tdc input signals
     inp0_i : std_logic;
     inp1_i : std_logic;
+    inp2_i : std_logic;
 
     --  Fd output signals
     out0_o : out std_logic;
@@ -47,6 +48,7 @@ architecture behav of opentdc_wb is
 
   --  TDCs
   signal tdc0, tdc1, tdcr : tdc_rec;
+  signal tdc2 : tdc_rec;
 
   --  fd0
   signal fd0_coarse : std_logic_vector(31 downto 0);
@@ -66,6 +68,7 @@ begin
       tdc0.restart <= '0';
       tdc1.restart <= '0';
       tdcr.restart <= '0';
+      tdc2.restart <= '0';
 
       --  FD: valid is a pulse
       fd0_valid <= '0';
@@ -90,6 +93,7 @@ begin
               -- status.
               wbs_dat_o (0) <= tdc0.trigger;
               wbs_dat_o (1) <= tdc1.trigger;
+              wbs_dat_o (2) <= tdc2.trigger;
               wbs_dat_o (7) <= tdcr.trigger;
               wbs_dat_o (16) <= fd0_busy;
             when x"03" =>
@@ -97,11 +101,13 @@ begin
               if wbs_we_i = '1' and wbs_sel_i (0) = '1' then
                 tdc0.restart <= wbs_dat_i (0);
                 tdc1.restart <= wbs_dat_i (1);
+                tdc2.restart <= wbs_dat_i (2);
                 tdcr.restart <= wbs_dat_i (7);
               end if;
               if wbs_we_i = '1' and wbs_sel_i (2) = '1' then
                 fd0_valid <= wbs_dat_i (16);
               end if;
+
             when x"04" =>
               wbs_dat_o <= tdc0.coarse;
             when x"05" =>
@@ -111,6 +117,11 @@ begin
               wbs_dat_o <= tdc1.coarse;
             when x"07" =>
               wbs_dat_o <= x"00_00" & tdc1.fine;
+
+            when x"08" =>
+              wbs_dat_o <= tdc2.coarse;
+            when x"09" =>
+              wbs_dat_o <= x"00_00" & tdc2.fine;
 
             when x"0e" =>
               wbs_dat_o <= tdcr.coarse;
@@ -127,6 +138,7 @@ begin
               if wbs_we_i = '1' then
                 fd0_fine <= wbs_dat_i(15 downto 0);
               end if;
+
             when others =>
               report "unhandled address";
               null;
@@ -190,6 +202,36 @@ begin
       trigger_o => tdcr.trigger,
       coarse_o => tdcr.coarse,
       fine_o => tdcr.fine);
+
+  blk_tdc2: block
+    constant length : natural := 20;
+    signal tap : std_logic_vector(length downto 0);
+    signal tap_clks : std_logic_vector(2*length - 1 downto 0);
+
+    component tapline_20 is
+      port (inp_i : std_logic;
+            clk_i : std_logic_vector(2*length - 1 downto 0);
+            tap_o : out std_logic_vector(length - 1 downto 0));
+    end component;
+  begin
+    tap_clks <= (others => wb_clk_i);
+    tap (0) <= inp2_i;
+    inst_tap_line: tapline_20 port map
+      (inp_i => inp2_i, clk_i => tap_clks, tap_o => tap (length downto 1));
+
+    inst_time: entity work.opentdc_time
+      generic map (
+        length => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        cur_cycles_i => cur_cycles,
+        restart_i => tdc2.restart,
+        tap_i => tap,
+        trigger_o => tdc2.trigger,
+        coarse_o => tdc2.coarse,
+        fine_o => tdc2.fine);
+  end block;
 
   --  FD0
   inst_fd0: entity work.openfd_core
