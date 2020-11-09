@@ -10,7 +10,7 @@ entity opentdc_tap is
     --  Input signal.
     inp_i : std_logic;
 
-    --  Delayed input signal. 
+    --  Delayed input signal.
     del_o : out std_logic;
 
     --  Synchronized (with clk*_i) value of inp_i.
@@ -25,7 +25,7 @@ begin
     port map (inp_i, tap0);
 
   del_o <= tap0;
-  
+
   --  1st FF
   process (clk0_i) is
   begin

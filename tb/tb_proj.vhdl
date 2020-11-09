@@ -223,6 +223,7 @@ begin
       wbs_dat_o    => wbs_in.dati,
       inp0_i       => inp0,
       inp1_i       => inp1,
+      inp2_i       => '0',
       out0_o       => out0,
       rst_time_n_i => rst_time_n);
 end behav;

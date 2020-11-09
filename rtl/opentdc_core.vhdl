@@ -29,12 +29,12 @@ end opentdc_core;
 --  This core is made of 2 submodules, so that it is easy to harden
 --  the tapline.
 architecture behav of opentdc_core is
-  signal tap : std_logic_vector(length downto 0);
+  signal tap : std_logic_vector(length - 1 downto 0);
   signal tap_clks : std_logic_vector(2*length - 1 downto 0);
 begin
   --  Drive the clocks of the tap line.
   tap_clks <= (others => clk_i);
-  
+
   inst_tap_line: entity work.opentdc_tapline
     generic map (
       length => length)

@@ -16,8 +16,8 @@ entity opentdc_time is
     --  If false, pause once triggered.
     restart_i : std_logic;
 
-    --  taps input 
-    tap_i : std_logic_vector(length downto 0);
+    --  taps input
+    tap_i : std_logic_vector(length - 1 downto 0);
 
     --  Set if a pulse has been detected.
     trigger_o : out std_logic;

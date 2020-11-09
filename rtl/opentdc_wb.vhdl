@@ -205,7 +205,7 @@ begin
 
   blk_tdc2: block
     constant length : natural := 20;
-    signal tap : std_logic_vector(length downto 0);
+    signal tap : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
 
     component tapline_20 is
@@ -217,7 +217,7 @@ begin
     tap_clks <= (others => wb_clk_i);
     tap (0) <= inp2_i;
     inst_tap_line: tapline_20 port map
-      (inp_i => inp2_i, clk_i => tap_clks, tap_o => tap (length downto 1));
+      (inp_i => inp2_i, clk_i => tap_clks, tap_o => tap);
 
     inst_time: entity work.opentdc_time
       generic map (
