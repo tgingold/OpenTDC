@@ -1,0 +1,6 @@
+name: OpenTDC
+description: Time to Data Converter with Fine Delay
+git_url: git@github.com:tgingold/opentdc.git
+version: 1
+user_level_netlist: opentdc_wb.v
+top_level_netlist: caravel.v
