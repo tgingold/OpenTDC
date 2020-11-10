@@ -52,30 +52,54 @@ class GenDef:
                  'orientation': "FS" if i % 2 == 0 else "N"}
             self.rows.append(r)
 
+    class Net:
+        def __init__(self, name):
+            self.name = name
+            self.conn = []
+
     def add_net(self, name):
-        n = {'name': name, 'conn': []}
+        n = GenDef.Net(name)
         self.nets.append(n)
         return n
 
-    def add_pin(self, name, io, place, offset):
+    class Pin:
+        def __init__(self, name, io):
+            self.name = name
+            self.dir = io
+            self.net = None
+            self.place = None
+            self.offset = None
+
+    def add_pin(self, name, io):
         """Add a pin, return the corresponding net"""
         assert io in "IO"
-        assert place in "NSEW"
         n = self.add_net(name)
-        p = {'name': name, 'net': n, 'dir': io,
-             'place': place, 'offset': offset}
+        p = GenDef.Pin(name, io)
+        p.net = n
         self.pins.append(p)
-        n['conn'].append((None, p))
-        return n
+        n.conn.append((None, p))
+        return p
 
-    def add_component(self, name, comp, row):
-        c = {'name': name, 'comp': comp}
-        self.rows[row]['comps'].append(c)
-        self.rows[row]['width'] += comp['width']
-        return c
+    def place_pin(self, pin, place, offset):
+        assert pin.place is None, "pin already placed"
+        assert place in "NSEW"
+        pin.place = place
+        pin.offset = offset
+
+    class Component:
+        def __init__(self, name, klass):
+            self.name = name
+            self.klass = klass
+
+    def add_component(self, name, klass):
+        return GenDef.Component(name, klass)
+
+    def place_component(self, comp, row):
+        self.rows[row]['comps'].append(comp)
+        self.rows[row]['width'] += comp.klass['width']
 
     def connect(self, net, inst, port):
-        net['conn'].append((inst, port))
+        net.conn.append((inst, port))
 
     def build_fillers(self):
         fillers = [v for k, v in self.config.items() if k.startswith('fill')]
@@ -89,8 +113,8 @@ class GenDef:
         for i, r in enumerate(self.rows):
             for f in self.fillers:
                 while r['width'] + f['width'] <= wd:
-                    self.add_component('FILL_{}'.format(self.fill_label),
-                                       f, i)
+                    c = self.add_component('FILL_{}'.format(self.fill_label), f)
+                    self.place_component(c, i)
                     self.fill_label += 1
             assert r['width'] == wd
 
@@ -138,38 +162,38 @@ class GenDef:
             y = r['y']
             orien = r['orientation']
             for c in r['comps']:
-                print('  - {} {}'.format(c['name'], c['comp']['name']),
+                print('  - {} {}'.format(c.name, c.klass['name']),
                       end='', file=f)
                 print(' + FIXED ( {} {} ) {}'.format(
                     x, y, orien), end='', file=f)
-                x += c['comp']['width']
+                x += c.klass['width']
                 print(' ;', file=f)
         print('END COMPONENTS', file=f)
 
     def disp_def_pins(self, f):
         print('PINS {} ;'.format(len(self.pins)), file=f)
         for p in self.pins:
-            print('  - {} + NET {}'.format(p['name'], p['net']['name']),
+            print('  - {} + NET {}'.format(p.name, p.net.name),
                   end='', file=f)
             print(' + DIRECTION {}'.format(
-                {'I': 'INPUT', 'O': 'OUTPUT'}[p['dir']]), end='', file=f)
+                {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
-            if p['place'] in "NS":
-                if p['place'] == 'S':
+            if p.place in "NS":
+                if p.place == 'S':
                     y = 2000
                 else:
                     y = self.y_size - 2000
                 print(' + PLACED ( {} {} ) N '.format(
-                    self.hmargin + p['offset'], y), end='', file=f)
+                    self.hmargin + p.offset, y), end='', file=f)
                 print(' + LAYER met2 ( {} {} ) ( {} {} )'.format(
                     -140, -2000, 140, 2000), end='', file=f)
-            elif p['place'] in "EW":
-                if p['place'] == 'W':
+            elif p.place in "EW":
+                if p.place == 'W':
                     x = 2000
                 else:
                     x = self.x_size - 2000
                 print(' + PLACED ( {} {} ) N '.format(
-                    x, self.vmargin + p['offset']), end='', file=f)
+                    x, self.vmargin + p.offset), end='', file=f)
                 print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
                     -2000, -300, 2000, 300), end='', file=f)
             print(' ;', file=f)
@@ -178,15 +202,15 @@ class GenDef:
     def disp_def_nets(self, f):
         print('NETS {} ;'.format(len(self.nets)), file=f)
         for n in self.nets:
-            print('  - {}'.format(n['name']), end='', file=f)
-            for inst, port in n['conn']:
+            print('  - {}'.format(n.name), end='', file=f)
+            for inst, port in n.conn:
                 if inst is None:
                     # This is a pin.
-                    print(' ( PIN {} )'.format(port['name']), end='', file=f)
+                    print(' ( PIN {} )'.format(port.name), end='', file=f)
                 else:
                     # This is an instance
                     print(' ( {} {} )'.format(
-                        inst['name'], inst['comp'][port]), end='', file=f)
+                        inst.name, inst.klass[port]), end='', file=f)
             print(' + USE SIGNAL ;', file=f)
         print('END NETS', file=f)
 
