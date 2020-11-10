@@ -30,20 +30,22 @@ config_sky130_fd_hd = {
 
 
 class GenDef:
-    def __init__(self, name, nrow):
+    def __init__(self, name):
         self.name = name
         self.row_width = 460
         self.row_height = 2720
         self.hmargin = 12 * self.row_width  # = 5520
         self.vmargin = 2 * self.row_height
-        self.nrow = 3   # Number of rows
+        self.nrow = 0   # Number of rows
         self.rowl = 0   # Length of rows
         self.rows = []
         self.nets = []
         self.pins = []
         self.config = config_sky130_fd_hd
+        self.build_fillers()
 
-    def build_rows(self):
+    def build_rows(self, nrow):
+        self.nrow = nrow
         for i in range(self.nrow):
             r = {'comps': [], 'width': 0,
                  'x': self.hmargin, 'y': self.vmargin + i * self.row_height,

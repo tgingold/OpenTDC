@@ -18,12 +18,11 @@ from gen_def import GenDef
 
 class tap_line(GenDef):
     def __init__(self, name, ntaps):
-        super().__init__(name, 3)
+        super().__init__(name)
         self.ntaps = ntaps
 
     def build(self):
-        self.build_rows()
-        self.build_fillers()
+        self.build_rows(3)
         last = self.add_pin('inp_i', 'I', 'W', 0)
         for i in range(self.ntaps):
             x_pin = self.rows[0]['width']
