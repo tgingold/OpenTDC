@@ -16,16 +16,16 @@
 import argparse
 
 config_sky130_fd_hd = {
-    'dff': {'name': 'sky130_fd_sc_hd__dfxtp_4', 'width': 8740,
+    'dff': {'name': 'sky130_fd_sc_hd__dfxtp_4', 'width': 19 * 460,
             'input': 'D', 'output': 'Q', 'clock': 'CLK'},
-    'delay': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_1', 'width': 3680,
+    'delay': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_1', 'width': 8 * 460,
               'input': 'A', 'output': 'X'},
-    'decap': {'name': 'sky130_fd_sc_hd__decap_3', 'width': 1380},
-    'tap':   {'name': 'sky130_fd_sc_hd__tapvpwrvgnd_1', 'width': 460},
-    'fill1': {'name': 'sky130_fd_sc_hd__fill_1', 'width': 460},
-    'fill2': {'name': 'sky130_fd_sc_hd__fill_2', 'width': 920},
-    'fill4': {'name': 'sky130_fd_sc_hd__fill_4', 'width': 1840},
-    'fill8': {'name': 'sky130_fd_sc_hd__fill_8', 'width': 3680},
+    'decap': {'name': 'sky130_fd_sc_hd__decap_3', 'width': 3 * 460},
+    'tap':   {'name': 'sky130_fd_sc_hd__tapvpwrvgnd_1', 'width': 1* 460},
+    'fill1': {'name': 'sky130_fd_sc_hd__fill_1', 'width': 1 * 460},
+    'fill2': {'name': 'sky130_fd_sc_hd__fill_2', 'width': 2 * 460},
+    'fill4': {'name': 'sky130_fd_sc_hd__fill_4', 'width': 4 * 460},
+    'fill8': {'name': 'sky130_fd_sc_hd__fill_8', 'width': 8 * 460},
 }
 
 
