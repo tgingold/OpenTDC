@@ -20,6 +20,8 @@ config_sky130_fd_hd = {
             'input': 'D', 'output': 'Q', 'clock': 'CLK'},
     'delay': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_1', 'width': 8 * 460,
               'input': 'A', 'output': 'X'},
+    'mux2':  {'name': 'sky130_fd_sc_hd__mux2_1', 'width': 9 * 460,
+              'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_hd__decap_3', 'width': 3 * 460},
     'tap':   {'name': 'sky130_fd_sc_hd__tapvpwrvgnd_1', 'width': 1* 460},
     'fill1': {'name': 'sky130_fd_sc_hd__fill_1', 'width': 1 * 460},
@@ -117,6 +119,16 @@ class GenDef:
                     self.place_component(c, i)
                     self.fill_label += 1
             assert r['width'] == wd
+
+    def build_tap_decap(self, row, idx):
+        # tap
+        tap = self.add_component('tap{}_{}'.format(row, idx),
+                                 self.config['tap'])
+        self.place_component(tap, row)
+        # decap
+        decap = self.add_component('decap{}_{}'.format(row, idx),
+                                   self.config['decap'])
+        self.place_component(decap, row)
 
     def compute_size(self):
         self.rowl = max(r['width'] for r in self.rows) // self.row_width

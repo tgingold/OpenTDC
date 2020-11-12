@@ -2,10 +2,16 @@
 # To be executed in the openlane/ directory
 
 length=""
-for arg; do
-    case $arg in
+geo="x1"
+
+for opt; do
+    arg=`echo $opt | sed -e 's/.*=//'`
+    case $opt in
         --length=*)
-            length=`echo $arg | sed -e s/--length=//`
+            length=$arg
+            ;;
+        --geo=*)
+            geo=$arg
             ;;
         --help)
             echo "usage: $0 --length=LEN"
@@ -25,15 +31,26 @@ fi
 
 set -e
 
-export DESIGN_NAME=tapline_$length
-python3 ../../tools/gen_tapline.py --length=$length --name=$DESIGN_NAME
-mv $DESIGN_NAME.def tapline.placed.def
+export DESIGN_NAME=tapline_${geo}_${length}
+python3 ../../tools/gen_tapline.py --length=$length --geo=$geo --name=$DESIGN_NAME
+mv $DESIGN_NAME.def design.placed.def
+
+rm -rf runs/user
 
 cd ..
 /openLANE_flow/openlane/flow.tcl -it -file gentapline/build.tcl
 cd gentapline
 
+cp runs/user/results/routing/$DESIGN_NAME.def .
+cp runs/user/results/magic/$DESIGN_NAME.mag .
+cp runs/user/results/magic/$DESIGN_NAME.drc.mag .
+cp runs/user/logs/magic/magic.drc* .
 cp runs/user/results/magic/$DESIGN_NAME.gds .
 cp runs/user/results/magic/$DESIGN_NAME.lef .
+
+if ! grep "COUNT: 0" runs/user/logs/magic/magic.drc.log; then
+    echo "DRC failures"
+    exit 1
+fi
 
 echo "Done"

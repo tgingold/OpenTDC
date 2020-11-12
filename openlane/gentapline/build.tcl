@@ -2,7 +2,7 @@ package require openlane; # provides the utils as well
 set script_dir [file dirname [file normalize [info script]]]
 
 prep -design gentapline -tag user -overwrite
-set ::env(CURRENT_DEF) $script_dir/tapline.placed.def
+set ::env(CURRENT_DEF) $script_dir/design.placed.def
 gen_pdn
 run_routing
 run_magic

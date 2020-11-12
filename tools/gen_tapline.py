@@ -59,16 +59,9 @@ class tap_line(GenDef):
             tap['delay'] = delay
         self.netlist = res
 
-    def build_tap_decap(self, col):
+    def build_all_tap_decap(self, col):
         for k in range(self.nrow):
-            # Row k: tap
-            tap = self.add_component('tap{}_{}'.format(k, col),
-                                         self.config['tap'])
-            self.place_component(tap, k)
-            # Row k: decap
-            decap = self.add_component('decap{}_{}'.format(k, col),
-                                           self.config['tap'])
-            self.place_component(decap, k)
+            self.build_tap_decap(k, col)
 
     def build_horizontal(self):
         self.build_rows(3)
@@ -86,10 +79,46 @@ class tap_line(GenDef):
             # Row 0: delay
             if t['delay'] is not None:
                 self.place_component(t['delay'], 0)
-            self.build_tap_decap(i)
+            self.build_all_tap_decap(i)
             self.pad_rows()
         self.compute_size()
 
+    def build_horizontal_x2(self):
+        self.build_rows(6)
+        self.place_pin(self.netlist['inp'], 'W', 2 * self.row_height)
+        taps = self.netlist['taps']
+        mid = (self.ntaps + 1) // 2
+        l1 = taps[:mid]
+        l2 = taps[len(taps):mid - 1:-1]
+        if self.ntaps % 2 == 1:
+            l2.append(None)
+        assert len(l1) == len(l2)
+        for i, (t1, t2) in enumerate(zip(l1, l2)):
+            x_pin = self.rows[0]['width']
+            x_pin_step = self.config['dff']['width'] // 8
+            # Row 0: dff
+            self.place_component(t1['dff2'], 0)
+            self.place_pin(t1['out'], 'N', x_pin + 1 * x_pin_step)
+            self.place_pin(t1['ck2'], 'N', x_pin + 2 * x_pin_step)
+            # Row 1: dff
+            self.place_component(t1['dff1'], 1)
+            self.place_pin(t1['ck1'], 'N', x_pin + 3 * x_pin_step)
+            # Row 2: delay
+            if t1['delay'] is not None:
+                self.place_component(t1['delay'], 2)
+            # Row 3: delay
+            if t2['delay'] is not None:
+                self.place_component(t2['delay'], 3)
+            # Row 4: dff
+            self.place_component(t2['dff1'], 4)
+            self.place_pin(t2['ck1'], 'N', x_pin + 4 * x_pin_step)
+            # Row 5: dff2
+            self.place_component(t2['dff2'], 5)
+            self.place_pin(t2['out'], 'N', x_pin + 5 * x_pin_step)
+            self.place_pin(t2['ck2'], 'N', x_pin + 6 * x_pin_step)
+            self.build_all_tap_decap(i)
+            self.pad_rows()
+        self.compute_size()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -98,9 +127,16 @@ if __name__ == '__main__':
                         help='number of taps')
     parser.add_argument('--name', '-n', type=str, default='tap_line',
                         help='name of the design')
+    parser.add_argument('--geo', '-g', choices=['x1', 'x2'], default='x1',
+                        help='geometry of the tapline')
     args = parser.parse_args()
 
     inst = tap_line(args.name, args.length)
     inst.build_netlist()
-    inst.build_horizontal()
+    if args.geo == 'x1':
+        inst.build_horizontal()
+    elif args.geo == 'x2':
+        inst.build_horizontal_x2()
+    else:
+        raise Exception
     inst.disp_def(args.name + '.def')

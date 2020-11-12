@@ -16,11 +16,11 @@ set ::env(CLOCK_TREE_SYNTH) 0
 # set ::env(DIODE_INSERTION_STRATEGY) 0
 
 # Use default hpitch.
-set ::env(FP_PDN_VOFFSET) 10.88
-set ::env(FP_PDN_VPITCH) 7.2
+#set ::env(FP_PDN_VOFFSET) 10.88
+set ::env(FP_PDN_VOFFSET) 0
+set ::env(FP_PDN_VPITCH) 16
 set ::env(FP_PDN_HOFFSET) 2.72
-set ::env(FP_PDN_HPITCH) 153.18
-
+set ::env(FP_PDN_HPITCH) 7.04
 #set ::env(FP_TAPCELL_DIST) 14
 
 set ::env(FP_SIZING) absolute
