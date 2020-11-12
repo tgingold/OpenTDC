@@ -1,0 +1,112 @@
+Mini-blog from a non-native English speaker...
+
+I decided to participate to the Open Source Shuttle Program (by efabless and google) because this was a unique opportunity to design my own ASIC.
+
+Although I do hardware design, I didn't have a design to be tapped out.  So I have to
+create a new design.  Due to the time constraints between the announce (June 2020) and the deadline (November 2020), this couldn't be a complex design from a logic point of view.  And the purpose of the shuttle program is mostly experimental.
+
+I quickly decided to do a TDC and FD design.  TDC stands for Time to Data Converter, which is a fancy name for simply timestamping a pulse with high precision (much more precise than the clock).  FD stands for Fine Delay and this is the opposite of TDC: generating a pulse at a given time (again, higher precision than the clock).
+
+The main advantages of this design are:
+
+* Not a very complex design (again).  This simplifies the verification a lot, and in
+  case of any errors (DRC or process), it should be possible to use the design partially.
+  Although the process is mature, we are using open source tools which aren't as
+  heavily tested.
+
+* Allows to analyze the process.  In particular, how long it takes for a pulse to
+  propagate through a certain gate (the delay gate).  And this could be studied at
+  various PVT (Process, Voltage, Temperature) points.
+
+* This is not a design that could be written the same way for an FPGA.  On an FPGA, you
+  have already defined and fixed complex gates, so all you can do is to play with certain
+  pathes (like carry lines).
+
+And of course, I also wanted to test in real conditions the synthesis feature of GHDL.
+So the design will be written in VHDL.  As the toolchain for the shuttle program is verilog only, the design will be first synthesized and the result will be a verilog netlist.  Then this netlist will be the entry point of the toolchain.  This will make the integration almost transparent.
+
+
+The first iteration
+-------------------
+
+The tool chain wasn't available when the shuttle project was announced.  So I had time
+to think about my design and to start to write it.
+
+When the first version of the toolchain was released (late July), it was time to try
+it.  The first test didn't go smooth.
+
+[ density ]
+[ With my design ]
+
+[ Sizing the taps chain]
+
+[ Clocking ]
+
+[ Power estimation ]
+
+[ Next iteration: better precision and accuracy, bursts, best techno, best layout ]
+
+OSU library
+-----------
+
+Magic
+-----
+
+I planned to have many hard blocks (macros in openlane language).  Fine, but you have to place them, through a file that indicates the position.  I would prefer a more graphical
+way as I need to take into account the distance between macros (they cannot overlap!),
+and distance with input pad.
+
+Magic is the graphical tool of the tool chain.  It can be used to draw cells and can also be used to edit or view a full design.  It it also the tool to do DRC and write
+the final GDS.  My idea was simple:
+
+* start from an almost empty design (to ease graphical display)
+
+* run the floorplan phase (at least the ioplacer)
+
+* edit the result (the DEF file) with magic
+
+* graphically place the macros
+
+* save the result (a .mag file)
+
+* convert the result to the macro_placement.cfg file
+
+* Or better, write a tcl script for that.
+
+As I want to place the macros near the pins, I have to select the pins.  The caravel design has 38 gpios (mprj_io[37:0]).  The pin mprj[11:0] are multiplexed with JTAG, UART, SPI, FLASH or IRQ.  So I don't plan to use them.  I still can use 26 gpios.  For each gpio, the user design has 3 pins: io_in (for the input), io_out (for the output) and io_oeb (to enable the output).
+
+26 gpios:
+37, 36: (far) internals FD + TDC
+35, 34, 33, 32: (far)
+31, 29, 27, 25: (best, left):
+30, 28, 26: (good, left):
+24: (far, left)
+23, 21, 19, 18, 16, 15: (best, top)
+22, 20, 17: (good, top)
+14, 13: (far, right)
+12: (best, right)
+
+TDCs - fd_sc_hd:
+2 + ref: internals
+1: hori x1
+1 + ref: hori x1
+1: hori x2
+1 + ref: hori x2
+1 + ref: hori x4
+1 + ref: hori x16
+1 + ref: x? dly: clkbuf_1
+1 + ref: x? dly: clkbuf_2
+1 + ref: x? dly: clkbuf_4
+1 + ref: x? dly: clkbuf_8
+1 + ref: x? dly: clkbuf_16
+1 + ref: x? dly: clklybuf4s18
+1 + ref: x? dly: clklybuf4s25
+1 + ref: x? dly: clklybuf4s50
+1 + ref: x? dly: not + not
+
+TDCs (hd, hs, ls, ms, osu_sc_t18): [x5]
+1 + ref: x16 + clkbuf - with scan - very long (1000 taps): for 10Mhz
+1 + ref: x2 + clkbuf + scan
+
+
+TODO: enable for ref TDCs and FDs.  Select edge.
