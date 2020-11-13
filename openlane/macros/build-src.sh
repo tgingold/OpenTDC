@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# This script creates the initial .def (placed netlist) for all the taplines
+# and delay lines of the design.
+
+set -e
+
+GEN_TAPLINE=../../tools/gen_tapline.py
+L=200
+
+# Tech: fd_sc_hd
+$GEN_TAPLINE -n tapline_200_x1_hd              -l $L -g 1
+$GEN_TAPLINE -n tapline_200_x1_hd_ref          -l $L -g 1 -r
+$GEN_TAPLINE -n tapline_200_x2_hd              -l $L -g 2
+$GEN_TAPLINE -n tapline_200_x2_hd_ref          -l $L -g 2 -r
+$GEN_TAPLINE -n tapline_200_x2_s1_cbuf1_hd_ref -l $L -g 2 -r -c s1 -d cbuf_1
+$GEN_TAPLINE -n tapline_200_x2_s1_cbuf2_hd_ref -l $L -g 2 -r -c s1 -d cbuf_2
+$GEN_TAPLINE -n tapline_200_x2_s1_cbuf4_hd_ref -l $L -g 2 -r -c s1 -d cbuf_4
+$GEN_TAPLINE -n tapline_200_x2_s1_cdly18_hd_ref -l $L -g 2 -r -c s1 -d cdly18_1
+$GEN_TAPLINE -n tapline_200_x2_s1_cdly25_hd_ref -l $L -g 2 -r -c s1 -d cdly25_1
+$GEN_TAPLINE -n tapline_200_x2_s1_cdly50_hd_ref -l $L -g 2 -r -c s1 -d cdly50_1
+$GEN_TAPLINE -n tapline_200_x4_s1_hd_ref       -l $L -g 4 -r -c s1
+$GEN_TAPLINE -n tapline_200_x8_s1_hd_ref       -l $L -g 8 -r -c s1
+$GEN_TAPLINE -n tapline_200_x8_s1_hd_ref       -l $L -g 8 -r -c s1
+$GEN_TAPLINE -n tapline_200_x8_s1_hd_ref       -l $L -g 8 -r -c s1
+
+$GEN_TAPLINE -n tapline_200_x2_s1_hd_ref      -t fd_hd -l $L -g 2 -r -c s1
+$GEN_TAPLINE -n tapline_200_x2_s1_dly4_hs_ref -t fd_hs -l $L -g 2 -r -c s1 -d dly4_1
+$GEN_TAPLINE -n tapline_200_x2_s1_dly4_ms_ref -t fd_ms -l $L -g 2 -r -c s1 -d dly4_1
+$GEN_TAPLINE -n tapline_200_x2_s1_dly4_ls_ref -t fd_ls -l $L -g 2 -r -c s1 -d dly4_1
+
+echo "Done."
