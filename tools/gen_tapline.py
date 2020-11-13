@@ -17,126 +17,183 @@ import argparse
 from gen_def import GenDef
 
 class tap_line(GenDef):
-    def __init__(self, name, ntaps):
-        super().__init__(name)
+    def __init__(self, name, ntaps, ref, tech, delay):
+        super().__init__(tech, name)
+        self.cells['delay'] = self.cells[delay]
         self.ntaps = ntaps
+        self.ref = ref
+
+    def build_tap(self, pfx, idx, last):
+        tap = { }
+        # Row 1:
+        dff1 = self.add_component('{}dff1_{}'.format(pfx, idx),
+                                  self.cells['dff'])
+        tap['dff1'] = dff1
+        self.connect(last, dff1, 'input')
+        o1 = self.add_net('{}q1_{}'.format(pfx, idx))
+        self.connect(o1, dff1, 'output')
+        # Row 2: dff
+        dff2 = self.add_component('{}dff2_{}'.format(pfx, idx),
+                                  self.cells['dff'])
+        tap['dff2'] = dff2
+        self.connect(o1, dff2, 'input')
+        out = self.add_pin('{}tap_o[{}]'.format(pfx, idx), 'O')
+        self.connect(out.net, dff2, 'output')
+        # Row 0: delay
+        if idx != self.ntaps - 1:
+            delay = self.add_component(
+                '{}delay_{}'.format(pfx, idx), self.cells['delay'])
+            self.connect(last, delay, 'input')
+            last = self.add_net('{}in_d{}'.format(pfx, idx))
+            self.connect(last, delay, 'output')
+        else:
+            delay = None
+        tap['delay'] = delay
+        tap['last'] = last
+        tap['opad'] = [out]
+        return tap
+
+    def build_netlist_taps(self, inp_name, pfx):
+        inp = self.add_pin(inp_name, 'I')
+        taps = []
+        last = inp.net
+        for i in range(self.ntaps):
+            tap = self.build_tap(pfx, i, last)
+            last = tap.pop('last')
+            taps.append(tap)
+        return (inp, taps)
 
     def build_netlist(self):
-        res = {'inp': None, 'taps': [] }
-        res['inp'] = self.add_pin('inp_i', 'I')
-        last = res['inp'].net
-        for i in range(self.ntaps):
-            tap = { }
-            res['taps'].append(tap)
-            # Row 1:
-            dff1 = self.add_component('dff1_{}'.format(i), self.config['dff'])
-            tap['dff1'] = dff1
-            self.connect(last, dff1, 'input')
-            o1 = self.add_net('q1_{}'.format(i))
-            self.connect(o1, dff1, 'output')
-            ck1 = self.add_pin('clk_i[{}]'.format(2*i), 'I')
-            tap['ck1'] = ck1
-            self.connect(ck1.net, dff1, 'clock')
-            # Row 2: dff
-            dff2 = self.add_component('dff2_{}'.format(i), self.config['dff'])
-            tap['dff2'] = dff2
-            self.connect(o1, dff2, 'input')
-            out = self.add_pin('tap_o[{}]'.format(i), 'O')
-            tap['out'] = out
-            self.connect(out.net, dff2, 'output')
-            ck2 = self.add_pin('clk_i[{}]'.format(2*i + 1), 'I')
-            tap['ck2'] = ck2
-            self.connect(ck2.net, dff2, 'clock')
-            # Row 0: delay
-            if i != self.ntaps - 1:
-                delay = self.add_component(
-                    'delay_{}'.format(i), self.config['delay'])
-                self.connect(last, delay, 'input')
-                last = self.add_net('in_d{}'.format(i))
-                self.connect(last, delay, 'output')
-            else:
-                delay = None
-            tap['delay'] = delay
-        self.netlist = res
+        inp, taps = self.build_netlist_taps('inp_i', '')
+        if self.ref:
+            ref, rtaps = self.build_netlist_taps('ref_i', 'r')
+        else:
+            ref, rtaps = (None, None)
+        self.netlist = {'inp': inp, 'taps': taps, 'ref': ref, 'rtaps': rtaps}
 
-    def build_all_tap_decap(self, col):
+    def insert_all_tap_decap(self, col):
         for k in range(self.nrow):
             self.build_tap_decap(k, col)
 
-    def build_horizontal(self):
-        self.build_rows(3)
-        self.place_pin(self.netlist['inp'], 'W', 0)
-        for i, t in enumerate(self.netlist['taps']):
-            x_pin = self.rows[0]['width']
-            x_pin_step = self.config['dff']['width'] // 4
-            # Row 1:
-            self.place_component(t['dff1'], 1)
-            self.place_pin(t['ck1'], 'N', x_pin + x_pin_step)
-            # Row 2: dff
-            self.place_component(t['dff2'], 2)
-            self.place_pin(t['out'], 'N', x_pin + 3 * x_pin_step)
-            self.place_pin(t['ck2'], 'N', x_pin + 2 * x_pin_step)
-            # Row 0: delay
-            if t['delay'] is not None:
-                self.place_component(t['delay'], 0)
-            self.build_all_tap_decap(i)
-            self.pad_rows()
-        self.compute_size()
+    def arrange_taps_line(self, taps, linelen, pos):
+        stride = linelen * pos
+        if pos % 2 == 0:
+            return taps[stride:stride + linelen]
+        else:
+            return taps[stride + linelen-1:stride-1:-1]
 
-    def build_horizontal_x2(self):
-        self.build_rows(6)
-        self.place_pin(self.netlist['inp'], 'W', 2 * self.row_height)
+    def arrange(self, nlines):
+        """Arrange the tap per lines"""
+        lines_mul = 2 if self.ref else 1
+        # Create list of taps per line
         taps = self.netlist['taps']
-        mid = (self.ntaps + 1) // 2
-        l1 = taps[:mid]
-        l2 = taps[len(taps):mid - 1:-1]
-        if self.ntaps % 2 == 1:
-            l2.append(None)
-        assert len(l1) == len(l2)
-        for i, (t1, t2) in enumerate(zip(l1, l2)):
-            x_pin = self.rows[0]['width']
-            x_pin_step = self.config['dff']['width'] // 8
-            # Row 0: dff
-            self.place_component(t1['dff2'], 0)
-            self.place_pin(t1['out'], 'N', x_pin + 1 * x_pin_step)
-            self.place_pin(t1['ck2'], 'N', x_pin + 2 * x_pin_step)
-            # Row 1: dff
-            self.place_component(t1['dff1'], 1)
-            self.place_pin(t1['ck1'], 'N', x_pin + 3 * x_pin_step)
-            # Row 2: delay
-            if t1['delay'] is not None:
-                self.place_component(t1['delay'], 2)
-            # Row 3: delay
-            if t2['delay'] is not None:
-                self.place_component(t2['delay'], 3)
-            # Row 4: dff
-            self.place_component(t2['dff1'], 4)
-            self.place_pin(t2['ck1'], 'N', x_pin + 4 * x_pin_step)
-            # Row 5: dff2
-            self.place_component(t2['dff2'], 5)
-            self.place_pin(t2['out'], 'N', x_pin + 5 * x_pin_step)
-            self.place_pin(t2['ck2'], 'N', x_pin + 6 * x_pin_step)
-            self.build_all_tap_decap(i)
+        rtaps = self.netlist['rtaps']
+        linelen = (len(taps) + nlines - 1) // nlines
+        extra = linelen * nlines - len(taps)
+        taps.extend([None] * extra)  # Pad with None
+        if self.ref:
+            rtaps.extend([None] * extra)  # Pad with None
+        l = [None] * (nlines * lines_mul)
+        for j in range(nlines):
+            if self.ref:
+                l[j*2] = self.arrange_taps_line(taps, linelen, j)
+                l[j*2+1] = self.arrange_taps_line(rtaps, linelen, j)
+            else:
+                l[j] = self.arrange_taps_line(taps, linelen, j)
+        self.arrangement = l
+
+    def build_clock_netlist_indiv(self, taps, pfx):
+        """Add clock net and pads.  This is done after arrange() so that it
+        is easier to share pins"""
+        l = self.arrangement
+        # Method 1: each dff has its own clock pin
+        for idx, p in enumerate(taps):
+            ck1 = self.add_pin('{}clk_i[{}]'.format(pfx, 2*idx), 'I')
+            self.connect(ck1.net, p['dff1'], 'clock')
+            ck2 = self.add_pin('{}clk_i[{}]'.format(pfx, 2*idx + 1), 'I')
+            self.connect(ck2.net, p['dff2'], 'clock')
+            p['opad'].extend([ck2, ck1])
+
+    def build_clock_netlist(self, conf):
+        """Add clock net and pads.  This is done after arrange() so that it
+        is easier to share pins"""
+        l = self.arrangement
+        if conf == 'indiv':
+            # indiv: each dff has its own clock pin
+            self.build_clock_netlist_indiv(self.netlist['taps'], '')
+            if self.ref:
+                self.build_clock_netlist_indiv(self.netlist['rtaps'], 'r')
+        elif conf == 'share' or conf == 's1':
+            # share: all the dff of the same column share the clock
+            for i in range(len(l[0])):
+                ck = self.add_pin('clk_i[{}]]'.format(i), 'I')
+                for k in range(len(l)):
+                    self.connect(ck.net, l[k][i]['dff1'], 'clock')
+                    self.connect(ck.net, l[k][i]['dff2'], 'clock')
+                l[0][i]['opad'].append(ck)
+        else:
+            raise Exception  # bad clock config
+
+    def place_horizontal_x(self):
+        lines_mul = 2 if self.ref else 1
+        l = self.arrangement
+        self.build_rows(3 * len(l))
+        # Place inputs
+        self.place_pin(self.netlist['inp'], 'W', 2 * self.row_height)
+        if self.ref:
+            self.place_pin(self.netlist['ref'], 'W', 3 * self.row_height)
+        # Place cells and pins
+        for i in range(len(l[0])):
+            x_pin = self.rows[0]['width']  # x offset of the next cell
+            opads = []
+            for j in range(len(l)):
+                tap = l[j].pop(0)
+                if tap is None:
+                    continue
+                crow = list(range(3 * j, 3 * j + 3))
+                if j % 2 == 1:
+                    crow.reverse()
+                # Row 0: dff
+                self.place_component(tap['dff2'], crow[0])
+                # Row 1: dff
+                self.place_component(tap['dff1'], crow[1])
+                # Row 2: delay
+                if tap['delay'] is not None:
+                    self.place_component(tap['delay'], crow[2])
+                opads.extend(tap['opad'])
+            # Opads
+            x_pin_step = self.cells['dff']['width'] // len(opads)
+            for k, p in enumerate(opads):
+                self.place_pin(p, 'N', x_pin + k * x_pin_step)
+            self.insert_all_tap_decap(i)
             self.pad_rows()
         self.compute_size()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Generate a tapline')
+    # Other args: -c (with clock buf), -d (delay cell)
     parser.add_argument('--length', '-l', required=True, type=int,
                         help='number of taps')
     parser.add_argument('--name', '-n', type=str, default='tap_line',
                         help='name of the design')
-    parser.add_argument('--geo', '-g', choices=['x1', 'x2'], default='x1',
+    parser.add_argument('--geo', '-g', type=int, default=1,
                         help='geometry of the tapline')
+    parser.add_argument('--tech', '-t', type=str, default="fd_hd",
+                        help='technology')
+    parser.add_argument('--ref', '-r', default=False, action='store_true',
+                        help='add a second ref line')
+    parser.add_argument('--clock', '-c', default='indiv',
+                        choices=['indiv', 'share', 's1'],
+                        help='select clock configuration')
+    parser.add_argument('--delay', '-d', default='cdly15_1',
+                        help='select delay gate')
     args = parser.parse_args()
 
-    inst = tap_line(args.name, args.length)
+    inst = tap_line(args.name, args.length, args.ref, args.tech, args.delay)
     inst.build_netlist()
-    if args.geo == 'x1':
-        inst.build_horizontal()
-    elif args.geo == 'x2':
-        inst.build_horizontal_x2()
-    else:
-        raise Exception
+    inst.arrange(args.geo)
+    inst.build_clock_netlist(args.clock)
+    inst.place_horizontal_x()
     inst.disp_def(args.name + '.def')
+    inst.write_config(args.name + '.tcl')

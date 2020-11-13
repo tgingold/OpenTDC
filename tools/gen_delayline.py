@@ -39,13 +39,13 @@ class DelayLine(GenDef):
             stage['delays'] = []
             for k in range(2**i):
                 delay = self.add_component(
-                    'delay_{}_{}'.format(i, k), self.config['delay'])
+                    'delay_{}_{}'.format(i, k), self.cells['delay'])
                 stage['delays'].append(delay)
                 self.connect(last_delay, delay, 'input')
                 last_delay = self.add_net('in{}_d{}'.format(i, k))
                 self.connect(last_delay, delay, 'output')
             # Mux
-            mux = self.add_component('mux_{}'.format(i), self.config['mux2'])
+            mux = self.add_component('mux_{}'.format(i), self.cells['mux2'])
             stage['mux'] = mux
             self.connect(last, mux, 'in0')
             self.connect(last_delay, mux, 'in1')

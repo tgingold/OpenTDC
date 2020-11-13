@@ -13,13 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# TODO:
+# * gen verilog/vhdl netlist
+# * gen config (adjust powers)
+# * read info from LEF
+# * tap: handle inv delay
+
 import argparse
 
 config_sky130_fd_hd = {
     'dff': {'name': 'sky130_fd_sc_hd__dfxtp_4', 'width': 19 * 460,
             'input': 'D', 'output': 'Q', 'clock': 'CLK'},
-    'delay': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_1', 'width': 8 * 460,
-              'input': 'A', 'output': 'X'},
+    'cdly15_1': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_1', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly15_2': {'name': 'sky130_fd_sc_hd__clkdlybuf4s15_2', 'width': 9 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly18_1': {'name': 'sky130_fd_sc_hd__clkdlybuf4s18_1', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly18_2': {'name': 'sky130_fd_sc_hd__clkdlybuf4s18_1', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly25_1': {'name': 'sky130_fd_sc_hd__clkdlybuf4s25_1', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly25_2': {'name': 'sky130_fd_sc_hd__clkdlybuf4s25_2', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly50_1': {'name': 'sky130_fd_sc_hd__clkdlybuf4s50_1', 'width': 8 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cdly50_2': {'name': 'sky130_fd_sc_hd__clkdlybuf4s50_2', 'width': 9 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cbuf_1':   {'name': 'sky130_fd_sc_hd__clkbuf_1', 'width': 3 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cbuf_2':   {'name': 'sky130_fd_sc_hd__clkbuf_2', 'width': 4 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cbuf_4':   {'name': 'sky130_fd_sc_hd__clkbuf_4', 'width': 6 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cbuf_8':   {'name': 'sky130_fd_sc_hd__clkbuf_2', 'width': 11 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cbuf_16':  {'name': 'sky130_fd_sc_hd__clkbuf_16', 'width': 20 * 460,
+                 'input': 'A', 'output': 'X'},
+    'cinv_1':   {'name': 'sky130_fd_sc_hd__clkinv_1', 'width': 3 * 460,
+                 'input': 'A', 'output': 'Y'},
+    'cinv_2':   {'name': 'sky130_fd_sc_hd__clkinv_2', 'width': 4 * 460,
+                 'input': 'A', 'output': 'Y'},
+    'inv_1':    {'name': 'sky130_fd_sc_hd__inv_1', 'width': 3 * 460,
+                 'input': 'A', 'output': 'Y'},
     'mux2':  {'name': 'sky130_fd_sc_hd__mux2_1', 'width': 9 * 460,
               'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_hd__decap_3', 'width': 3 * 460},
@@ -30,12 +66,99 @@ config_sky130_fd_hd = {
     'fill8': {'name': 'sky130_fd_sc_hd__fill_8', 'width': 8 * 460},
 }
 
+config_sky130_fd_hs = {
+    'dff': {'name': 'sky130_fd_sc_hs__dfxtp_4', 'width': 20 * 480,
+            'input': 'D', 'output': 'Q', 'clock': 'CLK'},
+    'dly4_1':  {'name': 'sky130_fd_sc_hs__dlygate4sd1', 'width': 8 * 480,
+                'input': 'A', 'output': 'X'},
+    'cdinv_1': {'name': 'sky130_fd_sc_hs__clkdlyinv3sd1_1', 'width': 6 * 480,
+                 'input': 'A', 'output': 'Y'},
+    'mux2':  {'name': 'sky130_fd_sc_hs__mux2_1', 'width': 9 * 480,
+              'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
+    'decap': {'name': 'sky130_fd_sc_hs__decap_4', 'width': 4 * 480},
+    'tap':   {'name': 'sky130_fd_sc_hs__tapvpwrvgnd_1', 'width': 1* 480},
+    'fill1': {'name': 'sky130_fd_sc_hs__fill_1', 'width': 1 * 480},
+    'fill2': {'name': 'sky130_fd_sc_hs__fill_2', 'width': 2 * 480},
+    'fill4': {'name': 'sky130_fd_sc_hs__fill_4', 'width': 4 * 480},
+    'fill8': {'name': 'sky130_fd_sc_hs__fill_8', 'width': 8 * 480},
+}
+
+config_sky130_fd_ls = {
+    'dff': {'name': 'sky130_fd_sc_ls__dfxtp_4', 'width': 20 * 480,
+            'input': 'D', 'output': 'Q', 'clock': 'CLK'},
+    'dly4_1':  {'name': 'sky130_fd_sc_ls__dlygate4sd1_1', 'width': 8 * 480,
+                'input': 'A', 'output': 'X'},
+    'cdinv_1': {'name': 'sky130_fd_sc_ls__clkdlyinv3sd1_1', 'width': 6 * 480,
+                 'input': 'A', 'output': 'Y'},
+    'mux2':  {'name': 'sky130_fd_sc_ls__mux2_1', 'width': 9 * 480,
+              'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
+    'decap': {'name': 'sky130_fd_sc_ls__decap_4', 'width': 4 * 480},
+    'tap':   {'name': 'sky130_fd_sc_ls__tapvpwrvgnd_1', 'width': 1* 480},
+    'fill1': {'name': 'sky130_fd_sc_ls__fill_1', 'width': 1 * 480},
+    'fill2': {'name': 'sky130_fd_sc_ls__fill_2', 'width': 2 * 480},
+    'fill4': {'name': 'sky130_fd_sc_ls__fill_4', 'width': 4 * 480},
+    'fill8': {'name': 'sky130_fd_sc_ls__fill_8', 'width': 8 * 480},
+}
+
+config_sky130_fd_ms = {
+    'dff': {'name': 'sky130_fd_sc_ms__dfxtp_4', 'width': 20 * 480,
+            'input': 'D', 'output': 'Q', 'clock': 'CLK'},
+    'dly4_1':  {'name': 'sky130_fd_sc_ms__dlygate4sd1_1', 'width': 8 * 480,
+                'input': 'A', 'output': 'X'},
+    'cdinv_1': {'name': 'sky130_fd_sc_ms__clkdlyinv3sd1_1', 'width': 6 * 480,
+                 'input': 'A', 'output': 'Y'},
+    'mux2':  {'name': 'sky130_fd_sc_ms__mux2_1', 'width': 9 * 480,
+              'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
+    'decap': {'name': 'sky130_fd_sc_ms__decap_4', 'width': 4 * 480},
+    'tap':   {'name': 'sky130_fd_sc_ms__tapvpwrvgnd_1', 'width': 1* 480},
+    'fill1': {'name': 'sky130_fd_sc_ms__fill_1', 'width': 1 * 480},
+    'fill2': {'name': 'sky130_fd_sc_ms__fill_2', 'width': 2 * 480},
+    'fill4': {'name': 'sky130_fd_sc_ms__fill_4', 'width': 4 * 480},
+    'fill8': {'name': 'sky130_fd_sc_ms__fill_8', 'width': 8 * 480},
+}
+
+TECHS= {
+    'fd_hd': {'cells': config_sky130_fd_hd, 'width': 460, 'height': 2720,
+              'tracks': [('li1', 460, 340),
+                         ('met1', 340, 340),
+                         ('met2', 460, 460),
+                         ('met3', 680, 680),
+                         ('met4', 920, 920),
+                         ('met5', 3400, 3400)],
+              'libname': 'sky130_fd_sc_hd'},
+    'fd_hs': {'cells': config_sky130_fd_hs, 'width': 480, 'height': 3330,
+              'tracks': [('li1', 480, 370),
+                        ('met1', 370, 370),
+                        ('met2', 480, 480),
+                        ('met3', 740, 740),
+                        ('met4', 960, 960),
+                        ('met5', 3330, 3330)],
+              'libname': 'sky130_fd_sc_hs'},
+    'fd_ls': {'cells': config_sky130_fd_ls, 'width': 480, 'height': 3330,
+              'tracks': [('li1', 480, 480),
+                        ('met1', 370, 370),
+                        ('met2', 480, 480),
+                        ('met3', 740, 740),
+                        ('met4', 960, 960),
+                        ('met5', 3330, 3330)],
+              'libname': 'sky130_fd_sc_ls'},
+    'fd_ms': {'cells': config_sky130_fd_ms, 'width': 480, 'height': 3330,
+              'tracks': [('li1', 480, 480),
+                        ('met1', 370, 370),
+                        ('met2', 480, 480),
+                        ('met3', 740, 740),
+                        ('met4', 960, 960),
+                        ('met5', 3330, 3330)],
+              'libname': 'sky130_fd_sc_ms'},
+}
 
 class GenDef:
-    def __init__(self, name):
+    def __init__(self, tech, name):
         self.name = name
-        self.row_width = 460
-        self.row_height = 2720
+        self.tech = TECHS[tech]
+        self.row_width = self.tech['width']
+        self.row_height = self.tech['height']
+        self.cells = self.tech['cells']
         self.hmargin = 12 * self.row_width  # = 5520
         self.vmargin = 2 * self.row_height
         self.nrow = 0   # Number of rows
@@ -43,7 +166,6 @@ class GenDef:
         self.rows = []
         self.nets = []
         self.pins = []
-        self.config = config_sky130_fd_hd
         self.build_fillers()
 
     def build_rows(self, nrow):
@@ -104,7 +226,7 @@ class GenDef:
         net.conn.append((inst, port))
 
     def build_fillers(self):
-        fillers = [v for k, v in self.config.items() if k.startswith('fill')]
+        fillers = [v for k, v in self.cells.items() if k.startswith('fill')]
         self.fillers = sorted(fillers,
                               key=lambda key: key['width'], reverse=True)
         self.fill_label = 0
@@ -123,11 +245,11 @@ class GenDef:
     def build_tap_decap(self, row, idx):
         # tap
         tap = self.add_component('tap{}_{}'.format(row, idx),
-                                 self.config['tap'])
+                                 self.cells['tap'])
         self.place_component(tap, row)
         # decap
         decap = self.add_component('decap{}_{}'.format(row, idx),
-                                   self.config['decap'])
+                                   self.cells['decap'])
         self.place_component(decap, row)
 
     def compute_size(self):
@@ -153,12 +275,7 @@ class GenDef:
                   file=f)
 
     def disp_def_tracks(self, f):
-        for layer, xstep, ystep in [('li1', 460, 340),
-                                    ('met1', 340, 340),
-                                    ('met2', 460, 460),
-                                    ('met3', 680, 680),
-                                    ('met4', 920, 920),
-                                    ('met5', 3400, 3400)]:
+        for layer, xstep, ystep in self.tech['tracks']:
             print("TRACKS X {} DO {} STEP {} LAYER {} ;".format(
                 xstep // 2, (self.x_size + xstep // 2) // xstep, xstep, layer),
                   file=f)
@@ -235,3 +352,20 @@ class GenDef:
             self.disp_def_pins(f)
             self.disp_def_nets(f)
             print('END DESIGN', file=f)
+
+    def write_config(self, filename):
+        with open(filename, 'w') as f:
+            print('set ::env(STD_CELL_LIBRARY) "{}"'.format(
+                self.tech['libname']), file=f)
+            print(file=f)
+            print('set ::env(FP_PDN_VOFFSET) 0', file=f)
+            print('set ::env(FP_PDN_VPITCH) 16', file=f)
+            print('set ::env(FP_PDN_HOFFSET) {}'.format(
+                self.row_height / 1000), file=f)
+            print('set ::env(FP_PDN_HPITCH) {}'.format(
+                3 * self.row_height / 1000), file=f)
+
+            print(file=f)
+            print('set ::env(FP_SIZING) absolute', file=f)
+            print('set ::env(DIE_AREA) "0 0 {} {}"'.format(
+                self.x_size / 1000, self.y_size / 1000), file=f)
