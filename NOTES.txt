@@ -1,42 +1,107 @@
 Mini-blog from a non-native English speaker...
 
-I decided to participate to the Open Source Shuttle Program (by efabless and google) because this was a unique opportunity to design my own ASIC.
+I decided to participate to the Open Source Shuttle Program (by
+efabless and google) because this was a unique opportunity to design
+my own ASIC.
 
-Although I do hardware design, I didn't have a design to be tapped out.  So I have to
-create a new design.  Due to the time constraints between the announce (June 2020) and the deadline (November 2020), this couldn't be a complex design from a logic point of view.  And the purpose of the shuttle program is mostly experimental.
+Although I do hardware design, I didn't have a design to be tapped
+out.  So I have to create a new design.  Due to the time constraints
+between the announce (June 2020) and the deadline (November 2020),
+this couldn't be a complex design from a logic point of view.  And the
+purpose of the shuttle program is mostly experimental.
 
-I quickly decided to do a TDC and FD design.  TDC stands for Time to Data Converter, which is a fancy name for simply timestamping a pulse with high precision (much more precise than the clock).  FD stands for Fine Delay and this is the opposite of TDC: generating a pulse at a given time (again, higher precision than the clock).
+I quickly decided to do a TDC and FD design.  TDC stands for Time to
+Data Converter, which is a fancy name for simply timestamping a pulse
+with high precision (much more precise than the clock).  FD stands for
+Fine Delay and this is the opposite of TDC: generating a pulse at a
+given time (again, higher precision than the clock).
 
 The main advantages of this design are:
 
-* Not a very complex design (again).  This simplifies the verification a lot, and in
-  case of any errors (DRC or process), it should be possible to use the design partially.
-  Although the process is mature, we are using open source tools which aren't as
-  heavily tested.
+* Not a very complex design (again).  This simplifies the verification
+  a lot, and in case of any errors (DRC or process), it should be
+  possible to use the design partially.  Although the process is
+  mature, we are using open source tools which aren't as heavily
+  tested.
 
-* Allows to analyze the process.  In particular, how long it takes for a pulse to
-  propagate through a certain gate (the delay gate).  And this could be studied at
-  various PVT (Process, Voltage, Temperature) points.
+* Allows to analyze the process.  In particular, how long it takes for
+  a pulse to propagate through a certain gate (the delay gate).  And
+  this could be studied at various PVT (Process, Voltage, Temperature)
+  points.
 
-* This is not a design that could be written the same way for an FPGA.  On an FPGA, you
-  have already defined and fixed complex gates, so all you can do is to play with certain
-  pathes (like carry lines).
+* This is not a design that could be written the same way for an FPGA.
+  On an FPGA, you have already defined and fixed complex gates, so all
+  you can do is to play with certain pathes (like carry lines).
 
-And of course, I also wanted to test in real conditions the synthesis feature of GHDL.
-So the design will be written in VHDL.  As the toolchain for the shuttle program is verilog only, the design will be first synthesized and the result will be a verilog netlist.  Then this netlist will be the entry point of the toolchain.  This will make the integration almost transparent.
+And of course, I also wanted to test in real conditions the synthesis
+feature of GHDL.  So the design will be written in VHDL.  As the
+toolchain for the shuttle program is verilog only, the design will be
+first synthesized and the result will be a verilog netlist.  Then this
+netlist will be the entry point of the toolchain.  This will make the
+integration almost transparent.
 
 
-The first iteration
--------------------
+August
+------
 
-The tool chain wasn't available when the shuttle project was announced.  So I had time
-to think about my design and to start to write it.
+The openlane tool chain wasn't available when the shuttle project was
+announced.  So I had time to think about my design and to start to
+write it.
 
-When the first version of the toolchain was released (late July), it was time to try
-it.  The first test didn't go smooth.
+When the first version of openlane was released (late July), it was
+time to try it.  The first test didn't go smooth.  The design was too
+small and hit unusual constraints.
 
-[ density ]
-[ With my design ]
+Hopefully, I get a quick answer from the forum and I was able to
+generate the gdsII file which decribes the masks of the results.
+I had to play with the parameters and in particular adjust the density.
+The final result doesn't only contain your gates.  There are a lot of
+extra gates:
+
+* decap: decoupling capacitors which provides current in case of peaks
+
+* tap: small cells that power the bulk and wells.
+
+* fill: cells that fill any hole so that abutment is continuous
+
+* diodes: cells needed to protect other cells from charges accumulated
+  during fabrication.  They are needed only for long wires, but the
+  rules are complex.  The toolchain will automatically insert diodes,
+  but there must be room for them.
+
+In addition, openlane also creates a power grid.  If the pitch of the grid
+is so large than the grid doesn't fit on your design, the toolchain fails
+(with a cryptic error message).
+
+I was also able to create a design from VHDL files.  I cheat a little
+bit to make the process easy: I first synthesize the VHDL sources but
+generate a simple verilog as an output and then I feed openlane with
+the verilog file (which is a netlist).
+
+The main part of a TDC is the tap line: a long chain of delays and
+flip-flop.  But how long is the tap line ?  Well, it depends on the
+propagation time in the delay element, on the wires and on the
+frequency.
+
+* For the delay element, I first need to choose it.  The obvious
+  choice would be a not gate.  But I didn't want to deal initially
+  with the inverted output.  So, the second obvious choice would be a
+  buf gate.  Until I realized there is also a clkbuf gate.  What is the
+  difference ?  Simple: the clkbuf gate is balanced, so the propagation
+  time of a 0 is the same as the propagation time of a 1.  That's the
+  gate to use.
+
+* What is the propagation of the a clkbuf gate ?  This information is
+  written in the .lib (liberty) file, but it is not easy to find it.
+  It is also given by the static timing analysis (STA) tool.  The result
+  is about 100ps
+
+* What is the frequency ?  It wasn't fixed so I estimated a frequency of
+  about 200Mhz.  This means a 5ns period so I need at least 50 taps.
+  Later some figures appeared: the max frequency could be 50Mhz (so a
+  period of 20ns), which means 200 taps.
+
+* What about the wires ?
 
 [ Sizing the taps chain]
 
@@ -52,12 +117,15 @@ OSU library
 Magic
 -----
 
-I planned to have many hard blocks (macros in openlane language).  Fine, but you have to place them, through a file that indicates the position.  I would prefer a more graphical
-way as I need to take into account the distance between macros (they cannot overlap!),
-and distance with input pad.
+I planned to have many hard blocks (macros in openlane language).
+Fine, but you have to place them, through a file that indicates the
+position.  I would prefer a more graphical way as I need to take into
+account the distance between macros (they cannot overlap!), and
+distance with input pad.
 
-Magic is the graphical tool of the tool chain.  It can be used to draw cells and can also be used to edit or view a full design.  It it also the tool to do DRC and write
-the final GDS.  My idea was simple:
+Magic is the graphical tool of the tool chain.  It can be used to draw
+cells and can also be used to edit or view a full design.  It it also
+the tool to do DRC and write the final GDS.  My idea was simple:
 
 * start from an almost empty design (to ease graphical display)
 
@@ -87,22 +155,23 @@ As I want to place the macros near the pins, I have to select the pins.  The car
 12: (best, right)
 
 TDCs - fd_sc_hd:
-2 + ref: internals
-1: hori x1
-1 + ref: hori x1
-1: hori x2
-1 + ref: hori x2
-1 + ref: hori x4
-1 + ref: hori x16
-1 + ref: x? dly: clkbuf_1
-1 + ref: x? dly: clkbuf_2
-1 + ref: x? dly: clkbuf_4
+*2 + ref: internals
+*1: hori x1
+*1 + ref: hori x1
+*1: hori x2
+*1 + ref: hori x2
+*1 + ref: hori x4
+*1 + ref: hori x8
+*1 + ref: x? dly: clkbuf_1
+*1 + ref: x? dly: clkbuf_2
+*1 + ref: x? dly: clkbuf_4
 1 + ref: x? dly: clkbuf_8
 1 + ref: x? dly: clkbuf_16
-1 + ref: x? dly: clklybuf4s18
-1 + ref: x? dly: clklybuf4s25
-1 + ref: x? dly: clklybuf4s50
-1 + ref: x? dly: not + not
+*1 + ref: x? dly: clkdlybuf4s18
+*1 + ref: x? dly: clkdlybuf4s25
+*1 + ref: x? dly: clkdlybuf4s50
+1 + ref: x? dly: not
+1 + ref: x? dly: clknot
 
 TDCs (hd, hs, ls, ms, osu_sc_t18): [x5]
 1 + ref: x16 + clkbuf - with scan - very long (1000 taps): for 10Mhz
