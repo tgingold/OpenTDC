@@ -1,6 +1,17 @@
-name: OpenTDC
-description: Time to Data Converter with Fine Delay
-git_url: git@github.com:tgingold/opentdc.git
-version: 1
-user_level_netlist: opentdc_wb.v
-top_level_netlist: caravel.v
+---
+project:
+  description: "Time to Data Converter with Fine Delay"
+  foundry: "SkyWater"
+  git_url: "https://github.com/tgingold/OpenTDC.git"
+  organization: "N/A"
+  organization_url: "N/A"
+  owner: "Tristan Gingold"
+  process: "SKY130"
+  project_name: "OpenTDC"
+  tags:
+    - "Open MPW"
+  category: "Sensor"
+  top_level_netlist: "gl/caravel.v"
+  user_level_netlist: "gl/user_project_wrapper.v"
+  version: "0.1"
+
