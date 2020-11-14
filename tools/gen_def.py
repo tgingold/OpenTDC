@@ -56,7 +56,7 @@ config_sky130_fd_hd = {
     'mux2':  {'name': 'sky130_fd_sc_hd__mux2_1', 'width': 9 * 460,
               'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_hd__decap_3', 'width': 3 * 460},
-    'tap':   {'name': 'sky130_fd_sc_hd__tapvpwrvgnd_1', 'width': 1* 460},
+    'tap':   {'name': 'sky130_fd_sc_hd__tapvpwrvgnd_1', 'width': 1 * 460},
     'fill1': {'name': 'sky130_fd_sc_hd__fill_1', 'width': 1 * 460},
     'fill2': {'name': 'sky130_fd_sc_hd__fill_2', 'width': 2 * 460},
     'fill4': {'name': 'sky130_fd_sc_hd__fill_4', 'width': 4 * 460},
@@ -69,11 +69,11 @@ config_sky130_fd_hs = {
     'dly4_1':  {'name': 'sky130_fd_sc_hs__dlygate4sd1', 'width': 8 * 480,
                 'input': 'A', 'output': 'X'},
     'cdinv_1': {'name': 'sky130_fd_sc_hs__clkdlyinv3sd1_1', 'width': 6 * 480,
-                 'input': 'A', 'output': 'Y'},
+                'input': 'A', 'output': 'Y'},
     'mux2':  {'name': 'sky130_fd_sc_hs__mux2_1', 'width': 9 * 480,
               'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_hs__decap_4', 'width': 4 * 480},
-    'tap':   {'name': 'sky130_fd_sc_hs__tapvpwrvgnd_1', 'width': 1* 480},
+    'tap':   {'name': 'sky130_fd_sc_hs__tapvpwrvgnd_1', 'width': 1 * 480},
     'fill1': {'name': 'sky130_fd_sc_hs__fill_1', 'width': 1 * 480},
     'fill2': {'name': 'sky130_fd_sc_hs__fill_2', 'width': 2 * 480},
     'fill4': {'name': 'sky130_fd_sc_hs__fill_4', 'width': 4 * 480},
@@ -86,11 +86,11 @@ config_sky130_fd_ls = {
     'dly4_1':  {'name': 'sky130_fd_sc_ls__dlygate4sd1_1', 'width': 8 * 480,
                 'input': 'A', 'output': 'X'},
     'cdinv_1': {'name': 'sky130_fd_sc_ls__clkdlyinv3sd1_1', 'width': 6 * 480,
-                 'input': 'A', 'output': 'Y'},
+                'input': 'A', 'output': 'Y'},
     'mux2':  {'name': 'sky130_fd_sc_ls__mux2_1', 'width': 9 * 480,
               'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_ls__decap_4', 'width': 4 * 480},
-    'tap':   {'name': 'sky130_fd_sc_ls__tapvpwrvgnd_1', 'width': 1* 480},
+    'tap':   {'name': 'sky130_fd_sc_ls__tapvpwrvgnd_1', 'width': 1 * 480},
     'fill1': {'name': 'sky130_fd_sc_ls__fill_1', 'width': 1 * 480},
     'fill2': {'name': 'sky130_fd_sc_ls__fill_2', 'width': 2 * 480},
     'fill4': {'name': 'sky130_fd_sc_ls__fill_4', 'width': 4 * 480},
@@ -103,18 +103,18 @@ config_sky130_fd_ms = {
     'dly4_1':  {'name': 'sky130_fd_sc_ms__dlygate4sd1_1', 'width': 8 * 480,
                 'input': 'A', 'output': 'X'},
     'cdinv_1': {'name': 'sky130_fd_sc_ms__clkdlyinv3sd1_1', 'width': 6 * 480,
-                 'input': 'A', 'output': 'Y'},
+                'input': 'A', 'output': 'Y'},
     'mux2':  {'name': 'sky130_fd_sc_ms__mux2_1', 'width': 9 * 480,
               'in0': 'A0', 'in1': 'A1', 'sel': 'S', 'output': 'X'},
     'decap': {'name': 'sky130_fd_sc_ms__decap_4', 'width': 4 * 480},
-    'tap':   {'name': 'sky130_fd_sc_ms__tapvpwrvgnd_1', 'width': 1* 480},
+    'tap':   {'name': 'sky130_fd_sc_ms__tapvpwrvgnd_1', 'width': 1 * 480},
     'fill1': {'name': 'sky130_fd_sc_ms__fill_1', 'width': 1 * 480},
     'fill2': {'name': 'sky130_fd_sc_ms__fill_2', 'width': 2 * 480},
     'fill4': {'name': 'sky130_fd_sc_ms__fill_4', 'width': 4 * 480},
     'fill8': {'name': 'sky130_fd_sc_ms__fill_8', 'width': 8 * 480},
 }
 
-TECHS= {
+TECHS = {
     'fd_hd': {'cells': config_sky130_fd_hd, 'width': 460, 'height': 2720,
               'tracks': [('li1', 460, 340),
                          ('met1', 340, 340),
@@ -125,29 +125,30 @@ TECHS= {
               'libname': 'sky130_fd_sc_hd'},
     'fd_hs': {'cells': config_sky130_fd_hs, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 370),
-                        ('met1', 370, 370),
-                        ('met2', 480, 480),
-                        ('met3', 740, 740),
-                        ('met4', 960, 960),
-                        ('met5', 3330, 3330)],
+                         ('met1', 370, 370),
+                         ('met2', 480, 480),
+                         ('met3', 740, 740),
+                         ('met4', 960, 960),
+                         ('met5', 3330, 3330)],
               'libname': 'sky130_fd_sc_hs'},
     'fd_ls': {'cells': config_sky130_fd_ls, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 480),
-                        ('met1', 370, 370),
-                        ('met2', 480, 480),
-                        ('met3', 740, 740),
-                        ('met4', 960, 960),
-                        ('met5', 3330, 3330)],
+                         ('met1', 370, 370),
+                         ('met2', 480, 480),
+                         ('met3', 740, 740),
+                         ('met4', 960, 960),
+                         ('met5', 3330, 3330)],
               'libname': 'sky130_fd_sc_ls'},
     'fd_ms': {'cells': config_sky130_fd_ms, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 480),
-                        ('met1', 370, 370),
-                        ('met2', 480, 480),
-                        ('met3', 740, 740),
-                        ('met4', 960, 960),
-                        ('met5', 3330, 3330)],
+                         ('met1', 370, 370),
+                         ('met2', 480, 480),
+                         ('met3', 740, 740),
+                         ('met4', 960, 960),
+                         ('met5', 3330, 3330)],
               'libname': 'sky130_fd_sc_ms'},
 }
+
 
 class GenDef:
     def __init__(self, tech, name):
@@ -240,7 +241,8 @@ class GenDef:
         for i, r in enumerate(self.rows):
             for f in self.fillers:
                 while r['width'] + f['width'] <= wd:
-                    c = self.add_component('FILL_{}'.format(self.fill_label), f)
+                    c = self.add_component('FILL_{}'.format(
+                        self.fill_label), f)
                     self.place_component(c, i)
                     self.fill_label += 1
             assert r['width'] == wd
@@ -399,7 +401,7 @@ class GenDef:
             if i != 0:
                 f.write(",\n")
             f.write("    {}".format({'I': 'input', 'O': 'output'}[first.dir]))
-            if k[0] != None:
+            if k[0] is not None:
                 assert min(k) == 0
                 assert max(k) == len(k) - 1
                 f.write(" [{}:0]".format(len(k) - 1))
@@ -413,7 +415,7 @@ class GenDef:
             w = wires[name]
             k = list(w.keys())
             f.write("  wire")
-            if k[0] != None:
+            if k[0] is not None:
                 assert min(k) == 0
                 assert max(k) == len(k) - 1
                 f.write(" [{}:0]".format(len(k) - 1))

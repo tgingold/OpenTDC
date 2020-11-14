@@ -16,6 +16,7 @@
 import argparse
 from gen_def import GenDef
 
+
 class tap_line(GenDef):
     def __init__(self, name, ntaps, ref, tech, delay):
         super().__init__(tech, name)
@@ -24,7 +25,7 @@ class tap_line(GenDef):
         self.ref = ref
 
     def build_tap(self, pfx, idx, last):
-        tap = { }
+        tap = {}
         # Row 1:
         dff1 = self.add_component('{}dff1_{}'.format(pfx, idx),
                                   self.cells['dff'])
@@ -93,19 +94,18 @@ class tap_line(GenDef):
         taps.extend([None] * extra)  # Pad with None
         if self.ref:
             rtaps.extend([None] * extra)  # Pad with None
-        l = [None] * (nlines * lines_mul)
+        arr = [None] * (nlines * lines_mul)
         for j in range(nlines):
             if self.ref:
-                l[j*2] = self.arrange_taps_line(taps, linelen, j)
-                l[j*2+1] = self.arrange_taps_line(rtaps, linelen, j)
+                arr[j*2] = self.arrange_taps_line(taps, linelen, j)
+                arr[j*2+1] = self.arrange_taps_line(rtaps, linelen, j)
             else:
-                l[j] = self.arrange_taps_line(taps, linelen, j)
-        self.arrangement = l
+                arr[j] = self.arrange_taps_line(taps, linelen, j)
+        self.arrangement = arr
 
     def build_clock_netlist_indiv(self, taps, pfx):
         """Add clock net and pads.  This is done after arrange() so that it
         is easier to share pins"""
-        l = self.arrangement
         # Method 1: each dff has its own clock pin
         for idx, p in enumerate(taps):
             ck1 = self.add_pin('{}clk_i[{}]'.format(pfx, 2*idx), 'I')
@@ -117,7 +117,7 @@ class tap_line(GenDef):
     def build_clock_netlist(self, conf):
         """Add clock net and pads.  This is done after arrange() so that it
         is easier to share pins"""
-        l = self.arrangement
+        arr = self.arrangement
         if conf == 'indiv':
             # indiv: each dff has its own clock pin
             self.build_clock_netlist_indiv(self.netlist['taps'], '')
@@ -125,29 +125,28 @@ class tap_line(GenDef):
                 self.build_clock_netlist_indiv(self.netlist['rtaps'], 'r')
         elif conf == 'share' or conf == 's1':
             # share: all the dff of the same column share the clock
-            for i in range(len(l[0])):
+            for i in range(len(arr[0])):
                 ck = self.add_pin('clk_i[{}]]'.format(i), 'I')
-                for k in range(len(l)):
-                    self.connect(ck.net, l[k][i]['dff1'], 'clock')
-                    self.connect(ck.net, l[k][i]['dff2'], 'clock')
-                l[0][i]['opad'].append(ck)
+                for k in range(len(arr)):
+                    self.connect(ck.net, arr[k][i]['dff1'], 'clock')
+                    self.connect(ck.net, arr[k][i]['dff2'], 'clock')
+                arr[0][i]['opad'].append(ck)
         else:
             raise Exception  # bad clock config
 
     def place_horizontal_x(self):
-        lines_mul = 2 if self.ref else 1
-        l = self.arrangement
-        self.build_rows(3 * len(l))
+        arr = self.arrangement
+        self.build_rows(3 * len(arr))
         # Place inputs
         self.place_pin(self.netlist['inp'], 'W', 2 * self.row_height)
         if self.ref:
             self.place_pin(self.netlist['ref'], 'W', 3 * self.row_height)
         # Place cells and pins
-        for i in range(len(l[0])):
+        for i in range(len(arr[0])):
             x_pin = self.rows[0]['width']  # x offset of the next cell
             opads = []
-            for j in range(len(l)):
-                tap = l[j].pop(0)
+            for j in range(len(arr)):
+                tap = arr[j].pop(0)
                 if tap is None:
                     continue
                 crow = list(range(3 * j, 3 * j + 3))
@@ -168,6 +167,7 @@ class tap_line(GenDef):
             self.insert_all_tap_decap(i)
             self.pad_rows()
         self.compute_size()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
