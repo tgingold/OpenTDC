@@ -1,3 +1,8 @@
+-- Delay element for sky130
+--
+-- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+-- SPDX-License-Identifier: Apache-2.0
+
 architecture sky130 of opentdc_delay is
   --  This is a generic name, to be replaced by the sky130 delay cell.
   --  (You could use this yosys command: chtype -map sky130_delay gatename)

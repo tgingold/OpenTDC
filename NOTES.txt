@@ -1,3 +1,6 @@
+SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+SPDX-License-Identifier: Apache-2.0
+
 Mini-blog from a non-native English speaker...
 
 I decided to participate to the Open Source Shuttle Program (by
@@ -110,6 +113,8 @@ frequency.
 [ Power estimation ]
 
 [ Next iteration: better precision and accuracy, bursts, best techno, best layout ]
+
+[ Test vectors ]
 
 OSU library
 -----------

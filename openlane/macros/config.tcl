@@ -1,7 +1,7 @@
-set script_dir [file dirname [file normalize [info script]]]
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-License-Identifier: Apache-2.0
 
-# User config
-#set ::env(DESIGN_NAME) tapline
+set script_dir [file dirname [file normalize [info script]]]
 
 # Clock (not used)
 set ::env(CLOCK_PERIOD) "10"

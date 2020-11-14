@@ -1,4 +1,7 @@
 #!/bin/sh
+#
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-License-Identifier: Apache-2.0
 
 # This script creates the initial .def (placed netlist) for all the taplines
 # and delay lines of the design.

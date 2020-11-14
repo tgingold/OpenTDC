@@ -1,3 +1,9 @@
+# Script to create verilog files
+# TODO: put into makefile
+#
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-License-Identifier: Apache-2.0
+
 GHDL_PLUGIN=${GHDL_PLUGIN:-ghdl.so}
 
 #yosys -m $GHDL_PLUGIN -p "ghdl rtl/opentdc_delay.vhdl rtl/opentdc_delay-sim.vhdl rtl/opentdc_core.vhdl rtl/opentdc.vhdl -e; write_verilog opentdc.v"

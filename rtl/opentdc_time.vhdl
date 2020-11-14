@@ -1,3 +1,8 @@
+-- Time core of a TDC: sample time in case of a pulse
+--
+-- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+-- SPDX-License-Identifier: Apache-2.0
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;

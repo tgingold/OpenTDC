@@ -1,5 +1,7 @@
---  Elementary delay, to be replaced by a specific implementation.
---  It should be balanced
+-- Delay element (entity)
+--
+-- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+-- SPDX-License-Identifier: Apache-2.0
 
 library ieee;
 use ieee.std_logic_1164.all;

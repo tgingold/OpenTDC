@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-License-Identifier: Apache-2.0
+
 package require openlane; # provides the utils as well
 set script_dir [file dirname [file normalize [info script]]]
 

@@ -132,3 +132,10 @@ analysis report after synthesis (designs/tap_line/runs/XXX/reports/synthesis/ope
 ```
 
 Each delay cell adds 120ps.
+
+
+Copyright
+---------
+
+SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+SPDX-License-Identifier: Apache-2.0

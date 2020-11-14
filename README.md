@@ -24,3 +24,12 @@ improve handling to clock lines, and maybe to design a delay element.
 
 You can also read the blog in the repository that tells about the
 progress of this project.
+
+Particularities of the design:
+* Mixes different cell libraries
+* Tool generated macros
+* mixed languages (VHDL and verilog)
+
+
+SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+SPDX-License-Identifier: Apache-2.0
