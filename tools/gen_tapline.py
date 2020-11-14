@@ -126,7 +126,7 @@ class tap_line(GenDef):
         elif conf == 'share' or conf == 's1':
             # share: all the dff of the same column share the clock
             for i in range(len(arr[0])):
-                ck = self.add_pin('clk_i[{}]]'.format(i), 'I')
+                ck = self.add_pin('clk_i[{}]'.format(i), 'I')
                 for k in range(len(arr)):
                     self.connect(ck.net, arr[k][i]['dff1'], 'clock')
                     self.connect(ck.net, arr[k][i]['dff2'], 'clock')
