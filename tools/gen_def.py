@@ -17,9 +17,6 @@
 # * gen verilog/vhdl netlist
 # * gen config (adjust powers)
 # * read info from LEF
-# * tap: handle inv delay
-
-import argparse
 
 config_sky130_fd_hd = {
     'dff': {'name': 'sky130_fd_sc_hd__dfxtp_4', 'width': 19 * 460,
@@ -166,6 +163,7 @@ class GenDef:
         self.rows = []
         self.nets = []
         self.pins = []
+        self.components = []
         self.build_fillers()
 
     def build_rows(self, nrow):
@@ -214,9 +212,12 @@ class GenDef:
         def __init__(self, name, klass):
             self.name = name
             self.klass = klass
+            self.conns = []
 
     def add_component(self, name, klass):
-        return GenDef.Component(name, klass)
+        comp = GenDef.Component(name, klass)
+        self.components.append(comp)
+        return comp
 
     def place_component(self, comp, row):
         self.rows[row]['comps'].append(comp)
@@ -224,6 +225,8 @@ class GenDef:
 
     def connect(self, net, inst, port):
         net.conn.append((inst, port))
+        if inst is not None:
+            inst.conns.append({'port': port, 'net': net})
 
     def build_fillers(self):
         fillers = [v for k, v in self.cells.items() if k.startswith('fill')]
@@ -369,3 +372,62 @@ class GenDef:
             print('set ::env(FP_SIZING) absolute', file=f)
             print('set ::env(DIE_AREA) "0 0 {} {}"'.format(
                 self.x_size / 1000, self.y_size / 1000), file=f)
+
+    def _add_net_name(self, dct, name, obj):
+        b = name.find('[')
+        if b == -1:
+            idx = None
+        else:
+            # This is part of a bus.
+            idx = int(name[b + 1:-1])
+            name = name[:b]
+        if name in dct:
+            dct[name][idx] = obj
+        else:
+            dct[name] = {idx: obj}
+
+    def write_verilog(self, f):
+        # 1. gather input-outputs
+        pins = {}
+        for p in self.pins:
+            self._add_net_name(pins, p.name, p)
+        f.write("module {} (\n".format(self.name))
+        for i, name in enumerate(sorted(pins.keys())):
+            p = pins[name]
+            k = list(p.keys())
+            first = p[k[0]]
+            if i != 0:
+                f.write(",\n")
+            f.write("    {}".format({'I': 'input', 'O': 'output'}[first.dir]))
+            if k[0] != None:
+                assert min(k) == 0
+                assert max(k) == len(k) - 1
+                f.write(" [{}:0]".format(len(k) - 1))
+            f.write(" {}".format(name))
+        f.write(");\n")
+        # 2. gather wires
+        wires = {}
+        for n in self.nets:
+            self._add_net_name(wires, n.name, n)
+        for name in sorted(wires.keys()):
+            w = wires[name]
+            k = list(w.keys())
+            f.write("  wire")
+            if k[0] != None:
+                assert min(k) == 0
+                assert max(k) == len(k) - 1
+                f.write(" [{}:0]".format(len(k) - 1))
+            f.write(" {};\n".format(name))
+        # 3. write cells
+        for c in self.components:
+            if not c.conns:
+                # Discard components without connections (fill, taps...)
+                continue
+            f.write("  {} {}(".format(c.klass['name'], c.name))
+            for i, conn in enumerate(c.conns):
+                if i != 0:
+                    f.write(", ")
+                f.write(".{}({})".format(c.klass[conn['port']],
+                                         conn['net'].name))
+            f.write(");\n")
+        f.write("endmodule\n")
