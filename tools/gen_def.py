@@ -122,6 +122,7 @@ TECHS = {
                          ('met3', 680, 680),
                          ('met4', 920, 920),
                          ('met5', 3400, 3400)],
+              'site': 'unithd',
               'libname': 'sky130_fd_sc_hd'},
     'fd_hs': {'cells': config_sky130_fd_hs, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 370),
@@ -130,6 +131,7 @@ TECHS = {
                          ('met3', 740, 740),
                          ('met4', 960, 960),
                          ('met5', 3330, 3330)],
+              'site': 'unit',
               'libname': 'sky130_fd_sc_hs'},
     'fd_ls': {'cells': config_sky130_fd_ls, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 480),
@@ -138,6 +140,7 @@ TECHS = {
                          ('met3', 740, 740),
                          ('met4', 960, 960),
                          ('met5', 3330, 3330)],
+              'site': 'unit',
               'libname': 'sky130_fd_sc_ls'},
     'fd_ms': {'cells': config_sky130_fd_ms, 'width': 480, 'height': 3330,
               'tracks': [('li1', 480, 480),
@@ -146,6 +149,7 @@ TECHS = {
                          ('met3', 740, 740),
                          ('met4', 960, 960),
                          ('met5', 3330, 3330)],
+              'site': 'unit',
               'libname': 'sky130_fd_sc_ms'},
 }
 
@@ -274,8 +278,8 @@ class GenDef:
     def disp_def_row(self, f):
         for i in range(self.nrow):
             r = self.rows[i]
-            print("ROW ROW_{} unithd {} {} {} DO {} BY 1 STEP {} 0 ;".format(
-                i, r['x'], r['y'], r['orientation'],
+            print("ROW ROW_{} {} {} {} {} DO {} BY 1 STEP {} 0 ;".format(
+                i, self.tech['site'], r['x'], r['y'], r['orientation'],
                 self.rowl, self.row_width),
                   file=f)
 
