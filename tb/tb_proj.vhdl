@@ -140,7 +140,7 @@ begin
 
     --  Start tdc 0 and 1 (set restart bits).
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0020", x"0005_0100");
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", x"0005_0100");
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", x"0305_0300");
 
     --  Trigger pulses.
     wait for 1130 ps;
@@ -158,24 +158,36 @@ begin
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
     assert d32 = x"0000_0006" report "(5) bad status" severity failure;
 
-    --  Read tdc0
+    --  Read tdc1
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0028", d32);
-    report "tdc0 coarse=" & to_hstring(d32);
+    report "tdc1 coarse=" & to_hstring(d32);
     d32_a := d32;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_002c", d32);
-    report "tdc0 fine=" & natural'image(to_integer(unsigned(d32)));
+    report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 12
       report "(7) bad fine value for tdc0" severity failure;
 
-    --  Read tdc1
+    --  Read tdc2
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0048", d32);
-    report "tdc1 coarse=" & to_hstring(d32);
+    report "tdc2 coarse=" & to_hstring(d32);
     assert unsigned(d32) = unsigned (d32_a) + 1
       report "(8) bad coarse value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_004c", d32);
-    report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
+    report "tdc2 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 16
       report "(9) bad fine value for tdc1" severity failure;
+
+    --  Read tdc2/ref
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0040", d32);
+    assert d32 = x"0305_0003"
+      report "(10) bad tdc2 status" severity failure;
+    report "tdc2 status=" & to_hstring(d32);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0044", d32);
+    report "tdc2 ref=" & to_hstring(d32);
+    assert unsigned(d32 (15 downto 0)) = 200 - 1
+      report "(11) bad tdc2 ref fine time" severity failure;
+    assert unsigned(d32 (31 downto 0)) > 10
+      report "(11) bad tdc2 ref time" severity failure;
 
     --  Program fd.
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0044", x"0000_0027");

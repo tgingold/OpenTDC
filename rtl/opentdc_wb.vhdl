@@ -209,6 +209,7 @@ begin
 
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
     signal clks, rclks : std_logic_vector (2*ndly - 1 downto 0);
+    signal rin : std_logic;
   begin
     clks <= (others => wb_clk_i);
     rclks <= (others => wb_clk_i);
@@ -226,7 +227,7 @@ begin
         length => ndly)
       port map (
         clks_i => rclks,
-        inp_i => wb_clk_i,
+        inp_i => rin,
         tap_o => rtaps);
 
     inst_core: entity work.opentdc_core2
@@ -238,6 +239,7 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => rtaps,
+        rin_o => rin,
         bin => dev2_in,
         bout => dev2_out);
   end block;
