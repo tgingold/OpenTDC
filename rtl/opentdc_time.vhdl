@@ -21,12 +21,18 @@ entity opentdc_time is
     --  If false, pause once triggered.
     restart_i : std_logic;
 
+    --  Which edges are detected.
+    detect_rise_i : std_logic;
+    detect_fall_i : std_logic;
+
     --  taps input
     tap_i : std_logic_vector(length - 1 downto 0);
 
     --  Set if a pulse has been detected.
+    --  Cleared by setting restart.
     trigger_o : out std_logic;
 
+    --  Registers.
     coarse_o  : out std_logic_vector(31 downto 0);
     fine_o    : out std_logic_vector(15 downto 0));
 end opentdc_time;
@@ -48,26 +54,34 @@ architecture behav of opentdc_time is
     end if;
   end ffs;
 
-  signal pulse : std_logic;
+  signal tap0_d : std_logic;
+  signal tap0 : std_logic;
   signal trigger : std_logic;
+  signal rise_edge : std_logic;
+  signal fall_edge : std_logic;
+  signal edge : std_logic;
 begin
   --  FF at the input to detect pulses (longer than the cycle).
   process (clk_i) is
   begin
     if rising_edge(clk_i) then
-      pulse <= tap_i(0);
+      tap0_d <= tap_i(0);
     end if;
   end process;
 
+  tap0 <= tap_i (0);
+
+  rise_edge <= not tap0_d and tap0;
+  fall_edge <= tap0_d and not tap0;
+
+  edge <= (rise_edge and detect_rise_i) or (fall_edge and detect_fall_i);
   --  Pulse detector.
   process (clk_i) is
   begin
     if rising_edge(clk_i) then
       if rst_n_i = '0' then
         trigger <= '0';
-      elsif (pulse xor tap_i (0)) = '1'
-        and (restart_i = '1' or trigger = '0')
-      then
+      elsif edge = '1' and (restart_i = '1' or trigger = '0') then
         --  A pulse is detected
         --   and not yet triggered or restarted
         trigger <= '1';
@@ -80,5 +94,4 @@ begin
   end process;
 
   trigger_o <= trigger;
-
 end behav;

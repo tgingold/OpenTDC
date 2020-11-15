@@ -128,7 +128,7 @@ begin
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
     report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
-    assert unsigned(d32) < 5 report "(2) bad cycle value" severity failure;
+    assert unsigned(d32) < 8 report "(2) bad cycle value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32_a);
     assert unsigned(d32_a) > unsigned(d32)
       report "(3) cycles not increased" severity failure;
@@ -139,7 +139,8 @@ begin
     assert d32 = x"0000_0000" report "(4) bad status" severity failure;
 
     --  Start tdc 0 and 1 (set restart bits).
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0000_0003");
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0020", x"0005_0100");
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", x"0005_0100");
 
     --  Trigger pulses.
     wait for 1130 ps;
@@ -155,13 +156,13 @@ begin
 
     --  Read status
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
-    assert d32 = x"0000_0003" report "(5) bad status" severity failure;
+    assert d32 = x"0000_0002" report "(5) bad status" severity failure;
 
     --  Read tdc0
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0010", d32);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0028", d32);
     report "tdc0 coarse=" & to_hstring(d32);
     d32_a := d32;
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0014", d32);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_002c", d32);
     report "tdc0 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 12
       report "(7) bad fine value for tdc0" severity failure;

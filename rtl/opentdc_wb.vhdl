@@ -7,6 +7,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+use work.opentdc_pkg.all;
+
 entity opentdc_wb is
   port (
     --  Control
@@ -40,8 +42,6 @@ architecture behav of opentdc_wb is
 
   signal rst_n : std_logic;
 
-  signal wb_ack : std_logic;
-
   signal cur_cycles : std_logic_vector(31 downto 0);
 
   type tdc_rec is record
@@ -60,95 +60,104 @@ architecture behav of opentdc_wb is
   signal fd0_fine   : std_logic_vector(15 downto 0);
   signal fd0_valid  : std_logic;
   signal fd0_busy  : std_logic;
+
+  signal start : std_logic;
+  signal dev0_in,  dev1_in,  dev2_in  : tdc_bus_in;
+  signal dev0_out, dev1_out, dev2_out : tdc_bus_out;
+
+  constant ndly : natural := 200;
+
 begin
   rst_n <= not wb_rst_i;
-
-  --  Wishbone slave.
-  wbs_ack_o <= wb_ack;
 
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
-      --  TDC: restart is a pulse.
-      tdc0.restart <= '0';
-      tdc1.restart <= '0';
-      tdcr.restart <= '0';
-      tdc2.restart <= '0';
+      wbs_ack_o <= '0';
+      wbs_dat_o <= (others => '0');
 
-      --  FD: valid is a pulse
-      fd0_valid <= '0';
+      dev0_in.cur_cycles <= cur_cycles;
+      dev1_in.cur_cycles <= cur_cycles;
+      dev2_in.cur_cycles <= cur_cycles;
 
       if rst_n = '0' then
-        wb_ack <= '0';
+        start <= '1';
+        dev0_in.re <= '0';
+        dev0_in.we <= '0';
+        dev1_in.re <= '0';
+        dev1_in.we <= '0';
+        dev2_in.re <= '0';
+        dev2_in.we <= '0';
       else
-        if wb_ack = '1' then
-          --  Negate ack after one clock
-          wb_ack <= '0';
-        elsif wbs_stb_i = '1' and wbs_cyc_i = '1' then
-          --  Start of a transaction
-          wbs_dat_o <= x"00_00_00_00";
-          case wbs_adr_i (9 downto 2) is
-            when x"00" =>
-              --  Id
-              wbs_dat_o <= x"54_64_63_01";  -- 'Tdc\1'
-            when x"01" =>
-              wbs_dat_o <= cur_cycles;
-
-            when x"02" =>
-              -- status.
-              wbs_dat_o (0) <= tdc0.trigger;
-              wbs_dat_o (1) <= tdc1.trigger;
-              wbs_dat_o (2) <= tdc2.trigger;
-              wbs_dat_o (7) <= tdcr.trigger;
-              wbs_dat_o (16) <= fd0_busy;
-            when x"03" =>
-              -- control.
-              if wbs_we_i = '1' and wbs_sel_i (0) = '1' then
-                tdc0.restart <= wbs_dat_i (0);
-                tdc1.restart <= wbs_dat_i (1);
-                tdc2.restart <= wbs_dat_i (2);
-                tdcr.restart <= wbs_dat_i (7);
-              end if;
-              if wbs_we_i = '1' and wbs_sel_i (2) = '1' then
-                fd0_valid <= wbs_dat_i (16);
-              end if;
-
-            when x"04" =>
-              wbs_dat_o <= tdc0.coarse;
-            when x"05" =>
-              wbs_dat_o <= x"00_00" & tdc0.fine;
-
-            when x"06" =>
-              wbs_dat_o <= tdc1.coarse;
-            when x"07" =>
-              wbs_dat_o <= x"00_00" & tdc1.fine;
-
-            when x"08" =>
-              wbs_dat_o <= tdc2.coarse;
-            when x"09" =>
-              wbs_dat_o <= x"00_00" & tdc2.fine;
-
-            when x"0e" =>
-              wbs_dat_o <= tdcr.coarse;
-            when x"0f" =>
-              wbs_dat_o <= x"00_00" & tdcr.fine;
-
-            when x"10" =>
-              wbs_dat_o <= fd0_coarse;
-              if wbs_we_i = '1' then
-                fd0_coarse <= wbs_dat_i;
-              end if;
-            when x"11" =>
-              wbs_dat_o (15 downto 0) <= fd0_fine;
-              if wbs_we_i = '1' then
-                fd0_fine <= wbs_dat_i(15 downto 0);
-              end if;
-
+        if wbs_stb_i = '1' and wbs_cyc_i = '1' then
+          -- 8 words per sub-device (so 3+2 bits)
+          case wbs_adr_i (6 downto 5) is
+            when "00" =>
+              dev0_in.adr <= wbs_adr_i (4 downto 2);
+              dev0_in.dati <= wbs_dat_i;
+              dev0_in.sel <= wbs_sel_i;
+              dev0_in.we <= start and wbs_we_i;
+              dev0_in.re <= start and not wbs_we_i;
+              wbs_ack_o <= dev0_out.wack or dev0_out.rack;
+              wbs_dat_o <= dev0_out.dato;
+            when "01" =>
+              dev1_in.adr <= wbs_adr_i (4 downto 2);
+              dev1_in.dati <= wbs_dat_i;
+              dev1_in.sel <= wbs_sel_i;
+              dev1_in.we <= start and wbs_we_i;
+              dev1_in.re <= start and not wbs_we_i;
+              wbs_ack_o <= dev1_out.wack or dev1_out.rack;
+              wbs_dat_o <= dev1_out.dato;
+            when "10" =>
+              dev2_in.adr <= wbs_adr_i (4 downto 2);
+              dev2_in.dati <= wbs_dat_i;
+              dev2_in.sel <= wbs_sel_i;
+              dev2_in.we <= start and wbs_we_i;
+              dev2_in.re <= start and not wbs_we_i;
+              wbs_ack_o <= dev2_out.wack or dev2_out.rack;
+              wbs_dat_o <= dev2_out.dato;
             when others =>
-              report "unhandled address";
               null;
           end case;
-          wb_ack <= '1';
+          start <= '0';
+        else
+          start <= '1';
+        end if;
+      end if;
+    end if;
+  end process;
+
+  --  Pseudo dev0 (ro)
+  process (wb_clk_i)
+  begin
+    if rising_edge(wb_clk_i) then
+      dev0_out.wack <= '0';
+      dev0_out.rack <= '0';
+      dev0_out.dato <= (others => '0');
+
+      if rst_n = '0' then
+        dev0_out.trig <= '0';
+      else
+        --  Write (nop)
+        if dev0_in.we = '1' then
+          dev0_out.wack <= '1';
+        end if;
+
+        --  Read (nop)
+        if dev0_in.re = '1' then
+          case dev0_in.adr is
+            when "000" =>
+              dev0_out.dato <= x"54_64_63_01";  -- 'Tdc\1'
+            when "001" =>
+              dev0_out.dato <= cur_cycles;
+            when "010" =>
+              --  Global status
+              dev0_out.dato (1) <= dev1_out.trig;
+              dev0_out.dato (2) <= dev2_out.trig;
+            when others =>
+              null;
+          end case;
+          dev0_out.rack <= '1';
         end if;
       end if;
     end if;
@@ -166,51 +175,46 @@ begin
     end if;
   end process;
 
-  --  TDC 0
-  i_tdc0: entity work.opentdc_core
-    generic map (
-      length => 200)
-    port map (
-      clk_i => wb_clk_i,
-      rst_n_i => rst_n,
-      cur_cycles_i => cur_cycles,
-      restart_i => tdc0.restart,
-      inp_i => inp0_i,
-      trigger_o => tdc0.trigger,
-      coarse_o => tdc0.coarse,
-      fine_o => tdc0.fine);
+  --  Dev 1
+  b_dev1: block
+    signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
+    signal clks, rclks : std_logic_vector (2*ndly - 1 downto 0);
+  begin
+    clks <= (others => wb_clk_i);
+    rclks <= (others => wb_clk_i);
 
-  --  TDC 1
-  i_tdc1: entity work.opentdc_core
-    generic map (
-      length => 200)
-    port map (
-      clk_i => wb_clk_i,
-      rst_n_i => rst_n,
-      cur_cycles_i => cur_cycles,
-      restart_i => tdc1.restart,
-      inp_i => inp1_i,
-      trigger_o => tdc1.trigger,
-      coarse_o => tdc1.coarse,
-      fine_o => tdc1.fine);
+    inst_itaps: entity work.opentdc_tapline
+      generic map (
+        length => ndly)
+      port map (
+        clks_i => clks,
+        inp_i => inp0_i,
+        tap_o => taps);
 
-  --  TDC ref
-  i_tdc_ref: entity work.opentdc_core
-    generic map (
-      length => 200)
-    port map (
-      clk_i => wb_clk_i,
-      rst_n_i => rst_n,
-      cur_cycles_i => cur_cycles,
-      restart_i => tdcr.restart,
-      inp_i => wb_clk_i,
-      trigger_o => tdcr.trigger,
-      coarse_o => tdcr.coarse,
-      fine_o => tdcr.fine);
+    inst_rtaps: entity work.opentdc_tapline
+      generic map (
+        length => ndly)
+      port map (
+        clks_i => rclks,
+        inp_i => wb_clk_i,
+        tap_o => rtaps);
 
-  blk_tdc2: block
+    inst_core: entity work.opentdc_core2
+      generic map (
+        g_with_ref => true,
+        length => ndly)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        itaps => taps,
+        rtaps => rtaps,
+        bin => dev1_in,
+        bout => dev1_out);
+  end block;
+
+  b_dev2: block
     constant length : natural := 20;
-    signal tap : std_logic_vector(length - 1 downto 0);
+    signal taps : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
 
     component tapline_20 is
@@ -220,22 +224,20 @@ begin
     end component;
   begin
     tap_clks <= (others => wb_clk_i);
-    tap (0) <= inp2_i;
     inst_tap_line: tapline_20 port map
-      (inp_i => inp2_i, clk_i => tap_clks, tap_o => tap);
+      (inp_i => inp2_i, clk_i => tap_clks, tap_o => taps);
 
-    inst_time: entity work.opentdc_time
+    inst_core: entity work.opentdc_core2
       generic map (
+        g_with_ref => false,
         length => length)
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        cur_cycles_i => cur_cycles,
-        restart_i => tdc2.restart,
-        tap_i => tap,
-        trigger_o => tdc2.trigger,
-        coarse_o => tdc2.coarse,
-        fine_o => tdc2.fine);
+        itaps => taps,
+        rtaps => (others => '0'),
+        bin => dev2_in,
+        bout => dev2_out);
   end block;
 
   --  FD0
