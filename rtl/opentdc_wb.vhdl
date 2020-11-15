@@ -26,9 +26,9 @@ entity opentdc_wb is
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
     --  Tdc input signals
-    inp0_i : std_logic;
     inp1_i : std_logic;
     inp2_i : std_logic;
+    inp3_i : std_logic;
 
     --  Fd output signals
     out0_o : out std_logic;
@@ -44,17 +44,6 @@ architecture behav of opentdc_wb is
 
   signal cur_cycles : std_logic_vector(31 downto 0);
 
-  type tdc_rec is record
-    trigger : std_logic;
-    restart : std_logic;
-    coarse : std_logic_vector(31 downto 0);
-    fine : std_logic_vector(15 downto 0);
-  end record;
-
-  --  TDCs
-  signal tdc0, tdc1, tdcr : tdc_rec;
-  signal tdc2 : tdc_rec;
-
   --  fd0
   signal fd0_coarse : std_logic_vector(31 downto 0);
   signal fd0_fine   : std_logic_vector(15 downto 0);
@@ -62,10 +51,8 @@ architecture behav of opentdc_wb is
   signal fd0_busy  : std_logic;
 
   signal start : std_logic;
-  signal dev0_in,  dev1_in,  dev2_in  : tdc_bus_in;
-  signal dev0_out, dev1_out, dev2_out : tdc_bus_out;
-
-  constant ndly : natural := 200;
+  signal dev0_in,  dev1_in,  dev2_in,  dev3_in  : tdc_bus_in;
+  signal dev0_out, dev1_out, dev2_out, dev3_out : tdc_bus_out;
 
 begin
   rst_n <= not wb_rst_i;
@@ -79,6 +66,7 @@ begin
       dev0_in.cur_cycles <= cur_cycles;
       dev1_in.cur_cycles <= cur_cycles;
       dev2_in.cur_cycles <= cur_cycles;
+      dev3_in.cur_cycles <= cur_cycles;
 
       if rst_n = '0' then
         start <= '1';
@@ -88,6 +76,8 @@ begin
         dev1_in.we <= '0';
         dev2_in.re <= '0';
         dev2_in.we <= '0';
+        dev3_in.re <= '0';
+        dev3_in.we <= '0';
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
           -- 8 words per sub-device (so 3+2 bits)
@@ -116,6 +106,14 @@ begin
               dev2_in.re <= start and not wbs_we_i;
               wbs_ack_o <= dev2_out.wack or dev2_out.rack;
               wbs_dat_o <= dev2_out.dato;
+            when "11" =>
+              dev3_in.adr <= wbs_adr_i (4 downto 2);
+              dev3_in.dati <= wbs_dat_i;
+              dev3_in.sel <= wbs_sel_i;
+              dev3_in.we <= start and wbs_we_i;
+              dev3_in.re <= start and not wbs_we_i;
+              wbs_ack_o <= dev3_out.wack or dev3_out.rack;
+              wbs_dat_o <= dev3_out.dato;
             when others =>
               null;
           end case;
@@ -177,6 +175,38 @@ begin
 
   --  Dev 1
   b_dev1: block
+    constant ndly : natural := 200;
+
+    signal taps : std_logic_vector (ndly - 1 downto 0);
+    signal clks : std_logic_vector (2*ndly - 1 downto 0);
+  begin
+    clks <= (others => wb_clk_i);
+
+    inst_itaps: entity work.opentdc_tapline
+      generic map (
+        length => ndly)
+      port map (
+        clks_i => clks,
+        inp_i => inp1_i,
+        tap_o => taps);
+
+    inst_core: entity work.opentdc_core2
+      generic map (
+        g_with_ref => false,
+        length => ndly)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        itaps => taps,
+        rtaps => (others => '0'),
+        bin => dev1_in,
+        bout => dev1_out);
+  end block;
+
+  --  Dev 2
+  b_dev2: block
+    constant ndly : natural := 200;
+
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
     signal clks, rclks : std_logic_vector (2*ndly - 1 downto 0);
   begin
@@ -188,7 +218,7 @@ begin
         length => ndly)
       port map (
         clks_i => clks,
-        inp_i => inp0_i,
+        inp_i => inp2_i,
         tap_o => taps);
 
     inst_rtaps: entity work.opentdc_tapline
@@ -208,11 +238,11 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => rtaps,
-        bin => dev1_in,
-        bout => dev1_out);
+        bin => dev2_in,
+        bout => dev2_out);
   end block;
 
-  b_dev2: block
+  b_dev3: block
     constant length : natural := 20;
     signal taps : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
@@ -236,8 +266,8 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => (others => '0'),
-        bin => dev2_in,
-        bout => dev2_out);
+        bin => dev3_in,
+        bout => dev3_out);
   end block;
 
   --  FD0

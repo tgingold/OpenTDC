@@ -33,8 +33,8 @@ architecture behav of tb_proj is
   signal wbs_out : wb32_master_out;
   signal wbs_in  : wb32_master_in;
 
-  signal inp0       : std_logic;
   signal inp1       : std_logic;
+  signal inp2       : std_logic;
   signal out0       : std_logic;
   signal rst_time_n : std_logic;
 
@@ -111,8 +111,8 @@ begin
     done <= '0';
 
     rst_time_n <= '1';
-    inp0 <= '0';
     inp1 <= '0';
+    inp2 <= '0';
     wbs_out.cyc <= '0';
 
     --  Wait until end of reset.
@@ -144,10 +144,10 @@ begin
 
     --  Trigger pulses.
     wait for 1130 ps;
-    inp0 <= '1';
+    inp1 <= '1';
     wait until rising_edge(wb_clk);
     wait for 1530 ps;
-    inp1 <= '1';
+    inp2 <= '1';
     wait until rising_edge(wb_clk);
 
     for i in 1 to 3 loop
@@ -156,7 +156,7 @@ begin
 
     --  Read status
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
-    assert d32 = x"0000_0002" report "(5) bad status" severity failure;
+    assert d32 = x"0000_0006" report "(5) bad status" severity failure;
 
     --  Read tdc0
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0028", d32);
@@ -168,11 +168,11 @@ begin
       report "(7) bad fine value for tdc0" severity failure;
 
     --  Read tdc1
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0048", d32);
     report "tdc1 coarse=" & to_hstring(d32);
     assert unsigned(d32) = unsigned (d32_a) + 1
       report "(8) bad coarse value" severity failure;
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_001c", d32);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_004c", d32);
     report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 16
       report "(9) bad fine value for tdc1" severity failure;
@@ -227,9 +227,9 @@ begin
       wbs_adr_i    => wbs_out.adr,
       wbs_ack_o    => wbs_in.ack,
       wbs_dat_o    => wbs_in.dati,
-      inp0_i       => inp0,
       inp1_i       => inp1,
-      inp2_i       => '0',
+      inp2_i       => inp2,
+      inp3_i       => '0',
       out0_o       => out0,
       rst_time_n_i => rst_time_n);
 end behav;
