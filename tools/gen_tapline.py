@@ -20,10 +20,11 @@ from gen_def import GenDef
 
 
 class tap_line(GenDef):
-    def __init__(self, name, ntaps, ref, tech, delay):
+    def __init__(self, name, ntaps, ref, tech, delay, nfill):
         super().__init__(tech, name)
         self.cells['delay'] = self.cells[delay]
         self.ntaps = ntaps
+        self.nfill = nfill
         self.ref = ref
 
     def build_tap(self, pfx, idx, last):
@@ -162,6 +163,9 @@ class tap_line(GenDef):
                 if tap['delay'] is not None:
                     self.place_component(tap['delay'], crow[2])
                 opads.extend(tap['opad'])
+                self.add_fillers(crow[0], self.nfill)
+                self.add_fillers(crow[1], self.nfill)
+                self.add_fillers(crow[2], self.nfill)
             # Opads
             x_pin_step = self.cells['dff']['width'] // len(opads)
             for k, p in enumerate(opads):
@@ -190,9 +194,12 @@ if __name__ == '__main__':
                         help='select clock configuration')
     parser.add_argument('--delay', '-d', default='cdly15_1',
                         help='select delay gate')
+    parser.add_argument('--fill', '-f', default=0, type=int,
+                        help='number of extra fillers')
     args = parser.parse_args()
 
-    inst = tap_line(args.name, args.length, args.ref, args.tech, args.delay)
+    inst = tap_line(args.name, args.length, args.ref, args.tech, args.delay,
+                    args.fill)
     inst.build_netlist()
     inst.arrange(args.geo)
     inst.build_clock_netlist(args.clock)

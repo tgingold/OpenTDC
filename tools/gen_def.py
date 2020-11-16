@@ -241,17 +241,24 @@ class GenDef:
                               key=lambda key: key['width'], reverse=True)
         self.fill_label = 0
 
+    def _add_fill(self, row, comp):
+        c = self.add_component('FILL_{}'.format(self.fill_label), comp)
+        self.place_component(c, row)
+        self.fill_label += 1
+
     def pad_rows(self):
         """Add fillers so that all rows have the same length"""
         wd = max([r['width'] for r in self.rows])
         for i, r in enumerate(self.rows):
             for f in self.fillers:
                 while r['width'] + f['width'] <= wd:
-                    c = self.add_component('FILL_{}'.format(
-                        self.fill_label), f)
-                    self.place_component(c, i)
-                    self.fill_label += 1
+                    self._add_fill(i, f)
             assert r['width'] == wd
+
+    def add_fillers(self, row, num):
+        comp = self.fillers[0]
+        for i in range(num):
+            self._add_fill(row, comp)
 
     def build_tap_decap(self, row, idx):
         # tap
@@ -369,8 +376,13 @@ class GenDef:
             print('set ::env(STD_CELL_LIBRARY) "{}"'.format(
                 self.tech['libname']), file=f)
             print(file=f)
+            pdn_vpitch = 153600
+            if self.x_size > pdn_vpitch:
+                vpitch = (pdn_vpitch // self.row_width) * self.row_width
+            else:
+                vpitch = self.s_size / 4
             print('set ::env(FP_PDN_VOFFSET) 0', file=f)
-            print('set ::env(FP_PDN_VPITCH) 16', file=f)
+            print('set ::env(FP_PDN_VPITCH) {}'.format(vpitch / 1000), file=f)
             print('set ::env(FP_PDN_HOFFSET) {}'.format(
                 self.row_height / 1000), file=f)
             print('set ::env(FP_PDN_HPITCH) {}'.format(
