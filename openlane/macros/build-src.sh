@@ -32,4 +32,13 @@ $GEN_TAPLINE -n tapline_200_x2_s1_dly4_hs_ref -t fd_hs -l $L -g 2 -r -c s1 -d dl
 $GEN_TAPLINE -n tapline_200_x2_s1_dly4_ms_ref -t fd_ms -l $L -g 2 -r -c s1 -d dly4_1
 $GEN_TAPLINE -n tapline_200_x2_s1_dly4_ls_ref -t fd_ls -l $L -g 2 -r -c s1 -d dly4_1
 
+{
+    sed -e '/^end/,$d' < opentdc_comps-tpl.vhdl
+    for f in *_comp.vhdl; do
+	cat $f
+	echo
+    done
+    sed -n -e '/^end/,$p' < opentdc_comps-tpl.vhdl
+} > opentdc_comps.vhdl
+
 echo "Done."
