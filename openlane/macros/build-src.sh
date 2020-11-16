@@ -12,8 +12,8 @@ GEN_TAPLINE=../../tools/gen_tapline.py
 L=200
 
 # Tech: fd_sc_hd
-$GEN_TAPLINE -n tapline_200_x1_hd              -l $L -g 1 -f 1
-$GEN_TAPLINE -n tapline_200_x1_hd_ref          -l $L -g 1 -r
+#$GEN_TAPLINE -n tapline_200_x1_hd              -l $L -g 1 -f 1
+#$GEN_TAPLINE -n tapline_200_x1_hd_ref          -l $L -g 1 -r
 $GEN_TAPLINE -n tapline_200_x2_hd              -l $L -g 2
 $GEN_TAPLINE -n tapline_200_x2_hd_ref          -l $L -g 2 -r
 $GEN_TAPLINE -n tapline_200_x2_s1_cbuf1_hd_ref -l $L -g 2 -r -c s1 -d cbuf_1

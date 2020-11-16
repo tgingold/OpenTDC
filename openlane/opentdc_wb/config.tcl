@@ -19,6 +19,13 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 2700 2700"
 set ::env(PL_TARGET_DENSITY) 0.3
 
-set ::env(EXTRA_LEFS)      "$script_dir/../../lef/tapline_200_x2_hd.lef"
-set ::env(EXTRA_GDS_FILES) "$script_dir/../../gds/tapline_200_x2_hd.gds"
+set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref"]
+set macros_lef ""
+set macros_gds ""
+foreach m $macros {
+    set macros_lef "$macros_lef $script_dir/../../lef/$m.lef"
+    set macros_gds "$macros_gds $script_dir/../../gds/$m.gds"
+}
+set ::env(EXTRA_LEFS)      "$macros_lef"
+set ::env(EXTRA_GDS_FILES) "$macros_gds"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg

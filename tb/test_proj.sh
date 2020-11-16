@@ -13,7 +13,8 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/opentdc_core2.vhdl \
  ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_delay-sim.vhdl \
- ../rtl/openfd_core.vhdl \
+ ../rtl/openfd_delayline.vhdl \
+ ../rtl/openfd_core2.vhdl \
  ../rtl/opentdc_wb.vhdl \
  tb_proj.vhdl \
  -r tb_proj --wave=tb_proj.ghw --stop-time=4us

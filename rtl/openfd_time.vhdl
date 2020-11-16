@@ -6,7 +6,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity openfd_core is
+entity openfd_time is
   generic (
     --  log2(nbr_taps).  This is also the number of significant bits of
     --  fine_i
@@ -18,7 +18,7 @@ entity openfd_core is
     --  Current time (in cycles).
     cur_cycles_i : std_logic_vector(31 downto 0);
 
-    --  Parameters for the next pulse.
+    --  Parameters for the next pulse (set when valid_i is true)
     coarse_i  : std_logic_vector(31 downto 0);
     fine_i    : std_logic_vector(15 downto 0);
     valid_i   : std_logic;
@@ -26,29 +26,27 @@ entity openfd_core is
     --  Set on valid, cleared on the pulse.
     busy_o    : out std_logic;
 
+    --  Delay line value
+    delay_o : out std_logic_vector (plen - 1 downto 0);
+
     --  Pulse (of clk_i width), delayed by coarse + fine
-    out_o     : out std_logic);
-end openfd_core;
+    pulse_o     : out std_logic);
+end openfd_time;
 
-architecture behav of openfd_core is
+architecture behav of openfd_time is
   signal coarse  : std_logic_vector(31 downto 0);
-  signal fine    : std_logic_vector(plen - 1 downto 0);
   signal valid   : std_logic;
-
-  signal pulse : std_logic;
-
-  signal taps : std_logic_vector (plen downto 0);
 begin
   process (clk_i)
   begin
     if rising_edge(clk_i) then
       if rst_n_i = '0' then
         coarse <= (others => '0');
-        fine <= (others => '0');
+        delay_o <= (others => '0');
         valid <= '0';
       elsif valid_i = '1' then
         coarse <= std_logic_vector (unsigned(coarse_i) - 1);
-        fine <= fine_i(fine'range);
+        delay_o <= fine_i(fine'range);
         valid <= '1';
       elsif pulse = '1' then
         valid <= '0';
@@ -62,20 +60,12 @@ begin
   begin
     if rising_edge (clk_i) then
       if rst_n_i = '0' then
-        pulse <= '0';
+        pulse_o <= '0';
       elsif valid = '1' and coarse = cur_cycles_i then
-        pulse <= '1';
+        pulse_o <= '1';
       else
-        pulse <= '0';
+        pulse_o <= '0';
       end if;
     end if;
   end process;
-
-  inst_delay: entity work.openfd_delayline
-    generic map (
-      plen => plen)
-    port map (
-      inp_i => pulse,
-      out_o => out_o,
-      delay_i => fine);
 end behav;

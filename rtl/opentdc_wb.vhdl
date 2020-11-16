@@ -30,6 +30,7 @@ entity opentdc_wb is
     inp1_i : std_logic;
     inp2_i : std_logic;
     inp3_i : std_logic;
+    inp4_i : std_logic;
 
     --  Fd output signals
     out0_o : out std_logic;
@@ -45,18 +46,12 @@ architecture behav of opentdc_wb is
 
   signal cur_cycles : std_logic_vector(31 downto 0);
 
-  --  fd0
-  signal fd0_coarse : std_logic_vector(31 downto 0);
-  signal fd0_fine   : std_logic_vector(15 downto 0);
-  signal fd0_valid  : std_logic;
-  signal fd0_busy  : std_logic;
-
   signal start : std_logic;
 
   type dev_in_array is array(natural range <>) of tdc_bus_in;
   type dev_out_array is array(natural range <>) of tdc_bus_out;
 
-  constant NDEVS : natural := 4;
+  constant NDEVS : natural := 6;
   signal devs_in: dev_in_array (NDEVS - 1 downto 0);
   signal devs_out: dev_out_array (NDEVS - 1 downto 0);
 begin
@@ -73,19 +68,25 @@ begin
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
           -- 8 words per sub-device (so 3+2 bits)
-          case wbs_adr_i (6 downto 5) is
-            when "00" =>
+          case wbs_adr_i (8 downto 5) is
+            when x"0" =>
               wbs_ack_o <= devs_out(0).wack or devs_out(0).rack;
               wbs_dat_o <= devs_out(0).dato;
-            when "01" =>
+            when x"1" =>
               wbs_ack_o <= devs_out(1).wack or devs_out(1).rack;
               wbs_dat_o <= devs_out(1).dato;
-            when "10" =>
+            when x"2" =>
               wbs_ack_o <= devs_out(2).wack or devs_out(2).rack;
               wbs_dat_o <= devs_out(2).dato;
-            when "11" =>
+            when x"3" =>
               wbs_ack_o <= devs_out(3).wack or devs_out(3).rack;
               wbs_dat_o <= devs_out(3).dato;
+            when x"4" =>
+              wbs_ack_o <= devs_out(4).wack or devs_out(4).rack;
+              wbs_dat_o <= devs_out(4).dato;
+            when x"5" =>
+              wbs_ack_o <= devs_out(5).wack or devs_out(5).rack;
+              wbs_dat_o <= devs_out(5).dato;
             when others =>
               null;
           end case;
@@ -108,7 +109,8 @@ begin
           devs_in (i).we <= '0';
         else
           if wbs_stb_i = '1' and wbs_cyc_i = '1' then
-            if wbs_adr_i (6 downto 5) = std_logic_vector(to_unsigned(i, 2)) then
+            if wbs_adr_i (8 downto 5) = std_logic_vector(to_unsigned(i, 4))
+            then
               devs_in (i).adr <= wbs_adr_i (4 downto 2);
               devs_in (i).dati <= wbs_dat_i;
               devs_in (i).sel <= wbs_sel_i;
@@ -248,7 +250,7 @@ begin
   begin
     tap_clks <= (others => wb_clk_i);
     inst_tap_line: tapline_200_x2_hd port map
-      (inp_i => inp2_i, clk_i => tap_clks, tap_o => taps);
+      (inp_i => inp3_i, clk_i => tap_clks, tap_o => taps);
 
     inst_core: entity work.opentdc_core2
       generic map (
@@ -263,17 +265,55 @@ begin
         bout => devs_out(3));
   end block;
 
-  --  FD0
-  inst_fd0: entity work.openfd_core
-    generic map (
-      plen => 8)
-    port map (
-      clk_i => wb_clk_i,
-      rst_n_i => rst_n,
-      cur_cycles_i => cur_cycles,
-      coarse_i     => fd0_coarse,
-      fine_i       => fd0_fine,
-      valid_i      => fd0_valid,
-      busy_o       => fd0_busy,
-      out_o        => out0_o);
+  b_dev4: block
+    constant length : natural := 200;
+    signal taps, rtaps : std_logic_vector(length - 1 downto 0);
+    signal tap_clks, tap_rclks : std_logic_vector(2*length - 1 downto 0);
+    signal rin : std_logic;
+  begin
+    tap_clks <= (others => wb_clk_i);
+    tap_rclks <= (others => wb_clk_i);
+    inst_tap_line: tapline_200_x2_hd_ref port map
+      (inp_i => inp4_i, ref_i => rin,
+       clk_i => tap_clks, rclk_i => tap_rclks,
+       tap_o => taps, rtap_o => rtaps);
+
+    inst_core: entity work.opentdc_core2
+      generic map (
+        g_with_ref => false,
+        length => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        rin_o => rin,
+        itaps => taps,
+        rtaps => rtaps,
+        bin => devs_in(4),
+        bout => devs_out(4));
+  end block;
+
+  --  dev5: FD
+  b_dev5: block
+    constant length : natural := 8;
+    signal delay : std_logic_vector(length - 1 downto 0);
+    signal pulse : std_logic;
+  begin
+    inst_delay_line: entity work.openfd_delayline
+      generic map (
+        plen => length)
+      port map (
+        inp_i => pulse, out_o => out0_o, delay_i => delay);
+
+    inst_core: entity work.openfd_core2
+      generic map (
+        g_with_ref => false,
+        plen => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        idelay_o => delay,
+        pulse_o => pulse,
+        bin => devs_in(5),
+        bout => devs_out(5));
+  end block;
 end behav;

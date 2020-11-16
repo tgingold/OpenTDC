@@ -212,15 +212,15 @@ begin
       report "(18) bad tdc2 scan val #6" severity failure;
 
     --  Program fd.
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0044", x"0000_0027");
-    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 10);
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0040", d32);
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_00ac", x"0000_0027");
+    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_00a8", d32);
+--  wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
 
     --  Check busy status (before the trigger).
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
-    assert d32_a(16) = '1'
-      report "(10) bad busy value for fd0" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_00a0", d32_a);
+    assert d32_a = x"0000_0001"
+      report "(19) bad busy value for fd0" severity failure;
 
     wait on fd0_time for 5 * cycle;
     wait until rising_edge(wb_clk);
@@ -232,10 +232,10 @@ begin
     report "fd0 coarse=" & to_hstring(d32);
 
     --  cur_cycle start when now = 2 cycles
-    assert ncycles = to_integer(unsigned(d32) + 2)
-      report "(11) bad coarse time for fd0" severity failure;
+    assert ncycles = to_integer(unsigned(d32) + 4)
+      report "(20) bad coarse time for fd0" severity failure;
     assert ndelays = 39
-      report "(12) bad fine time for fd0" severity failure;
+      report "(21) bad fine time for fd0" severity failure;
 
     --  Check busy status (before the trigger).
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
@@ -264,6 +264,7 @@ begin
       inp1_i       => inp1,
       inp2_i       => inp2,
       inp3_i       => '0',
+      inp4_i       => '0',
       out0_o       => out0,
       rst_time_n_i => rst_time_n);
 end behav;
