@@ -8,6 +8,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.opentdc_pkg.all;
+use work.opentdc_comps.all;
 
 entity opentdc_wb is
   port (
@@ -246,18 +247,12 @@ begin
   end block;
 
   b_dev3: block
-    constant length : natural := 20;
+    constant length : natural := 200;
     signal taps : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
-
-    component tapline_20 is
-      port (inp_i : std_logic;
-            clk_i : std_logic_vector(2*length - 1 downto 0);
-            tap_o : out std_logic_vector(length - 1 downto 0));
-    end component;
   begin
     tap_clks <= (others => wb_clk_i);
-    inst_tap_line: tapline_20 port map
+    inst_tap_line: tapline_200_x1_hd port map
       (inp_i => inp2_i, clk_i => tap_clks, tap_o => taps);
 
     inst_core: entity work.opentdc_core2

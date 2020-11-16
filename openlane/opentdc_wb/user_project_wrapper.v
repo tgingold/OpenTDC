@@ -78,11 +78,12 @@ module user_project_wrapper (
        .wbs_dat_o(wbs_dat_o),
 
        // IO Pads
-       .inp0_i(io_in[35]),
-       .inp1_i(io_in[36]),
-       .inp2_i(io_in[37]),
+       .inp1_i(io_in[35]),
+       .inp2_i(io_in[36]),
+       .inp3_i(io_in[37]),
 
-       .out0_o(io_out[13])
+       .out0_o(io_out[13]),
+       .rst_time_n_i(1'b1)
     );
 
    assign io_out[0:12] = 0;
