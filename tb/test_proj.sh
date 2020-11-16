@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ${GHDL:-ghdl} -c --std=08 \
+ ../openlane/macros/opentdc_comps.vhdl \
  ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_sync.vhdl \
  ../rtl/opentdc_tapline.vhdl \

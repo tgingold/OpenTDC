@@ -52,9 +52,13 @@ architecture behav of opentdc_wb is
   signal fd0_busy  : std_logic;
 
   signal start : std_logic;
-  signal dev0_in,  dev1_in,  dev2_in,  dev3_in  : tdc_bus_in;
-  signal dev0_out, dev1_out, dev2_out, dev3_out : tdc_bus_out;
 
+  type dev_in_array is array(natural range <>) of tdc_bus_in;
+  type dev_out_array is array(natural range <>) of tdc_bus_out;
+
+  constant NDEVS : natural := 4;
+  signal devs_in: dev_in_array (NDEVS - 1 downto 0);
+  signal devs_out: dev_out_array (NDEVS - 1 downto 0);
 begin
   rst_n <= not wb_rst_i;
 
@@ -64,57 +68,24 @@ begin
       wbs_ack_o <= '0';
       wbs_dat_o <= (others => '0');
 
-      dev0_in.cur_cycles <= cur_cycles;
-      dev1_in.cur_cycles <= cur_cycles;
-      dev2_in.cur_cycles <= cur_cycles;
-      dev3_in.cur_cycles <= cur_cycles;
-
       if rst_n = '0' then
         start <= '1';
-        dev0_in.re <= '0';
-        dev0_in.we <= '0';
-        dev1_in.re <= '0';
-        dev1_in.we <= '0';
-        dev2_in.re <= '0';
-        dev2_in.we <= '0';
-        dev3_in.re <= '0';
-        dev3_in.we <= '0';
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
           -- 8 words per sub-device (so 3+2 bits)
           case wbs_adr_i (6 downto 5) is
             when "00" =>
-              dev0_in.adr <= wbs_adr_i (4 downto 2);
-              dev0_in.dati <= wbs_dat_i;
-              dev0_in.sel <= wbs_sel_i;
-              dev0_in.we <= start and wbs_we_i;
-              dev0_in.re <= start and not wbs_we_i;
-              wbs_ack_o <= dev0_out.wack or dev0_out.rack;
-              wbs_dat_o <= dev0_out.dato;
+              wbs_ack_o <= devs_out(0).wack or devs_out(0).rack;
+              wbs_dat_o <= devs_out(0).dato;
             when "01" =>
-              dev1_in.adr <= wbs_adr_i (4 downto 2);
-              dev1_in.dati <= wbs_dat_i;
-              dev1_in.sel <= wbs_sel_i;
-              dev1_in.we <= start and wbs_we_i;
-              dev1_in.re <= start and not wbs_we_i;
-              wbs_ack_o <= dev1_out.wack or dev1_out.rack;
-              wbs_dat_o <= dev1_out.dato;
+              wbs_ack_o <= devs_out(1).wack or devs_out(1).rack;
+              wbs_dat_o <= devs_out(1).dato;
             when "10" =>
-              dev2_in.adr <= wbs_adr_i (4 downto 2);
-              dev2_in.dati <= wbs_dat_i;
-              dev2_in.sel <= wbs_sel_i;
-              dev2_in.we <= start and wbs_we_i;
-              dev2_in.re <= start and not wbs_we_i;
-              wbs_ack_o <= dev2_out.wack or dev2_out.rack;
-              wbs_dat_o <= dev2_out.dato;
+              wbs_ack_o <= devs_out(2).wack or devs_out(2).rack;
+              wbs_dat_o <= devs_out(2).dato;
             when "11" =>
-              dev3_in.adr <= wbs_adr_i (4 downto 2);
-              dev3_in.dati <= wbs_dat_i;
-              dev3_in.sel <= wbs_sel_i;
-              dev3_in.we <= start and wbs_we_i;
-              dev3_in.re <= start and not wbs_we_i;
-              wbs_ack_o <= dev3_out.wack or dev3_out.rack;
-              wbs_dat_o <= dev3_out.dato;
+              wbs_ack_o <= devs_out(3).wack or devs_out(3).rack;
+              wbs_dat_o <= devs_out(3).dato;
             when others =>
               null;
           end case;
@@ -126,37 +97,61 @@ begin
     end if;
   end process;
 
+  gen_devs: for i in NDEVS - 1 downto 0 generate
+    process (wb_clk_i)
+    begin
+      if rising_edge(wb_clk_i) then
+        devs_in (i).cur_cycles <= cur_cycles;
+
+        if rst_n = '0' then
+          devs_in (i).re <= '0';
+          devs_in (i).we <= '0';
+        else
+          if wbs_stb_i = '1' and wbs_cyc_i = '1' then
+            if wbs_adr_i (6 downto 5) = std_logic_vector(to_unsigned(i, 2)) then
+              devs_in (i).adr <= wbs_adr_i (4 downto 2);
+              devs_in (i).dati <= wbs_dat_i;
+              devs_in (i).sel <= wbs_sel_i;
+              devs_in (i).we <= start and wbs_we_i;
+              devs_in (i).re <= start and not wbs_we_i;
+            end if;
+          end if;
+        end if;
+      end if;
+    end process;
+  end generate;
+    
   --  Pseudo dev0 (ro)
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
-      dev0_out.wack <= '0';
-      dev0_out.rack <= '0';
-      dev0_out.dato <= (others => '0');
+      devs_out(0).wack <= '0';
+      devs_out(0).rack <= '0';
+      devs_out(0).dato <= (others => '0');
 
       if rst_n = '0' then
-        dev0_out.trig <= '0';
+        devs_out(0).trig <= '0';
       else
         --  Write (nop)
-        if dev0_in.we = '1' then
-          dev0_out.wack <= '1';
+        if devs_in(0).we = '1' then
+          devs_out(0).wack <= '1';
         end if;
 
         --  Read (nop)
-        if dev0_in.re = '1' then
-          case dev0_in.adr is
+        if devs_in(0).re = '1' then
+          case devs_in(0).adr is
             when "000" =>
-              dev0_out.dato <= x"54_64_63_01";  -- 'Tdc\1'
+              devs_out(0).dato <= x"54_64_63_01";  -- 'Tdc\1'
             when "001" =>
-              dev0_out.dato <= cur_cycles;
+              devs_out(0).dato <= cur_cycles;
             when "010" =>
               --  Global status
-              dev0_out.dato (1) <= dev1_out.trig;
-              dev0_out.dato (2) <= dev2_out.trig;
+              devs_out(0).dato (1) <= devs_out(1).trig;
+              devs_out(0).dato (2) <= devs_out(2).trig;
             when others =>
               null;
           end case;
-          dev0_out.rack <= '1';
+          devs_out(0).rack <= '1';
         end if;
       end if;
     end if;
@@ -200,8 +195,8 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => (others => '0'),
-        bin => dev1_in,
-        bout => dev1_out);
+        bin => devs_in(1),
+        bout => devs_out(1));
   end block;
 
   --  Dev 2
@@ -242,8 +237,8 @@ begin
         itaps => taps,
         rtaps => rtaps,
         rin_o => rin,
-        bin => dev2_in,
-        bout => dev2_out);
+        bin => devs_in(2),
+        bout => devs_out(2));
   end block;
 
   b_dev3: block
@@ -264,8 +259,8 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => (others => '0'),
-        bin => dev3_in,
-        bout => dev3_out);
+        bin => devs_in(3),
+        bout => devs_out(3));
   end block;
 
   --  FD0
