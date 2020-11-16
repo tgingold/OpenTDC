@@ -252,7 +252,7 @@ begin
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
   begin
     tap_clks <= (others => wb_clk_i);
-    inst_tap_line: tapline_200_x1_hd port map
+    inst_tap_line: tapline_200_x2_hd port map
       (inp_i => inp2_i, clk_i => tap_clks, tap_o => taps);
 
     inst_core: entity work.opentdc_core2

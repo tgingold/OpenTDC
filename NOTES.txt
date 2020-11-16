@@ -183,4 +183,5 @@ TDCs (hd, hs, ls, ms, osu_sc_t18): [x5]
 1 + ref: x2 + clkbuf + scan
 
 
-TODO: enable for ref TDCs and FDs.  Select edge.
+TODO: enable for ref TDCs and FDs.
+TODO: detect unhandled macro in placement

@@ -17,8 +17,8 @@ set ::env(CLOCK_PERIOD) "20"
 
 set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 2700 2700"
-set ::env(PL_TARGET_DENSITY) 0.5
+set ::env(PL_TARGET_DENSITY) 0.3
 
-set ::env(EXTRA_LEFS)      "$script_dir/../../lef/tapline_200_x1_hd.lef"
-set ::env(EXTRA_GDS_FILES) "$script_dir/../../gds/tapline_200_x1_hd.gds"
+set ::env(EXTRA_LEFS)      "$script_dir/../../lef/tapline_200_x2_hd.lef"
+set ::env(EXTRA_GDS_FILES) "$script_dir/../../gds/tapline_200_x2_hd.gds"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
