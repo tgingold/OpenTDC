@@ -14,4 +14,4 @@ project:
   top_level_netlist: "gl/caravel.v"
   user_level_netlist: "gl/user_project_wrapper.v"
   version: "0.1"
-
+  cover_image: ""
