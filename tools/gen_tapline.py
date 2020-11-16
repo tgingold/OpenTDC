@@ -200,3 +200,4 @@ if __name__ == '__main__':
     inst.disp_def(args.name + '.def')
     inst.write_config(args.name + '.tcl')
     inst.write_verilog(open(args.name + '.v', 'w'))
+    inst.write_vhdl_component(open(args.name + '_comp.vhdl', 'w'))

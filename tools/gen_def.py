@@ -394,6 +394,12 @@ class GenDef:
         else:
             dct[name] = {idx: obj}
 
+    def write_verilog_range(self, f, key):
+        if key[0] is not None:
+            assert min(key) == 0
+            assert max(key) == len(key) - 1
+            f.write(" [{}:0]".format(len(key) - 1))
+
     def write_verilog(self, f):
         # 1. gather input-outputs
         pins = {}
@@ -407,10 +413,7 @@ class GenDef:
             if i != 0:
                 f.write(",\n")
             f.write("    {}".format({'I': 'input', 'O': 'output'}[first.dir]))
-            if k[0] is not None:
-                assert min(k) == 0
-                assert max(k) == len(k) - 1
-                f.write(" [{}:0]".format(len(k) - 1))
+            self.write_verilog_range(f, k)
             f.write(" {}".format(name))
         f.write(");\n")
         # 2. gather wires
@@ -421,10 +424,7 @@ class GenDef:
             w = wires[name]
             k = list(w.keys())
             f.write("  wire")
-            if k[0] is not None:
-                assert min(k) == 0
-                assert max(k) == len(k) - 1
-                f.write(" [{}:0]".format(len(k) - 1))
+            self.write_verilog_range(f, k)
             f.write(" {};\n".format(name))
         # 3. write cells
         for c in self.components:
@@ -439,3 +439,26 @@ class GenDef:
                                          conn['net'].name))
             f.write(");\n")
         f.write("endmodule\n")
+
+    def write_vhdl_component(self, f):
+        pins = {}
+        for p in self.pins:
+            self._add_net_name(pins, p.name, p)
+        f.write("  component {} is\n".format(self.name))
+        f.write("    port (\n")
+        for i, name in enumerate(sorted(pins.keys())):
+            p = pins[name]
+            k = list(p.keys())
+            first = p[k[0]]
+            if i != 0:
+                f.write(";\n")
+            f.write("      {}: {}".format(
+                name, {'I': 'in ', 'O': 'out'}[first.dir]))
+            if k[0] is not None:
+                assert min(k) == 0
+                assert max(k) == len(k) - 1
+                f.write(" std_logic_vector({} downto 0)".format(len(k) - 1))
+            else:
+                f.write(" std_logic")
+        f.write(");\n")
+        f.write("  end component;\n")
