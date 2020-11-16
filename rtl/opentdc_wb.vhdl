@@ -233,6 +233,7 @@ begin
     inst_core: entity work.opentdc_core2
       generic map (
         g_with_ref => true,
+        g_with_scan => true,
         length => ndly)
       port map (
         clk_i => wb_clk_i,

@@ -15,4 +15,4 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/openfd_core.vhdl \
  ../rtl/opentdc_wb.vhdl \
  tb_proj.vhdl \
- -r tb_proj --wave=tb_proj.ghw --stop-time=2us
+ -r tb_proj --wave=tb_proj.ghw --stop-time=4us

@@ -11,6 +11,7 @@ use work.opentdc_pkg.all;
 entity opentdc_core2 is
   generic (
     g_with_ref : boolean := True;
+    g_with_scan : boolean := False;
     length : natural := 1024);
   port (
     clk_i : std_logic;
@@ -36,11 +37,17 @@ architecture behav of opentdc_core2 is
   signal fine, rfine      : std_logic_vector(15 downto 0);
   signal detect_rise, detect_fall : std_logic;
   signal rdetect_rise, rdetect_fall : std_logic;
+  signal detect : std_logic;
 
   signal clk_div : std_logic_vector(3 downto 0);
   signal clk_cnt : std_logic_vector(7 downto 0);
   signal clk_out : std_logic;
   signal clk_dir : std_logic;
+
+  signal scan_tap : std_logic_vector(length - 1 downto 0);
+  signal scan_reg : std_logic_vector(31 downto 0);
+  signal scan_cnt : std_logic_vector(7 downto 0);
+  signal scan_rd : std_logic;
 begin
   inst_itime: entity work.opentdc_time
     generic map (
@@ -53,9 +60,57 @@ begin
       detect_rise_i => detect_rise,
       detect_fall_i => detect_fall,
       tap_i => itaps,
-      trigger_o => trigger,
+      triggered_o => trigger,
+      detect_o => detect,
       coarse_o => coarse,
       fine_o => fine);
+
+  gen_scan: if g_with_scan generate
+    process (clk_i)
+      constant tap_words : natural := length / 32;
+    begin
+      if rising_edge(clk_i) then
+        if detect = '1' then
+          scan_tap <= itaps;
+          scan_cnt <= (others => '0');
+        elsif scan_rd = '1' then
+          if length mod 32 = 0 then
+            scan_tap (length - 32 - 1 downto 0) <=
+              scan_tap (length - 1 downto 32);
+            scan_tap (length - 1 downto length - 32) <=
+              (others => '0');
+          elsif length > 32 then
+            --  The bulk
+            scan_tap (tap_words * 32 - 32 - 1 downto 0) <=
+              scan_tap (tap_words * 32 - 1 downto 32);
+            --  The remaining
+            scan_tap (length - 32 - 1 downto tap_words * 32 - 32) <=
+              scan_tap (length - 1 downto tap_words * 32);
+            --  Clear the top
+            scan_tap (length - 1 downto length - 32) <=
+              (others => '0');
+          else
+            scan_tap <= (others => '0');
+          end if;
+          scan_cnt <= std_logic_vector(unsigned(scan_cnt) + 1);
+        end if;
+      end if;
+    end process;
+
+    process (scan_tap) is
+    begin
+      if length >= 32 then
+        scan_reg <= scan_tap (31 downto 0);
+      else
+        scan_reg <= (31 downto length => '0') & scan_tap;
+      end if;
+    end process;
+  end generate;
+
+  gen_no_scan: if not g_with_scan generate
+    scan_reg <= (others => '0');
+    scan_cnt <= (others => '0');
+  end generate;
 
   gen_rtime: if g_with_ref generate
     inst_rtime: entity work.opentdc_time
@@ -69,7 +124,7 @@ begin
         detect_rise_i => rdetect_rise,
         detect_fall_i => rdetect_fall,
         tap_i => rtaps,
-        trigger_o => rtrigger,
+        triggered_o => rtrigger,
         coarse_o => rcoarse,
         fine_o => rfine);
   end generate;
@@ -85,6 +140,8 @@ begin
   begin
     if rising_edge (clk_i) then
       bout.trig <= trigger or rtrigger;
+      scan_rd <= '0';
+
       if bin.re = '1' then
         case bin.adr is
           when "000" =>
@@ -107,11 +164,11 @@ begin
             bout.dato (31 downto 16) <= (others => '0');
             bout.dato (15 downto 0) <= fine;
           when "100" =>
-            --  TODO: scan pos
             bout.dato <= (others => '0');
+            bout.dato (7 downto 0) <= scan_cnt;
           when "101" =>
-            --  TODO: scan value
-            bout.dato <= (others => '0');
+            bout.dato <= scan_reg;
+            scan_rd <= '1';
           when "110" =>
             bout.dato <= (others => '0');
           when "111" =>

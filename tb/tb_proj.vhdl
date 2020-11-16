@@ -187,7 +187,29 @@ begin
     assert unsigned(d32 (15 downto 0)) = 200 - 1
       report "(11) bad tdc2 ref fine time" severity failure;
     assert unsigned(d32 (31 downto 0)) > 10
-      report "(11) bad tdc2 ref time" severity failure;
+      report "(12) bad tdc2 ref time" severity failure;
+
+    --  Read tdc2/scan
+    for i in 0 to 4 loop  -- 5*32 = 160
+      wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0050", d32);
+      assert d32 = std_logic_vector(to_unsigned(i, 32))
+        report "(13) bad tdc2 scan pos #" & natural'image(i) severity failure;
+      wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0054", d32);
+      assert d32 = x"ffff_ffff"
+        report "(14) bad tdc2 scan val #" & natural'image(i) severity failure;
+    end loop;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0050", d32);
+    assert d32 = x"0000_0005"
+      report "(15) bad tdc2 scan pos #5" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0054", d32);
+    assert d32 = x"01ff_ffff"
+      report "(16) bad tdc2 scan val #5" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0050", d32);
+    assert d32 = x"0000_0006"
+      report "(17) bad tdc2 scan pos #6" severity failure;
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0054", d32);
+    assert d32 = x"0000_0000"
+      report "(18) bad tdc2 scan val #6" severity failure;
 
     --  Program fd.
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0044", x"0000_0027");
