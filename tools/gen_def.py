@@ -118,40 +118,44 @@ config_sky130_fd_ms = {
 
 TECHS = {
     'fd_hd': {'cells': config_sky130_fd_hd, 'width': 460, 'height': 2720,
-              'tracks': [('li1', 460, 340),
-                         ('met1', 340, 340),
-                         ('met2', 460, 460),
-                         ('met3', 680, 680),
-                         ('met4', 920, 920),
-                         ('met5', 3400, 3400)],
+              'tracks': {'li1': (460, 340),
+                         'met1': (340, 340),
+                         'met2': (460, 460),
+                         'met3': (680, 680),
+                         'met4': (920, 920),
+                         'met5': (3400, 3400)},
               'site': 'unithd',
+              'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_hd'},
     'fd_hs': {'cells': config_sky130_fd_hs, 'width': 480, 'height': 3330,
-              'tracks': [('li1', 480, 370),
-                         ('met1', 370, 370),
-                         ('met2', 480, 480),
-                         ('met3', 740, 740),
-                         ('met4', 960, 960),
-                         ('met5', 3330, 3330)],
+              'tracks': {'li1': (480, 370),
+                         'met1': (370, 370),
+                         'met2': (480, 480),
+                         'met3': (740, 740),
+                         'met4': (960, 960),
+                         'met5': (3330, 3330)},
               'site': 'unit',
+              'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_hs'},
     'fd_ls': {'cells': config_sky130_fd_ls, 'width': 480, 'height': 3330,
-              'tracks': [('li1', 480, 480),
-                         ('met1', 370, 370),
-                         ('met2', 480, 480),
-                         ('met3', 740, 740),
-                         ('met4', 960, 960),
-                         ('met5', 3330, 3330)],
+              'tracks': {'li1': (480, 480),
+                         'met1': (370, 370),
+                         'met2': (480, 480),
+                         'met3': (740, 740),
+                         'met4': (960, 960),
+                         'met5': (3330, 3330)},
               'site': 'unit',
+              'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_ls'},
     'fd_ms': {'cells': config_sky130_fd_ms, 'width': 480, 'height': 3330,
-              'tracks': [('li1', 480, 480),
-                         ('met1', 370, 370),
-                         ('met2', 480, 480),
-                         ('met3', 740, 740),
-                         ('met4', 960, 960),
-                         ('met5', 3330, 3330)],
+              'tracks': {'li1': (480, 480),
+                         'met1': (370, 370),
+                         'met2': (480, 480),
+                         'met3': (740, 740),
+                         'met4': (960, 960),
+                         'met5': (3330, 3330)},
               'site': 'unit',
+              'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_ms'},
 }
 
@@ -213,6 +217,13 @@ class GenDef:
         assert pin.place is None, "pin already placed"
         assert place in "NSEW"
         pin.place = place
+        # Adjust pin position
+        idx = 1 if place in "NS" else 0
+        layer = self.tech['pins'][idx]
+        wd = self.tech['tracks'][layer][idx]
+        offset -= wd // 2
+        offset = (offset // wd) * wd
+        offset += wd // 2
         pin.offset = offset
 
     class Component:
@@ -293,7 +304,7 @@ class GenDef:
                   file=f)
 
     def disp_def_tracks(self, f):
-        for layer, xstep, ystep in self.tech['tracks']:
+        for layer, (xstep, ystep) in self.tech['tracks'].items():
             print("TRACKS X {} DO {} STEP {} LAYER {} ;".format(
                 xstep // 2, (self.x_size + xstep // 2) // xstep, xstep, layer),
                   file=f)
