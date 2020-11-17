@@ -54,7 +54,8 @@ class tap_line(GenDef):
             delay = None
         tap['delay'] = delay
         tap['last'] = last
-        tap['opad'] = [out]
+        tap['outpad'] = [out]
+        tap['clkpad'] = []
         return tap
 
     def build_netlist_taps(self, inp_name, pfx):
@@ -120,7 +121,7 @@ class tap_line(GenDef):
             self.connect(ck1.net, p['dff1'], 'clock')
             ck2 = self.add_pin('{}clk_i[{}]'.format(pfx, 2*idx + 1), 'I')
             self.connect(ck2.net, p['dff2'], 'clock')
-            p['opad'].extend([ck2, ck1])
+            p['clkpad'].extend([ck2, ck1])
 
     def build_clock_netlist(self, conf):
         """Add clock net and pads.  This is done after arrange() so that it
@@ -138,7 +139,7 @@ class tap_line(GenDef):
                 for k in range(len(arr)):
                     self.connect(ck.net, arr[k][i]['dff1'], 'clock')
                     self.connect(ck.net, arr[k][i]['dff2'], 'clock')
-                arr[0][i]['opad'].append(ck)
+                arr[0][i]['clkpad'].append(ck)
         else:
             raise Exception  # bad clock config
 
@@ -152,7 +153,8 @@ class tap_line(GenDef):
         # Place cells and pins
         for i in range(len(arr[0])):
             x_pin = self.rows[0]['width']  # x offset of the next cell
-            opads = []
+            outpads = []
+            clkpads = []
             for j in range(len(arr)):
                 tap = arr[j].pop(0)
                 if tap is None:
@@ -167,13 +169,18 @@ class tap_line(GenDef):
                 # Row 2: delay
                 if tap['delay'] is not None:
                     self.place_component(tap['delay'], crow[2])
-                opads.extend(tap['opad'])
+                outpads.extend(tap['outpad'])
+                clkpads.extend(tap['clkpad'])
                 self.row_add_fill(crow[0], self.nfill)
                 self.row_add_fill(crow[1], self.nfill)
                 self.row_add_fill(crow[2], self.nfill)
-            # Opads
-            x_pin_step = self.cells['dff']['width'] // len(opads)
-            for k, p in enumerate(opads):
+            # Outpads
+            x_pin_step = self.cells['dff']['width'] // len(outpads)
+            for k, p in enumerate(outpads):
+                self.place_pin(p, 'S', x_pin + k * x_pin_step)
+            # Clkpads
+            x_pin_step = self.cells['dff']['width'] // len(clkpads)
+            for k, p in enumerate(clkpads):
                 self.place_pin(p, 'N', x_pin + k * x_pin_step)
             self.insert_all_tap_decap(i)
             self.pad_rows()
