@@ -13,6 +13,8 @@ set ::env(VERILOG_FILES_BLACKBOX) "$script_dir/../../src/bb.v"
 set ::env(CLOCK_PORT) "wb_clk_i"
 set ::env(CLOCK_NET) "wb_clk_i"
 
+set ::env(BASE_SDC_FILE) "$script_dir/opentdc_wb.sdc"
+
 set ::env(CLOCK_PERIOD) "20"
 
 set ::env(FP_SIZING) absolute

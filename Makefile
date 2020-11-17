@@ -13,7 +13,8 @@ VHDL_SRCS=\
  rtl/opentdc_pkg.vhdl \
  rtl/opentdc_time.vhdl \
  rtl/opentdc_core2.vhdl \
- rtl/openfd_core.vhdl \
+ rtl/openfd_delayline.vhdl \
+ rtl/openfd_core2.vhdl \
  openlane/macros/opentdc_comps.vhdl \
  rtl/opentdc_wb.vhdl
 
