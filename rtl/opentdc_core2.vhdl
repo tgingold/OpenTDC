@@ -41,7 +41,6 @@ architecture behav of opentdc_core2 is
 
   signal clk_div : std_logic_vector(3 downto 0);
   signal clk_cnt : std_logic_vector(7 downto 0);
-  signal clk_out : std_logic;
   signal clk_dir : std_logic;
 
   signal scan_tap : std_logic_vector(length - 1 downto 0);
@@ -241,8 +240,6 @@ begin
   end process;
 
   gen_rin: if g_with_ref generate
-    rin_o <= clk_i when clk_dir = '1' else clk_out;
-
     process (clk_i)
     begin
       if rising_edge(clk_i) then
@@ -259,17 +256,16 @@ begin
       if rising_edge (clk_i) then
         clk_dir <= '0';
         case clk_div is
-          when x"0" => clk_out <= '0';
-          when x"1" => clk_dir <= '1';
-          when x"2" => clk_out <= clk_cnt(0);
-          when x"3" => clk_out <= clk_cnt(1);
-          when x"4" => clk_out <= clk_cnt(2);
-          when x"5" => clk_out <= clk_cnt(3);
-          when x"6" => clk_out <= clk_cnt(4);
-          when x"7" => clk_out <= clk_cnt(5);
-          when x"8" => clk_out <= clk_cnt(6);
-          when x"9" => clk_out <= clk_cnt(7);
-          when others => clk_out <= '0';
+          when x"0" => rin_o <= '0';
+          when x"1" => rin_o <= clk_cnt(0);
+          when x"2" => rin_o <= clk_cnt(1);
+          when x"3" => rin_o <= clk_cnt(2);
+          when x"4" => rin_o <= clk_cnt(3);
+          when x"5" => rin_o <= clk_cnt(4);
+          when x"6" => rin_o <= clk_cnt(5);
+          when x"7" => rin_o <= clk_cnt(6);
+          when x"8" => rin_o <= clk_cnt(7);
+          when others => rin_o <= '0';
         end case;
       end if;
     end process;
