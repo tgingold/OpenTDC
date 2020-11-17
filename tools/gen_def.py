@@ -230,6 +230,7 @@ class GenDef:
         def __init__(self, name, klass):
             self.name = name
             self.klass = klass
+            self.flip = False
             self.conns = []
 
     def add_component(self, name, klass):
@@ -318,12 +319,13 @@ class GenDef:
         for r in self.rows:
             x = r['x']
             y = r['y']
-            orien = r['orientation']
+            orient = r['orientation']
             for c in r['comps']:
                 print('  - {} {}'.format(c.name, c.klass['name']),
                       end='', file=f)
+                corient = 'F' + orient if c.flip else orient
                 print(' + FIXED ( {} {} ) {}'.format(
-                    x, y, orien), end='', file=f)
+                    x, y, corient), end='', file=f)
                 x += c.klass['width']
                 print(' ;', file=f)
         print('END COMPONENTS', file=f)
@@ -391,7 +393,7 @@ class GenDef:
             if self.x_size > pdn_vpitch:
                 vpitch = (pdn_vpitch // self.row_width) * self.row_width
             else:
-                vpitch = self.s_size / 4
+                vpitch = self.x_size / 4
             print('set ::env(FP_PDN_VOFFSET) 0', file=f)
             print('set ::env(FP_PDN_VPITCH) {}'.format(vpitch / 1000), file=f)
             print('set ::env(FP_PDN_HOFFSET) {}'.format(

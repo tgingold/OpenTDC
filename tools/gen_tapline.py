@@ -82,9 +82,14 @@ class tap_line(GenDef):
     def arrange_taps_line(self, taps, linelen, pos):
         stride = linelen * pos
         if pos % 2 == 0:
-            return taps[stride:stride + linelen]
+            res = taps[stride:stride + linelen]
         else:
-            return taps[stride + linelen-1:stride-1:-1]
+            res = taps[stride + linelen-1:stride-1:-1]
+            for t in res:
+                # line in reverse direction, flip delay components
+                if t['delay']:
+                    t['delay'].flip = True
+        return res
 
     def arrange(self, nlines):
         """Arrange the tap per lines"""
