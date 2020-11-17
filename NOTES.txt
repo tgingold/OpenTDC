@@ -104,9 +104,55 @@ frequency.
   Later some figures appeared: the max frequency could be 50Mhz (so a
   period of 20ns), which means 200 taps.
 
-* What about the wires ?
+* What about the wires ?  I don't know how important to the delay they
+  are.  In the first openlane release, the static analysis tool was applied
+  only before routing, which means that wires length was not considered (or
+  maybe just estimated).  The tool team planned to use a parasistic
+  extractor that compute wires capacity and resistance.
 
-[ Sizing the taps chain]
+  I had a look at that tool (SPEF_EXTRACTOR) before it was integrated.
+  It was very interesting to me: I didn't know anything about parasistic
+  extraction and about the various files (LEF, DEF, SPEF).  And the tool
+  was a small (about 700 lines) python script.  So I started to read the
+  source code, and also started to refactor it to make it more efficient
+  and more understandable.  And I read about the files format.
+
+  Just when I started to integrate the tool in the openlane toolchain,
+  a new release of openlane was published.  Depressing moment.  They
+  were faster than me!  But the tool was simply integrated, without the
+  refactoring work.  I restarted to refactor and submitted several PR.
+  The submission went very well, which pushed me to continue.
+
+  The conclusion on wires is simple: almost no impact on timing.  Except on
+  my personnal timing!
+
+September
+---------
+
+At the end of September, there was the Fossi dial-up event about OSU cells.
+I initially thought that would be the least interesting talk, because
+I am not an analog designer.  But the talk was very accessible, very
+understandable and maybe the most interesting one.  Because I didn't know
+a lot about standard cells.
+
+To sum up, the OSU team has designed a standard cells library for the
+skywater 130 process.  And that's almost all.  But the library is very
+interesting.  It is small, so you aren't lost by the huge number of cells.
+The cell library of the skywater foundary is much larger and it is not
+always easy to understand the purpose of each cell.  Also the OSU library
+has a pdf file that quickly document each cell.
+
+During the talk, they explained the OSU library must be faster, as it was
+designed to be.  However, it is not possible to use it with openlane, there is
+no integration.
+
+I started to integrate the OSU library.  Most of the work consists in
+adjusting the scripts of the open_pdk project to have a standard place of
+the library files so that openlane can found them easily.  That's not very
+complex.
+
+Then I wanted to use the OSU library in a design.  After fixing some simple
+issues, I quickly got weird error message from tools or even crashes.
 
 [ Clocking ]
 
@@ -115,6 +161,10 @@ frequency.
 [ Next iteration: better precision and accuracy, bursts, best techno, best layout ]
 
 [ Test vectors ]
+
+[ bug magic: cell with FN orient ]
+
+[ crisis time...]
 
 OSU library
 -----------
@@ -146,7 +196,20 @@ the tool to do DRC and write the final GDS.  My idea was simple:
 
 * Or better, write a tcl script for that.
 
-As I want to place the macros near the pins, I have to select the pins.  The caravel design has 38 gpios (mprj_io[37:0]).  The pin mprj[11:0] are multiplexed with JTAG, UART, SPI, FLASH or IRQ.  So I don't plan to use them.  I still can use 26 gpios.  For each gpio, the user design has 3 pins: io_in (for the input), io_out (for the output) and io_oeb (to enable the output).
+As I want to place the macros near the pins, I have to select the
+pins.  The caravel design has 38 gpios (mprj_io[37:0]).  The pin
+mprj[11:0] are multiplexed with JTAG, UART, SPI, FLASH or IRQ.  So I
+don't plan to use them.  I still can use 26 gpios.  For each gpio, the
+user design has 3 pins: io_in (for the input), io_out (for the output)
+and io_oeb (to enable the output).
+
+This was a nice idea on the paper but it doesn't work well.  In magic, you
+cannot move cells directly with the mouse, only with keys.  Or I didn't find
+how.  But there is no default key to move the cells, you need to enter
+a command.  Due to lack of time, I didn't investigate further.  I simply
+look at the DEF file, look at the pin place and use that number in the macro
+placement file.  To be investigated later.  Also might worth to check if
+klayout might help.
 
 26 gpios:
 37, 36: (far) internals FD + TDC
