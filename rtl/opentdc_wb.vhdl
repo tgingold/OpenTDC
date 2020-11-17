@@ -171,7 +171,7 @@ begin
     end if;
   end process;
 
-  --  Dev 1
+  --  Dev 1: tdc (without a macro)
   b_dev1: block
     constant ndly : natural := 200;
 
@@ -201,7 +201,7 @@ begin
         bout => devs_out(1));
   end block;
 
-  --  Dev 2
+  --  Dev 2: tdc (without a macro, with a ref).
   b_dev2: block
     constant ndly : natural := 200;
 
