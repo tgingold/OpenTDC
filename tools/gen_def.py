@@ -227,20 +227,20 @@ class GenDef:
         pin.offset = offset
 
     class Component:
-        def __init__(self, name, klass):
+        def __init__(self, name, model):
             self.name = name
-            self.klass = klass
+            self.model = model
             self.flip = False
             self.conns = []
 
-    def add_component(self, name, klass):
-        comp = GenDef.Component(name, klass)
+    def add_component(self, name, model):
+        comp = GenDef.Component(name, model)
         self.components.append(comp)
         return comp
 
     def place_component(self, comp, row):
         self.rows[row]['comps'].append(comp)
-        self.rows[row]['width'] += comp.klass['width']
+        self.rows[row]['width'] += comp.model['width']
 
     def connect(self, net, inst, port):
         net.conn.append((inst, port))
@@ -321,12 +321,12 @@ class GenDef:
             y = r['y']
             orient = r['orientation']
             for c in r['comps']:
-                print('  - {} {}'.format(c.name, c.klass['name']),
+                print('  - {} {}'.format(c.name, c.model['name']),
                       end='', file=f)
                 corient = 'F' + orient if c.flip else orient
                 print(' + FIXED ( {} {} ) {}'.format(
                     x, y, corient), end='', file=f)
-                x += c.klass['width']
+                x += c.model['width']
                 print(' ;', file=f)
         print('END COMPONENTS', file=f)
 
@@ -370,7 +370,7 @@ class GenDef:
                 else:
                     # This is an instance
                     print(' ( {} {} )'.format(
-                        inst.name, inst.klass[port]), end='', file=f)
+                        inst.name, inst.model[port]), end='', file=f)
             print(' + USE SIGNAL ;', file=f)
         print('END NETS', file=f)
 
@@ -456,11 +456,11 @@ class GenDef:
             if not c.conns:
                 # Discard components without connections (fill, taps...)
                 continue
-            f.write("  {} {}(".format(c.klass['name'], c.name))
+            f.write("  {} {}(".format(c.model['name'], c.name))
             for i, conn in enumerate(c.conns):
                 if i != 0:
                     f.write(", ")
-                f.write(".{}({})".format(c.klass[conn['port']],
+                f.write(".{}({})".format(c.model[conn['port']],
                                          conn['net'].name))
             f.write(");\n")
         f.write("endmodule\n")
