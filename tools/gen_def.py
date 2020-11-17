@@ -267,10 +267,15 @@ class GenDef:
                     self._add_fill(i, f)
             assert r['width'] == wd
 
-    def add_fillers(self, row, num):
-        comp = self.fillers[0]
-        for i in range(num):
-            self._add_fill(row, comp)
+    def row_add_fill(self, row, wd):
+        wd *= self.row_width
+        for f in self.fillers:
+            if wd == 0:
+                break
+            fw = f['width']
+            while wd >= fw:
+                self._add_fill(row, f)
+                wd -= fw
 
     def build_tap_decap(self, row, idx):
         # tap

@@ -168,9 +168,9 @@ class tap_line(GenDef):
                 if tap['delay'] is not None:
                     self.place_component(tap['delay'], crow[2])
                 opads.extend(tap['opad'])
-                self.add_fillers(crow[0], self.nfill)
-                self.add_fillers(crow[1], self.nfill)
-                self.add_fillers(crow[2], self.nfill)
+                self.row_add_fill(crow[0], self.nfill)
+                self.row_add_fill(crow[1], self.nfill)
+                self.row_add_fill(crow[2], self.nfill)
             # Opads
             x_pin_step = self.cells['dff']['width'] // len(opads)
             for k, p in enumerate(opads):
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     parser.add_argument('--delay', '-d', default='cdly15_1',
                         help='select delay gate')
     parser.add_argument('--fill', '-f', default=0, type=int,
-                        help='number of extra fillers')
+                        help='extra empty columns')
     args = parser.parse_args()
 
     inst = tap_line(args.name, args.length, args.ref, args.tech, args.delay,
