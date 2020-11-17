@@ -323,7 +323,13 @@ class GenDef:
             for c in r['comps']:
                 print('  - {} {}'.format(c.name, c.model['name']),
                       end='', file=f)
-                corient = 'F' + orient if c.flip else orient
+                if c.flip:
+                    if orient[0] == 'F':
+                        corient = orient[1:]
+                    else:
+                        corient = 'F' + orient
+                else:
+                    corient = orient
                 print(' + FIXED ( {} {} ) {}'.format(
                     x, y, corient), end='', file=f)
                 x += c.model['width']
