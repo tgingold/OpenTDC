@@ -369,7 +369,7 @@ class GenDef:
                 print(' + PLACED ( {} {} ) N '.format(
                     x, self.vmargin + p.offset), end='', file=f)
                 print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
-                    -2000, -pinwd, pinwd, 300), end='', file=f)
+                    -pinwd, -300, pinwd, 300), end='', file=f)
             print(' ;', file=f)
         print('END PINS', file=f)
 
