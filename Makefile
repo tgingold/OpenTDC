@@ -21,6 +21,9 @@ VHDL_SRCS=\
 build:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -design opentdc_wb -tag user -overwrite
 
+ibuild:
+	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
+
 src/opentdc.v: $(VHDL_SRCS)
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; chtype -map sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog src/opentdc.v; rename sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog -blackboxes src/bb.v"
 
