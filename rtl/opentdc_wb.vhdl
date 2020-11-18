@@ -35,6 +35,9 @@ entity opentdc_wb is
     --  Fd output signals
     out0_o : out std_logic;
 
+    --  Outputs enable
+    oen_o : out std_logic_vector(1 downto 0);
+
     rst_time_n_i : std_logic);
 end opentdc_wb;
 
@@ -48,6 +51,10 @@ architecture behav of opentdc_wb is
 
   signal start : std_logic;
 
+  signal oen : std_logic_vector(1 downto 0);
+
+  signal rst_time_en : std_logic;
+
   type dev_in_array is array(natural range <>) of tdc_bus_in;
   type dev_out_array is array(natural range <>) of tdc_bus_out;
 
@@ -57,6 +64,7 @@ architecture behav of opentdc_wb is
 begin
   rst_n <= not wb_rst_i;
 
+  --  Wishbone out process
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
@@ -98,6 +106,7 @@ begin
     end if;
   end process;
 
+  --  Wishbone inputs process
   gen_devs: for i in NDEVS - 1 downto 0 generate
     process (wb_clk_i)
     begin
@@ -122,8 +131,8 @@ begin
       end if;
     end process;
   end generate;
-    
-  --  Pseudo dev0 (ro)
+
+  --  Pseudo dev0
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
@@ -133,13 +142,24 @@ begin
 
       if rst_n = '0' then
         devs_out(0).trig <= '0';
+        oen <= (others => '0');
+        rst_time_en <= '0';
       else
-        --  Write (nop)
+        --  Write
         if devs_in(0).we = '1' then
+          case devs_in(0).adr is
+            when "011" =>
+              --  Outputs enable
+              oen <= devs_in(0).dati(oen'range);
+            when "100" =>
+              rst_time_en <= devs_in(0).dati(0);
+            when others =>
+              null;
+          end case;
           devs_out(0).wack <= '1';
         end if;
 
-        --  Read (nop)
+        --  Read
         if devs_in(0).re = '1' then
           case devs_in(0).adr is
             when "000" =>
@@ -150,6 +170,12 @@ begin
               --  Global status
               devs_out(0).dato (1) <= devs_out(1).trig;
               devs_out(0).dato (2) <= devs_out(2).trig;
+            when "011" =>
+              --  Outputs enable
+              devs_out(0).dato(oen'range) <= oen;
+            when "100" =>
+              --  Config
+              devs_out(0).dato(0) <= rst_time_en;
             when others =>
               null;
           end case;
@@ -163,7 +189,7 @@ begin
   process (wb_clk_i) is
   begin
     if rising_edge(wb_clk_i) then
-      if rst_time_n_i = '0' or rst_n = '0' then
+      if (rst_time_en = '1' and rst_time_n_i = '0') or rst_n = '0' then
         cur_cycles <= (others => '0');
       else
         cur_cycles <= std_logic_vector(unsigned(cur_cycles) + 1);
@@ -243,6 +269,7 @@ begin
         bout => devs_out(2));
   end block;
 
+  --  dev 3: tdc with a macro
   b_dev3: block
     constant length : natural := 200;
     signal taps : std_logic_vector(length - 1 downto 0);
@@ -265,6 +292,7 @@ begin
         bout => devs_out(3));
   end block;
 
+  -- dev 4: TDC with ref
   b_dev4: block
     constant length : natural := 200;
     signal taps, rtaps : std_logic_vector(length - 1 downto 0);
@@ -280,7 +308,7 @@ begin
 
     inst_core: entity work.opentdc_core2
       generic map (
-        g_with_ref => false,
+        g_with_ref => true,
         length => length)
       port map (
         clk_i => wb_clk_i,
