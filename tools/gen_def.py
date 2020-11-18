@@ -239,6 +239,7 @@ class GenDef:
         return comp
 
     def place_component(self, comp, row):
+        assert row >= 0
         self.rows[row]['comps'].append(comp)
         self.rows[row]['width'] += comp.model['width']
 
@@ -350,23 +351,25 @@ class GenDef:
                 {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
             if p.place in "NS":
+                pinwd = 140
                 if p.place == 'S':
-                    y = 2000
+                    y = pinwd
                 else:
-                    y = self.y_size - 2000
+                    y = self.y_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
                     self.hmargin + p.offset, y), end='', file=f)
                 print(' + LAYER met2 ( {} {} ) ( {} {} )'.format(
-                    -140, -2000, 140, 2000), end='', file=f)
+                    -140, -pinwd, 140, pinwd), end='', file=f)
             elif p.place in "EW":
+                pinwd = 300
                 if p.place == 'W':
-                    x = 2000
+                    x = pinwd
                 else:
-                    x = self.x_size - 2000
+                    x = self.x_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
                     x, self.vmargin + p.offset), end='', file=f)
                 print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
-                    -2000, -300, 2000, 300), end='', file=f)
+                    -2000, -pinwd, pinwd, 300), end='', file=f)
             print(' ;', file=f)
         print('END PINS', file=f)
 

@@ -149,7 +149,7 @@ class tap_line(GenDef):
         # Place inputs
         self.place_pin(self.netlist['inp'], 'W', 2 * self.row_height)
         if self.ref:
-            self.place_pin(self.netlist['ref'], 'W', 3 * self.row_height)
+            self.place_pin(self.netlist['ref'], 'W', 4 * self.row_height)
         # Place cells and pins
         for i in range(len(arr[0])):
             x_pin = self.rows[0]['width']  # x offset of the next cell

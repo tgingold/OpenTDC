@@ -21,8 +21,9 @@ from gen_def import GenDef
 verbose = False
 
 class DelayLine(GenDef):
-    def __init__(self, name, nstages):
-        super().__init__(name)
+    def __init__(self, name, nstages, tech, delay):
+        super().__init__(tech, name)
+        self.cells['delay'] = self.cells[delay]
         self.nstages = nstages
 
     def build_netlist(self):
@@ -98,7 +99,7 @@ class DelayLine(GenDef):
         for i in range(self.nrow):
             self.build_tap_decap(i, 0)
         # Third delays
-        row = nrows - 1
+        row = nrows
         for i in range(self.nstages):
             stage = stages[i]
             dlys = stage['delays']
@@ -115,13 +116,17 @@ class DelayLine(GenDef):
             # Place delay cells
             row -= rows[i]
             if verbose:
-                print("stage {}: {} rows, n={}".format(i, rows[i], n))
+                print("stage {}: {} rows, n={}, row={}".format(
+                    i, rows[i], n, row))
                 for k in range(rows[i]):
+                    print(" row {}: ".format(row + k), end='')
                     print([c.name for c in l[k]])
             for j in range(n):
                 for k in range(rows[i]):
-                    self.place_component(l[k].pop(0), row + k)
+                    c = l[k].pop(0)
+                    self.place_component(c, row + k)
                     self.build_tap_decap(row + k, j + 1)
+        assert row == 0
         self.pad_rows()
         self.compute_size()
 
@@ -132,9 +137,16 @@ if __name__ == '__main__':
                         help='log2 of tap number')
     parser.add_argument('--name', '-n', type=str, default='delayline',
                         help='name of the design')
+    parser.add_argument('--tech', '-t', type=str, default="fd_hd",
+                        help='technology')
+    parser.add_argument('--delay', '-d', default='cdly15_1',
+                        help='select delay gate')
     args = parser.parse_args()
 
-    inst = DelayLine(args.name, args.length)
+    inst = DelayLine(args.name, args.length, args.tech, args.delay)
     inst.build_netlist()
     inst.build_square()
     inst.disp_def(args.name + '.def')
+    inst.write_config(args.name + '.tcl')
+    inst.write_verilog(open(args.name + '.v', 'w'))
+    inst.write_vhdl_component(open(args.name + '_comp.vhdl', 'w'))
