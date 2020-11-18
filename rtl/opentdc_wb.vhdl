@@ -69,6 +69,7 @@ begin
 
   --  Wishbone out process
   process (wb_clk_i)
+    variable n : natural range 0 to 15;
   begin
     if rising_edge(wb_clk_i) then
       wbs_ack_o <= '0';
@@ -79,31 +80,9 @@ begin
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
           -- 8 words per sub-device (so 3+2 bits)
-          case wbs_adr_i (8 downto 5) is
-            when x"0" =>
-              wbs_ack_o <= devs_out(0).wack or devs_out(0).rack;
-              wbs_dat_o <= devs_out(0).dato;
-            when x"1" =>
-              wbs_ack_o <= devs_out(1).wack or devs_out(1).rack;
-              wbs_dat_o <= devs_out(1).dato;
-            when x"2" =>
-              wbs_ack_o <= devs_out(2).wack or devs_out(2).rack;
-              wbs_dat_o <= devs_out(2).dato;
-            when x"3" =>
-              wbs_ack_o <= devs_out(3).wack or devs_out(3).rack;
-              wbs_dat_o <= devs_out(3).dato;
-            when x"4" =>
-              wbs_ack_o <= devs_out(4).wack or devs_out(4).rack;
-              wbs_dat_o <= devs_out(4).dato;
-            when x"5" =>
-              wbs_ack_o <= devs_out(5).wack or devs_out(5).rack;
-              wbs_dat_o <= devs_out(5).dato;
-            when x"6" =>
-              wbs_ack_o <= devs_out(6).wack or devs_out(6).rack;
-              wbs_dat_o <= devs_out(6).dato;
-            when others =>
-              null;
-          end case;
+          n := to_integer(unsigned(wbs_adr_i (8 downto 5)));
+          wbs_ack_o <= devs_out(n).wack or devs_out(n).rack;
+          wbs_dat_o <= devs_out(n).dato;
           start <= '0';
         else
           start <= '1';

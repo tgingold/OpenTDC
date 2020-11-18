@@ -79,9 +79,9 @@ module user_project_wrapper (
        // IO Pads
        .inp1_i(io_in[37]),
        .inp2_i(io_in[36]),
-       .inp3_i(io_in[35]),
-       .inp4_i(io_in[34]),
-       .inp5_i(io_in[33]),
+       .inp3_i(io_in[34]),
+       .inp4_i(io_in[33]),
+       .inp5_i(io_in[32]),
 
        .out0_o(io_out[13]),
 
