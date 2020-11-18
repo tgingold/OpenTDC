@@ -56,10 +56,9 @@ module user_project_wrapper (
     /* User project is instantiated  here   */
     /*--------------------------------------*/
 
-   wire     inp0_i, inp1_i, inp2_i;
-   wire     out0_o;
+   wire [1:0] oen;
 
-    opentdc_wb mprj
+   opentdc_wb mprj
       (
        // clock and reset
 
@@ -78,20 +77,23 @@ module user_project_wrapper (
        .wbs_dat_o(wbs_dat_o),
 
        // IO Pads
-       .inp1_i(io_in[36]),
-       .inp2_i(io_in[37]),
+       .inp1_i(io_in[37]),
+       .inp2_i(io_in[36]),
        .inp3_i(io_in[35]),
        .inp4_i(io_in[34]),
+       .inp5_i(io_in[33]),
 
        .out0_o(io_out[13]),
-       .rst_time_n_i(1'b0)
+
+       .oen_o(oen),
+       .rst_time_n_i(io_in[24])
     );
 
    assign io_out[0:12] = 0;
    assign io_out[14:37] = 0;
 
    assign io_oeb[0:12] = 0;
-   assign io_oeb[13] = 1'b1;
+   assign io_oeb[13] = oen[0];
    assign io_oeb[14:37] = 0;
 
 endmodule

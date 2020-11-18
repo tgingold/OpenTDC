@@ -31,6 +31,7 @@ entity opentdc_wb is
     inp2_i : std_logic;
     inp3_i : std_logic;
     inp4_i : std_logic;
+    inp5_i : std_logic;
 
     --  Fd output signals
     out0_o : out std_logic;
@@ -58,11 +59,13 @@ architecture behav of opentdc_wb is
   type dev_in_array is array(natural range <>) of tdc_bus_in;
   type dev_out_array is array(natural range <>) of tdc_bus_out;
 
-  constant NDEVS : natural := 6;
+  constant NDEVS : natural := 7;
   signal devs_in: dev_in_array (NDEVS - 1 downto 0);
   signal devs_out: dev_out_array (NDEVS - 1 downto 0);
 begin
   rst_n <= not wb_rst_i;
+
+  oen_o <= oen;
 
   --  Wishbone out process
   process (wb_clk_i)
@@ -95,6 +98,9 @@ begin
             when x"5" =>
               wbs_ack_o <= devs_out(5).wack or devs_out(5).rack;
               wbs_dat_o <= devs_out(5).dato;
+            when x"6" =>
+              wbs_ack_o <= devs_out(6).wack or devs_out(6).rack;
+              wbs_dat_o <= devs_out(6).dato;
             when others =>
               null;
           end case;
@@ -320,8 +326,36 @@ begin
         bout => devs_out(4));
   end block;
 
-  --  dev5: FD
+  -- dev 5: TDC with ref
   b_dev5: block
+    constant length : natural := 200;
+    signal taps, rtaps : std_logic_vector(length - 1 downto 0);
+    signal tap_clks : std_logic_vector(length / 2 - 1 downto 0);
+    signal rin : std_logic;
+  begin
+    tap_clks <= (others => wb_clk_i);
+
+    inst_tap_line: tapline_200_x2_s1_hd_ref port map
+      (inp_i => inp5_i, ref_i => rin,
+       clk_i => tap_clks,
+       tap_o => taps, rtap_o => rtaps);
+
+    inst_core: entity work.opentdc_core2
+      generic map (
+        g_with_ref => true,
+        length => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        rin_o => rin,
+        itaps => taps,
+        rtaps => rtaps,
+        bin => devs_in(5),
+        bout => devs_out(5));
+  end block;
+
+  --  dev6: FD
+  b_dev6: block
     constant length : natural := 8;
     signal delay : std_logic_vector(length - 1 downto 0);
     signal pulse : std_logic;
@@ -341,7 +375,7 @@ begin
         rst_n_i => rst_n,
         idelay_o => delay,
         pulse_o => pulse,
-        bin => devs_in(5),
-        bout => devs_out(5));
+        bin => devs_in(6),
+        bout => devs_out(6));
   end block;
 end behav;
