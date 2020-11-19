@@ -11,6 +11,8 @@ else
     files=$*
 fi
 
+unset TERM
+
 for f in $files; do
     export DESIGN_NAME=$(basename $f .def)
     echo $DESIGN_NAME

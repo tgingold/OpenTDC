@@ -33,6 +33,11 @@ set ::env(GLB_RT_TILES) 8
 
 #set ::env(GLB_RT_ADJUSTMENT) 0.1
 
+# Add padding as there are not always pins on all sides
+set ::env(MAGIC_PAD) 1
+set ::env(PLACE_SITE_WIDTH) 4
+set ::env(PLACE_SITE_HEIGHT) 4
+
 set filename $script_dir/../$::env(DESIGN_NAME).tcl
 puts "sourcing $filename"
 source $filename
