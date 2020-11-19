@@ -174,6 +174,8 @@ class GenDef:
         self.rows = []
         self.nets = []
         self.pins = []
+        self.ppow = None  # power name (for hdl output)
+        self.pgnd = None
         self.components = []
         self.build_fillers()
 
@@ -292,6 +294,10 @@ class GenDef:
         self.rowl = max(r['width'] for r in self.rows) // self.row_width
         self.x_size = self.rowl * self.row_width + 2 * self.hmargin
         self.y_size = self.nrow * self.row_height + 2 * self.vmargin
+
+    def set_power_pin(self, ppow, pgnd):
+        self.ppow = ppow
+        self.pgnd = pgnd
 
     def disp_def_hdr(self, f):
         print("VERSION 5.8 ;", file=f)
@@ -499,5 +505,11 @@ class GenDef:
                 f.write(" std_logic_vector({} downto 0)".format(len(k) - 1))
             else:
                 f.write(" std_logic")
+        if self.ppow:
+                f.write(";\n")
+                f.write("      \\{}\\: std_logic".format(self.ppow))
+        if self.pgnd:
+                f.write(";\n")
+                f.write("      \\{}\\: std_logic".format(self.pgnd))
         f.write(");\n")
         f.write("  end component;\n")

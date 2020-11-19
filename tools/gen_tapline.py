@@ -208,6 +208,10 @@ if __name__ == '__main__':
                         help='select delay gate')
     parser.add_argument('--fill', '-f', default=0, type=int,
                         help='extra empty columns')
+    parser.add_argument('--ground', default=None, type=str,
+                        help='ground pin name')
+    parser.add_argument('--power', default=None, type=str,
+                        help='power pin name')
     args = parser.parse_args()
 
     inst = tap_line(args.name, args.length, args.ref, args.tech, args.delay,
@@ -217,6 +221,7 @@ if __name__ == '__main__':
     inst.build_clock_netlist(args.clock)
     inst.place_horizontal_x()
     inst.disp_def(args.name + '.def')
+    inst.set_power_pin(args.power, args.ground)
     inst.write_config(args.name + '.tcl')
     inst.write_verilog(open(args.name + '.v', 'w'))
     inst.write_vhdl_component(open(args.name + '_comp.vhdl', 'w'))
