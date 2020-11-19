@@ -8,6 +8,7 @@ use ieee.std_logic_1164.all;
 
 entity opentdc_tapline is
   generic (
+    cell : natural := 0;
     length : natural := 100);
   port (
     --  There is one clock input per dff, so that it can be balanced.
@@ -26,6 +27,7 @@ begin
 
   gen_delay: for i in 0 to length - 2 generate
     inst: entity work.opentdc_delay
+      generic map (cell => cell)
       port map (tap0 (i), tap0 (i + 1));
   end generate;
 

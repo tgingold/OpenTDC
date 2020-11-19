@@ -8,7 +8,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.opentdc_pkg.all;
-use work.opentdc_comps.all;
 
 entity opentdc_wb is
   port (
@@ -27,14 +26,10 @@ entity opentdc_wb is
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
     --  Tdc input signals
-    inp1_i : std_logic;
-    inp2_i : std_logic;
-    inp3_i : std_logic;
-    inp4_i : std_logic;
-    inp5_i : std_logic;
+    inp_i : std_logic_vector(2 downto 0);
 
     --  Fd output signals
-    out0_o : out std_logic;
+    out_o : out std_logic_vector(1 downto 0);
 
     --  Outputs enable
     oen_o : out std_logic_vector(1 downto 0);
@@ -44,8 +39,8 @@ end opentdc_wb;
 
 architecture behav of opentdc_wb is
   --  Config (not generics to keep the same name).
-  constant NTDC : natural range 2 to 5 := 3;
-  constant NFD : natural range 1 to 1 := 1;
+  constant NTDC : natural := inp_i'length;
+  constant NFD : natural := out_o'length;
   
   --  Regs for the bus interface.
   signal b_idle : std_logic;
@@ -56,16 +51,18 @@ architecture behav of opentdc_wb is
 
   signal start : std_logic;
 
-  signal oen : std_logic_vector(1 downto 0);
+  signal oen : std_logic_vector(oen_o'range);
 
   signal rst_time_en : std_logic;
 
   type dev_in_array is array(natural range <>) of tdc_bus_in;
   type dev_out_array is array(natural range <>) of tdc_bus_out;
 
-  constant NDEVS : natural := NTDC + NFD;
-  signal devs_in: dev_in_array (NDEVS downto 0);
-  signal devs_out: dev_out_array (NDEVS downto 0);
+  constant FTDC : natural := 1;
+  constant FFD : natural := NTDC + 1;
+  
+  signal devs_in: dev_in_array (NTDC + NFD downto 0);
+  signal devs_out: dev_out_array (NTDC + NFD downto 0);
 begin
   rst_n <= not wb_rst_i;
 
@@ -96,7 +93,7 @@ begin
   end process;
 
   --  Wishbone inputs process
-  gen_devs: for i in NDEVS - 1 downto 0 generate
+  gen_devs: for i in devs_in'range generate
     process (wb_clk_i)
     begin
       if rising_edge(wb_clk_i) then
@@ -114,6 +111,12 @@ begin
               devs_in (i).sel <= wbs_sel_i;
               devs_in (i).we <= start and wbs_we_i;
               devs_in (i).re <= start and not wbs_we_i;
+            else
+              devs_in (i).adr <= (others => '0');
+              devs_in (i).dati <= (others => '0');
+              devs_in (i).sel <= (others => '0');
+              devs_in (i).we <= '0';
+              devs_in (i).re <= '0';
             end if;
           end if;
         end if;
@@ -186,8 +189,8 @@ begin
     end if;
   end process;
 
-  --  Dev 1: tdc (without a macro)
-  b_tdc1: block
+  --  Dev 0: tdc (without a macro)
+  b_tdc0: block
     constant ndly : natural := 200;
 
     signal taps : std_logic_vector (ndly - 1 downto 0);
@@ -197,10 +200,11 @@ begin
 
     inst_itaps: entity work.opentdc_tapline
       generic map (
+        cell => 0,
         length => ndly)
       port map (
         clks_i => clks,
-        inp_i => inp1_i,
+        inp_i => inp_i(0),
         tap_o => taps);
 
     inst_core: entity work.opentdc_core2
@@ -212,12 +216,11 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => (others => '0'),
-        bin => devs_in(1),
-        bout => devs_out(1));
+        bin => devs_in(FTDC + 0),
+        bout => devs_out(FTDC + 0));
   end block;
 
-  --  Dev 2: tdc (without a macro, with a ref).
-  b_tdc2: block
+  g_tdcs: for cell in inp_i'left downto 1 generate
     constant ndly : natural := 200;
 
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
@@ -229,14 +232,16 @@ begin
 
     inst_itaps: entity work.opentdc_tapline
       generic map (
+        cell => cell,
         length => ndly)
       port map (
         clks_i => clks,
-        inp_i => inp2_i,
+        inp_i => inp_i(cell),
         tap_o => taps);
 
     inst_rtaps: entity work.opentdc_tapline
       generic map (
+        cell => cell,
         length => ndly)
       port map (
         clks_i => rclks,
@@ -254,90 +259,11 @@ begin
         itaps => taps,
         rtaps => rtaps,
         rin_o => rin,
-        bin => devs_in(2),
-        bout => devs_out(2));
-  end block;
-
-  --  dev 3: tdc with a macro
-  b_tdc3: if NTDC >= 3 generate
-    constant length : natural := 200;
-    signal taps : std_logic_vector(length - 1 downto 0);
-    signal tap_clks : std_logic_vector(2*length - 1 downto 0);
-  begin
-    tap_clks <= (others => wb_clk_i);
-    inst_tap_line: tapline_200_x2_hd port map
-      (inp_i => inp3_i, clk_i => tap_clks, tap_o => taps);
-
-    inst_core: entity work.opentdc_core2
-      generic map (
-        g_with_ref => false,
-        length => length)
-      port map (
-        clk_i => wb_clk_i,
-        rst_n_i => rst_n,
-        itaps => taps,
-        rtaps => (others => '0'),
-        bin => devs_in(3),
-        bout => devs_out(3));
+        bin => devs_in(FTDC + cell),
+        bout => devs_out(FTDC + cell));
   end generate;
 
-  -- dev 4: TDC with ref
-  b_tdc4: if NTDC >= 4 generate
-    constant length : natural := 200;
-    signal taps, rtaps : std_logic_vector(length - 1 downto 0);
-    signal tap_clks, tap_rclks : std_logic_vector(2*length - 1 downto 0);
-    signal rin : std_logic;
-  begin
-    tap_clks <= (others => wb_clk_i);
-    tap_rclks <= (others => wb_clk_i);
-    inst_tap_line: tapline_200_x2_hd_ref port map
-      (inp_i => inp4_i, ref_i => rin,
-       clk_i => tap_clks, rclk_i => tap_rclks,
-       tap_o => taps, rtap_o => rtaps);
-
-    inst_core: entity work.opentdc_core2
-      generic map (
-        g_with_ref => true,
-        length => length)
-      port map (
-        clk_i => wb_clk_i,
-        rst_n_i => rst_n,
-        rin_o => rin,
-        itaps => taps,
-        rtaps => rtaps,
-        bin => devs_in(4),
-        bout => devs_out(4));
-  end generate;
-
-  -- dev 5: TDC with ref
-  b_tdc5: if NTDC >= 5 generate
-    constant length : natural := 200;
-    signal taps, rtaps : std_logic_vector(length - 1 downto 0);
-    signal tap_clks : std_logic_vector(length / 2 - 1 downto 0);
-    signal rin : std_logic;
-  begin
-    tap_clks <= (others => wb_clk_i);
-
-    inst_tap_line: tapline_200_x2_s1_hd_ref port map
-      (inp_i => inp5_i, ref_i => rin,
-       clk_i => tap_clks,
-       tap_o => taps, rtap_o => rtaps);
-
-    inst_core: entity work.opentdc_core2
-      generic map (
-        g_with_ref => true,
-        length => length)
-      port map (
-        clk_i => wb_clk_i,
-        rst_n_i => rst_n,
-        rin_o => rin,
-        itaps => taps,
-        rtaps => rtaps,
-        bin => devs_in(5),
-        bout => devs_out(5));
-  end generate;
-
-  --  dev6: FD
+  --  fd0: inline delay
   b_fd1: block
     constant length : natural := 8;
     signal delay : std_logic_vector(length - 1 downto 0);
@@ -345,9 +271,10 @@ begin
   begin
     inst_delay_line: entity work.openfd_delayline
       generic map (
+        cell => 1,
         plen => length)
       port map (
-        inp_i => pulse, out_o => out0_o, delay_i => delay);
+        inp_i => pulse, out_o => out_o(0), delay_i => delay);
 
     inst_core: entity work.openfd_core2
       generic map (
@@ -358,7 +285,36 @@ begin
         rst_n_i => rst_n,
         idelay_o => delay,
         pulse_o => pulse,
-        bin => devs_in(NTDC + 1),
-        bout => devs_out(NTDC + 1));
+        bin => devs_in(FFD + 0),
+        bout => devs_out(FFD + 0));
   end block;
+
+  --  fd1: macro
+  b_fd2: if NFD > 1 generate
+    constant length : natural := 8;
+    signal delay : std_logic_vector(length - 1 downto 0);
+    signal pulse : std_logic;
+  begin
+    inst_delay_line: entity work.openfd_delayline
+      generic map (
+        cell => 2,
+        plen => length)
+      port map (
+        inp_i => pulse, out_o => out_o(1), delay_i => delay);
+
+    inst_core: entity work.openfd_core2
+      generic map (
+        g_with_ref => false,
+        plen => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        idelay_o => delay,
+        pulse_o => pulse,
+        bin => devs_in(FFD + 1),
+        bout => devs_out(FFD + 1));
+  end generate;
+  b_no_fd2: if NFD <= 1 generate
+    out_o(FFD + 1) <= '0';
+  end generate;
 end behav;

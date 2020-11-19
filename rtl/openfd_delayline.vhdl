@@ -7,6 +7,7 @@ use ieee.std_logic_1164.all;
 
 entity openfd_delayline is
   generic (
+    cell : natural := 0;
     --  log2(nbr_taps).  This is also the number of significant bits of
     --  fine_i
     plen : natural := 7);
@@ -30,6 +31,8 @@ begin
     g_subtaps: for j in 2**i downto 1 generate
     begin
       inst_tap: entity work.opentdc_delay
+        generic map (
+          cell => cell)
         port map (
           inp_i => sub_taps (j),
           out_o => sub_taps (j - 1));

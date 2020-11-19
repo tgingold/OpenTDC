@@ -10,7 +10,41 @@ architecture sky130 of opentdc_delay is
     port (X : out std_logic;
           A : in std_logic);
   end component;
+
+  component \sky130_fd_sc_hd__clkbuf_1\ is
+    port (\X\ : out std_logic;
+          \A\ : in std_logic);    
+  end component;
+
+  component \sky130_fd_sc_hd__clkbuf_2\ is
+    port (\X\ : out std_logic;
+          \A\ : in std_logic);    
+  end component;
+
+  component \sky130_fd_sc_hd__clkbuf_4\ is
+    port (\X\ : out std_logic;
+          \A\ : in std_logic);    
+  end component;
+
 begin
-  dly: sky130_delay
-    port map (out_o, inp_i);
+  g_any: if cell = 0 generate
+    dly: sky130_delay
+      port map (out_o, inp_i);
+  end generate;
+
+  g_clkbuf_1: if cell = 1 generate
+    dly: \sky130_fd_sc_hd__clkbuf_1\
+      port map (out_o, inp_i);
+  end generate;
+
+  g_clkbuf_2: if cell = 2 generate
+    dly: \sky130_fd_sc_hd__clkbuf_2\
+      port map (out_o, inp_i);
+  end generate;
+
+  g_clkbuf_4: if cell = 3 generate
+    dly: \sky130_fd_sc_hd__clkbuf_4\
+      port map (out_o, inp_i);
+  end generate;
+
 end sky130;
