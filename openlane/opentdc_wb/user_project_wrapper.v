@@ -56,9 +56,9 @@ module user_project_wrapper (
     /* User project is instantiated  here   */
     /*--------------------------------------*/
 
-   wire [8:0] inp;
-   wire [8:0] oen;
-   wire [8:0] out;
+   wire [11:0] inp;
+   wire [11:0] oen;
+   wire [11:0] out;
 
    opentdc_wb mprj
       (
@@ -86,14 +86,14 @@ module user_project_wrapper (
        .rst_time_n_i(io_in[37])
     );
 
-   assign inp[8:0] = io_in[36:28];
+   assign inp[11:0] = io_in[36:25];
 
    assign io_out[12:0] = 0;
-   assign io_out[21:13] = out[8:0];
-   assign io_out[37:22] = 0;
+   assign io_out[24:13] = out[11:0];
+   assign io_out[37:25] = 0;
 
    assign io_oeb[12:0] = 0;
-   assign io_oeb[21:13] = oen[8:0];
-   assign io_oeb[37:22] = 0;
+   assign io_oeb[24:13] = oen[11:0];
+   assign io_oeb[37:25] = 0;
 
 endmodule

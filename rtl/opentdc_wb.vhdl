@@ -26,13 +26,13 @@ entity opentdc_wb is
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
     --  Tdc input signals
-    inp_i : std_logic_vector(8 downto 0);
+    inp_i : std_logic_vector(11 downto 0);
 
     --  Fd output signals
-    out_o : out std_logic_vector(8 downto 0);
+    out_o : out std_logic_vector(11 downto 0);
 
     --  Outputs enable
-    oen_o : out std_logic_vector(8 downto 0);
+    oen_o : out std_logic_vector(11 downto 0);
 
     rst_time_n_i : std_logic);
 end opentdc_wb;
