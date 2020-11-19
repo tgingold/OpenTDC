@@ -26,13 +26,13 @@ entity opentdc_wb is
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
     --  Tdc input signals
-    inp_i : std_logic_vector(2 downto 0);
+    inp_i : std_logic_vector(8 downto 0);
 
     --  Fd output signals
-    out_o : out std_logic_vector(1 downto 0);
+    out_o : out std_logic_vector(8 downto 0);
 
     --  Outputs enable
-    oen_o : out std_logic_vector(1 downto 0);
+    oen_o : out std_logic_vector(8 downto 0);
 
     rst_time_n_i : std_logic);
 end opentdc_wb;
@@ -271,7 +271,7 @@ begin
   begin
     inst_delay_line: entity work.openfd_delayline
       generic map (
-        cell => 1,
+        cell => 0,
         plen => length)
       port map (
         inp_i => pulse, out_o => out_o(0), delay_i => delay);
@@ -289,18 +289,17 @@ begin
         bout => devs_out(FFD + 0));
   end block;
 
-  --  fd1: macro
-  b_fd2: if NFD > 1 generate
+  b_fd2: for cell in out_o'left downto 1 generate
     constant length : natural := 8;
     signal delay : std_logic_vector(length - 1 downto 0);
     signal pulse : std_logic;
   begin
     inst_delay_line: entity work.openfd_delayline
       generic map (
-        cell => 2,
+        cell => cell,
         plen => length)
       port map (
-        inp_i => pulse, out_o => out_o(1), delay_i => delay);
+        inp_i => pulse, out_o => out_o(cell), delay_i => delay);
 
     inst_core: entity work.openfd_core2
       generic map (
@@ -311,10 +310,7 @@ begin
         rst_n_i => rst_n,
         idelay_o => delay,
         pulse_o => pulse,
-        bin => devs_in(FFD + 1),
-        bout => devs_out(FFD + 1));
-  end generate;
-  b_no_fd2: if NFD <= 1 generate
-    out_o(FFD + 1) <= '0';
+        bin => devs_in(FFD + cell),
+        bout => devs_out(FFD + cell));
   end generate;
 end behav;
