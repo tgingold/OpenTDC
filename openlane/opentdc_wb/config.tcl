@@ -21,7 +21,7 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 2700 2700"
 set ::env(PL_TARGET_DENSITY) 0.3
 
-set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref" "tapline_200_x2_s1_hd_ref"]
+set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref"]
 set macros_lef ""
 set macros_gds ""
 foreach m $macros {

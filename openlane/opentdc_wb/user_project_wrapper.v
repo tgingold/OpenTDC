@@ -81,7 +81,6 @@ module user_project_wrapper (
        .inp2_i(io_in[36]),
        .inp3_i(io_in[34]),
        .inp4_i(io_in[33]),
-       .inp5_i(io_in[32]),
 
        .out0_o(io_out[13]),
 

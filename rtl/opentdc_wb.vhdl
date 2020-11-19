@@ -43,6 +43,10 @@ entity opentdc_wb is
 end opentdc_wb;
 
 architecture behav of opentdc_wb is
+  --  Config (not generics to keep the same name).
+  constant NTDC : natural range 2 to 5 := 3;
+  constant NFD : natural range 1 to 1 := 1;
+  
   --  Regs for the bus interface.
   signal b_idle : std_logic;
 
@@ -59,9 +63,9 @@ architecture behav of opentdc_wb is
   type dev_in_array is array(natural range <>) of tdc_bus_in;
   type dev_out_array is array(natural range <>) of tdc_bus_out;
 
-  constant NDEVS : natural := 7;
-  signal devs_in: dev_in_array (NDEVS - 1 downto 0);
-  signal devs_out: dev_out_array (NDEVS - 1 downto 0);
+  constant NDEVS : natural := NTDC + NFD;
+  signal devs_in: dev_in_array (NDEVS downto 0);
+  signal devs_out: dev_out_array (NDEVS downto 0);
 begin
   rst_n <= not wb_rst_i;
 
@@ -183,7 +187,7 @@ begin
   end process;
 
   --  Dev 1: tdc (without a macro)
-  b_dev1: block
+  b_tdc1: block
     constant ndly : natural := 200;
 
     signal taps : std_logic_vector (ndly - 1 downto 0);
@@ -213,7 +217,7 @@ begin
   end block;
 
   --  Dev 2: tdc (without a macro, with a ref).
-  b_dev2: block
+  b_tdc2: block
     constant ndly : natural := 200;
 
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
@@ -255,7 +259,7 @@ begin
   end block;
 
   --  dev 3: tdc with a macro
-  b_dev3: block
+  b_tdc3: if NTDC >= 3 generate
     constant length : natural := 200;
     signal taps : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(2*length - 1 downto 0);
@@ -275,10 +279,10 @@ begin
         rtaps => (others => '0'),
         bin => devs_in(3),
         bout => devs_out(3));
-  end block;
+  end generate;
 
   -- dev 4: TDC with ref
-  b_dev4: block
+  b_tdc4: if NTDC >= 4 generate
     constant length : natural := 200;
     signal taps, rtaps : std_logic_vector(length - 1 downto 0);
     signal tap_clks, tap_rclks : std_logic_vector(2*length - 1 downto 0);
@@ -303,10 +307,10 @@ begin
         rtaps => rtaps,
         bin => devs_in(4),
         bout => devs_out(4));
-  end block;
+  end generate;
 
   -- dev 5: TDC with ref
-  b_dev5: block
+  b_tdc5: if NTDC >= 5 generate
     constant length : natural := 200;
     signal taps, rtaps : std_logic_vector(length - 1 downto 0);
     signal tap_clks : std_logic_vector(length / 2 - 1 downto 0);
@@ -331,10 +335,10 @@ begin
         rtaps => rtaps,
         bin => devs_in(5),
         bout => devs_out(5));
-  end block;
+  end generate;
 
   --  dev6: FD
-  b_dev6: block
+  b_fd1: block
     constant length : natural := 8;
     signal delay : std_logic_vector(length - 1 downto 0);
     signal pulse : std_logic;
@@ -354,7 +358,7 @@ begin
         rst_n_i => rst_n,
         idelay_o => delay,
         pulse_o => pulse,
-        bin => devs_in(6),
-        bout => devs_out(6));
+        bin => devs_in(NTDC + 1),
+        bout => devs_out(NTDC + 1));
   end block;
 end behav;
