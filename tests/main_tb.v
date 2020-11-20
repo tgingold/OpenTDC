@@ -87,6 +87,10 @@ module uart_tb;
 		else if(checkbits == 16'hAB00) begin
 			$display("Test passed");
 			$finish;
+                end
+		else if(checkbits == 16'hAC00) begin
+			$display("Test failed");
+			$finish;
 		end
 	end
 

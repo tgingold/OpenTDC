@@ -3,18 +3,21 @@
 #define USE_UART 0
 
 #define PRJ_BASE ((volatile uint32_t*)0x30000000)
+#define PRJ_BASE_8 ((volatile uint8_t*)0x30000000)
 
 // --------------------------------------------------------
+
+#if USE_UART
+#define PUTC(c) reg_uart_data = c
+#else
+#define PUTC(c) reg_mprj_datal = (0xa1000000 | ((c & 0xff) << 16))
+#endif
 
 static void putchar(int c)
 {
 	if (c == '\n')
-		putchar('\r');
-#if USE_UART
-	reg_uart_data = c;
-#else
-        reg_mprj_datal = 0xa1000000 | ((c & 0xff) << 16);
-#endif
+		PUTC('\r');
+        PUTC(c);
 }
 
 static void print(const char *p)
@@ -89,12 +92,32 @@ void main()
     // Start test
     reg_mprj_datal = 0xa0000000;
 
+    PUTC('S');
+    if (PRJ_BASE[0] != 0x54646301)
+      goto error;
+    PUTC('1');
+
+    if (PRJ_BASE[6] != 0x10203040)
+      goto error;
+    PUTC('2');
+
+    PRJ_BASE_8[6*4 + 1] = 0xd3;
+    if (PRJ_BASE[6] != 0x1020d340)
+      goto error;
+    PUTC('3');
+
+#if 0
     print("Id: ");
     puthex4(PRJ_BASE[0]);
     putchar('\n');
-    
-    // Allow transmission to complete before signalling that the program
-    // has ended.
-    for (j = 0; j < 20; j++);
+#endif
+
+    PUTC('o');
+    PUTC('k');
     reg_mprj_datal = 0xab000000;
+    return;
+
+ error:
+    PUTC('X');
+    reg_mprj_datal = 0xac000000;
 }
