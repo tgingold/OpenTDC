@@ -55,6 +55,7 @@ begin
   begin
     if rising_edge (clk_i) then
       bout.trig <= '0';
+
       bout.dato <= (others => '0');
       bout.rack <= '0';
 
@@ -71,13 +72,19 @@ begin
             bout.dato (31 downto plen) <= (others => '0');
             bout.dato (plen - 1 downto 0) <= fine;
           when "100" =>
-            bout.dato <= (others => '0');
+            null;
           when "101" =>
-            bout.dato <= (others => '0');
+            null;
           when "110" =>
-            bout.dato <= (others => '0');
+            null;
           when "111" =>
-            bout.dato <= (others => '0');
+            bout.dato (0) <= '1';
+            bout.dato (1) <= '0';
+            if g_with_ref then
+              bout.dato (2) <= '1';
+            end if;
+            bout.dato (31 downto 16) <=
+              std_logic_vector (to_unsigned(plen, 16));
           when others =>
             bout.dato <= (others => 'X');
         end case;
@@ -91,6 +98,7 @@ begin
   begin
     if rising_edge (clk_i) then
       bout.wack <= '0';
+
       if rst_n_i = '0' then
         valid <= '0';
       else
@@ -110,6 +118,7 @@ begin
           end case;
           bout.wack <= '1';
         end if;
+
         if pulse = '1' then
           valid <= '0';
         end if;

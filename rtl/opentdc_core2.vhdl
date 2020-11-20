@@ -141,6 +141,9 @@ begin
       bout.trig <= trigger or rtrigger;
       scan_rd <= '0';
 
+      bout.dato <= (others => '0');
+      bout.rack <= '0';
+
       if bin.re = '1' then
         case bin.adr is
           when "000" =>
@@ -169,16 +172,22 @@ begin
             bout.dato <= scan_reg;
             scan_rd <= '1';
           when "110" =>
-            bout.dato <= (others => '0');
+            null;
           when "111" =>
-            bout.dato <= (others => '0');
+            bout.dato (0) <= '1';
+            bout.dato (1) <= '1';
+            if g_with_ref then
+              bout.dato (2) <= '1';
+            end if;
+            if g_with_scan then
+              bout.dato (3) <= '1';
+            end if;
+            bout.dato (31 downto 16) <=
+              std_logic_vector (to_unsigned(length, 16));
           when others =>
             bout.dato <= (others => 'X');
         end case;
-        bout.wack <= '1';
-      else
-        bout.dato <= (others => '0');
-        bout.wack <= '0';
+        bout.rack <= '1';
       end if;
     end if;
   end process;
@@ -190,7 +199,7 @@ begin
       --  restart is a pulse
       rrestart <= '0';
       restart <= '0';
-      bout.rack <= '0';
+      bout.wack <= '0';
 
       if rst_n_i = '0' then
         rdetect_fall <= '0';
@@ -233,7 +242,7 @@ begin
             when others =>
               null;
           end case;
-          bout.rack <= '1';
+          bout.wack <= '1';
         end if;
       end if;
     end if;
