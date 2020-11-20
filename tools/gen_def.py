@@ -116,6 +116,9 @@ config_sky130_fd_ms = {
     'fill8': {'name': 'sky130_fd_sc_ms__fill_8', 'width': 8 * 480},
 }
 
+# with/height: from the site size in tech LEF.
+# tracks: from track file, or PITCH of LAYER.
+# pins: layer used to place pins
 TECHS = {
     'fd_hd': {'cells': config_sky130_fd_hd, 'width': 460, 'height': 2720,
               'tracks': {'li1': (460, 340),
