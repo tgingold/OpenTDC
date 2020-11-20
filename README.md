@@ -58,6 +58,13 @@ As the sources are partially written in VHDL, you need
 (ghdl-yosys-plugin)[https://github.com/ghdl/ghdl-yosys-plugin]
 
 
+## Testing
+
+There are functional unit tests in `tb/`.
+
+And a simple integration test with caraval in `tests/`.
+
+
 ## Contributing
 
 Please use issues and pull-requests from github
