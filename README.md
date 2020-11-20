@@ -1,5 +1,7 @@
 # OpenTDC
 
+## Intro
+
 OpenTDC is a Time to Digital Converter (TDC) and a Fine Delay (FD) design.
 
 The TDC can timestamp a pulse with a precision below 1 ns, while the
@@ -30,6 +32,38 @@ Particularities of the design:
 * Tool generated macros
 * mixed languages (VHDL and verilog)
 
+## Building
+
+Regenerate verilog sources:
+
+```bash
+  make verilog
+```
+
+Harden the chip using openlane:
+
+```bash
+  make build
+```
+
+TODO: export the result:
+
+```bash
+  make result
+```
+
+## Dependencies
+
+As the sources are partially written in VHDL, you need
+(ghdl-yosys-plugin)[https://github.com/ghdl/ghdl-yosys-plugin]
+
+
+## Contributing
+
+Please use issues and pull-requests from github
+
+
+## Copyright
 
 SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
 SPDX-License-Identifier: Apache-2.0
