@@ -26,22 +26,22 @@ entity opentdc_wb is
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
     --  Tdc input signals
-    inp_i : std_logic_vector(11 downto 0);
+    inp_i : std_logic_vector(15 downto 0);
 
     --  Fd output signals
-    out_o : out std_logic_vector(11 downto 0);
+    out_o : out std_logic_vector(15 downto 0);
 
     --  Outputs enable
-    oen_o : out std_logic_vector(11 downto 0);
+    oen_o : out std_logic_vector(15 downto 0);
 
     rst_time_n_i : std_logic);
 end opentdc_wb;
 
 architecture behav of opentdc_wb is
   --  Config (not generics to keep the same name).
-  constant NTDC : natural := inp_i'length;
-  constant NFD : natural := out_o'length;
-  
+  constant NTDC : natural := 5;
+  constant NFD : natural := 5;
+
   --  Regs for the bus interface.
   signal b_idle : std_logic;
 
@@ -60,9 +60,11 @@ architecture behav of opentdc_wb is
 
   constant FTDC : natural := 1;
   constant FFD : natural := NTDC + 1;
-  
+
   signal devs_in: dev_in_array (NTDC + NFD downto 0);
   signal devs_out: dev_out_array (NTDC + NFD downto 0);
+
+  signal areg : std_logic_vector(31 downto 0);
 begin
   rst_n <= not wb_rst_i;
 
@@ -137,6 +139,7 @@ begin
         devs_out(0).trig <= '0';
         oen <= (others => '0');
         rst_time_en <= '0';
+        areg <= x"10_20_30_40";
       else
         --  Write
         if devs_in(0).we = '1' then
@@ -146,6 +149,12 @@ begin
               oen <= devs_in(0).dati(oen'range);
             when "100" =>
               rst_time_en <= devs_in(0).dati(0);
+            when "110" =>
+              for i in 3 downto 0 loop
+                if devs_in(0).sel (i) = '1' then
+                  areg(i*8+7 downto i*8) <= devs_in(0).dati(i*8+7 downto i*8);
+                end if;
+              end loop;
             when others =>
               null;
           end case;
@@ -169,6 +178,13 @@ begin
             when "100" =>
               --  Config
               devs_out(0).dato(0) <= rst_time_en;
+            when "110" =>
+              devs_out(0).dato <= areg;
+            when "111" =>
+              devs_out(0).dato(31 downto 24) <=
+                std_logic_vector(to_unsigned(NFD, 8));
+              devs_out(0).dato(23 downto 16) <=
+                std_logic_vector(to_unsigned(NTDC, 8));
             when others =>
               null;
           end case;
@@ -221,7 +237,7 @@ begin
         bout => devs_out(FTDC + 0));
   end block;
 
-  g_tdcs: for cell in inp_i'left downto 1 generate
+  g_tdcs: for cell in NTDC - 1 downto 1 generate
     constant ndly : natural := 200;
 
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
@@ -285,22 +301,25 @@ begin
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
         idelay_o => delay,
-        pulse_o => pulse,
+        ipulse_o => pulse,
         bin => devs_in(FFD + 0),
         bout => devs_out(FFD + 0));
   end block;
 
-  b_fd2: for cell in out_o'left downto 1 generate
+  b_fd2: for cell in NFD - 1 downto 1 generate
     constant length : natural := 8;
-    signal delay : std_logic_vector(length - 1 downto 0);
-    signal pulse : std_logic;
+    signal idelay : std_logic_vector(length - 1 downto 0);
+    signal ipulse : std_logic;
+    signal iout : std_logic;
   begin
     inst_delay_line: entity work.openfd_delayline
       generic map (
         cell => cell,
         plen => length)
       port map (
-        inp_i => pulse, out_o => out_o(cell), delay_i => delay);
+        inp_i => ipulse, out_o => iout, delay_i => idelay);
+
+    out_o(cell) <= iout;
 
     inst_core: entity work.openfd_core2
       generic map (
@@ -309,9 +328,13 @@ begin
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        idelay_o => delay,
-        pulse_o => pulse,
+        idelay_o => idelay,
+        rdelay_o => open,
+        ipulse_o => ipulse,
+        rpulse_o => open,
         bin => devs_in(FFD + cell),
         bout => devs_out(FFD + cell));
   end generate;
+
+  out_o (out_o'left downto NFD) <= (others => '0');
 end behav;

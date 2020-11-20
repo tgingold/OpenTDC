@@ -10,17 +10,19 @@ use work.opentdc_pkg.all;
 
 entity openfd_core2 is
   generic (
-    g_with_ref : boolean := True;
+    g_with_ref : boolean := False;
     plen : natural := 7);
   port (
     clk_i : std_logic;
     rst_n_i : std_logic;
 
+    --  Taps value
     idelay_o : out std_logic_vector(plen - 1 downto 0);
-    --  rdelay_o : std_logic_vector(plen - 1 downto 0);
+    rdelay_o : out std_logic_vector(plen - 1 downto 0);
 
-    --  Source of idelay taps
-    pulse_o : out std_logic;
+    --  Source of delay taps
+    ipulse_o : out std_logic;
+    rpulse_o : out std_logic;
 
     bin : tdc_bus_in;
     bout : out tdc_bus_out);
@@ -31,8 +33,8 @@ end openfd_core2;
 architecture behav of openfd_core2 is
   signal coarse, rcoarse  : std_logic_vector(31 downto 0);
   signal fine, rfine      : std_logic_vector(plen - 1 downto 0);
-  signal valid            : std_logic;
-  signal pulse            : std_logic;
+  signal valid, rvalid    : std_logic;
+  signal pulse, rpulse    : std_logic;
 begin
   process (clk_i)
   begin
@@ -47,8 +49,30 @@ begin
     end if;
   end process;
 
-  pulse_o <= pulse;
+  ipulse_o <= pulse;
   idelay_o <= fine;
+
+  g_ref: if g_with_ref generate
+    process (clk_i)
+    begin
+      if rising_edge (clk_i) then
+        if rst_n_i = '0' then
+          rpulse <= '0';
+        elsif valid = '1' and rcoarse = bin.cur_cycles then
+          rpulse <= '1';
+        else
+          rpulse <= '0';
+        end if;
+      end if;
+    end process;
+
+    rpulse_o <= rpulse;
+    rdelay_o <= rfine;
+  end generate;
+  g_no_ref: if not g_with_ref generate
+    rpulse_o <= '0';
+    rdelay_o <= (others => '0');
+  end generate;
 
   --  Read process
   process (clk_i) is
@@ -63,18 +87,22 @@ begin
         case bin.adr is
           when "000" =>
             bout.dato <= (0 => valid,
+                          1 => rvalid,
                           others => '0');
           when "001" =>
             bout.dato <= (others => '0');
           when "010" =>
             bout.dato <= coarse;
           when "011" =>
-            bout.dato (31 downto plen) <= (others => '0');
             bout.dato (plen - 1 downto 0) <= fine;
           when "100" =>
-            null;
+            if g_with_ref then
+              bout.dato <= rcoarse;
+            end if;
           when "101" =>
-            null;
+            if g_with_ref then
+              bout.dato (plen - 1 downto 0) <= rfine;
+            end if;
           when "110" =>
             null;
           when "111" =>
@@ -101,6 +129,7 @@ begin
 
       if rst_n_i = '0' then
         valid <= '0';
+        rvalid <= '0';
       else
         if bin.we = '1' then
           case bin.adr is
@@ -113,6 +142,15 @@ begin
               valid <= '1';
             when "011" =>
               fine <= bin.dati (plen - 1 downto 0);
+            when "100" =>
+              if g_with_ref then
+                rcoarse <= bin.dati;
+                rvalid <= '1';
+              end if;
+            when "101" =>
+              if g_with_ref then
+                fine <= bin.dati (plen - 1 downto 0);
+              end if;
             when others =>
               null;
           end case;
@@ -121,6 +159,9 @@ begin
 
         if pulse = '1' then
           valid <= '0';
+        end if;
+        if g_with_ref and rpulse = '1' then
+          rvalid <= '0';
         end if;
       end if;
     end if;

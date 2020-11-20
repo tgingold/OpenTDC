@@ -33,8 +33,8 @@ architecture behav of tb_proj is
   signal wbs_out : wb32_master_out;
   signal wbs_in  : wb32_master_in;
 
-  signal inps : std_logic_vector(11 downto 0);
-  signal outs : std_logic_vector(11 downto 0);
+  signal inps : std_logic_vector(15 downto 0);
+  signal outs : std_logic_vector(15 downto 0);
 
   alias inp1 : std_logic is inps (0);
   alias inp2 : std_logic is inps (1);
@@ -111,6 +111,7 @@ begin
 
   process
     variable d32, d32_a : std_logic_vector (31 downto 0);
+    variable fd0 : std_logic_vector (31 downto 0);
     variable ncycles : natural;
     variable ndelays : natural;
   begin
@@ -131,10 +132,16 @@ begin
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0000", d32);
     assert d32 = x"54_64_63_01" report "(1) bad opentdc id" severity failure;
 
+    --  Compute fd0 address
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_001c", d32);
+    report "Nbr TDCs: " & natural'image(to_integer(unsigned(d32(23 downto 16))));
+    report "Nbr FDs: " & natural'image(to_integer(unsigned(d32(31 downto 24))));
+    fd0 := (31 downto 13 => '0') & std_logic_vector(unsigned(d32 (23 downto 16)) + 1) & b"000_00";
+
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
     report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
-    assert unsigned(d32) < 8 report "(2) bad cycle value" severity failure;
+    assert unsigned(d32) < 16 report "(2) bad cycle value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32_a);
     assert unsigned(d32_a) > unsigned(d32)
       report "(3) cycles not increased" severity failure;
@@ -217,14 +224,14 @@ begin
     assert d32 = x"0000_0000"
       report "(18) bad tdc2 scan val #6" severity failure;
 
-    --  Program fd.
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_01ac", x"0000_0027");
+    --  Program fd0.
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_000c", x"0000_0027");
     d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_01a8", d32);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_0008", d32);
 --  wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
 
     --  Check busy status (before the trigger).
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_01a0", d32_a);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_0000", d32_a);
     assert d32_a = x"0000_0001"
       report "(19) bad busy value for fd0" severity failure;
 
@@ -246,7 +253,26 @@ begin
     --  Check busy status (before the trigger).
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
     assert d32_a(16) = '0'
-      report "(13) bad busy value for fd0" severity failure;
+      report "(22) bad busy value for fd0" severity failure;
+
+    --  Check register access
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
+    assert d32 = x"10_20_30_40"
+      report "(40) bad init value for areg" severity failure;
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0018", x"01_02_03_04");
+
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0000", d32);
+    assert d32 = x"54_64_63_01" report "(40.1) bad opentdc id" severity failure;
+
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
+    assert d32 = x"01_02_03_04"
+      report "(40.2) bad write value for areg" severity failure;
+
+    wb32_write32 (wb_clk, wbs_out, wbs_in,
+                  x"0000_0018", x"aa_21_bb_cc", "0100");
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
+    assert d32 = x"01_21_03_04"
+      report "(40.3) bad partial write value for areg" severity failure;
 
     --  OK
     report "Test OK" severity note;
