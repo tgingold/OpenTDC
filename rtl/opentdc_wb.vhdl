@@ -81,7 +81,8 @@ begin
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
           -- 8 words per sub-device (so 3+2 bits)
-          n := to_integer(unsigned(wbs_adr_i (8 downto 5)));
+          n := to_integer(unsigned(wbs_adr_i (9 downto 5)));
+          -- report "write to device " & natural'image(n);
           wbs_ack_o <= devs_out(n).wack or devs_out(n).rack;
           wbs_dat_o <= devs_out(n).dato;
           start <= '0';
@@ -104,7 +105,7 @@ begin
           devs_in (i).we <= '0';
         else
           if wbs_stb_i = '1' and wbs_cyc_i = '1' then
-            if wbs_adr_i (8 downto 5) = std_logic_vector(to_unsigned(i, 4))
+            if wbs_adr_i (9 downto 5) = std_logic_vector(to_unsigned(i, 5))
             then
               devs_in (i).adr <= wbs_adr_i (4 downto 2);
               devs_in (i).dati <= wbs_dat_i;

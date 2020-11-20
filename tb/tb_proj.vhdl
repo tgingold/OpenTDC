@@ -33,9 +33,13 @@ architecture behav of tb_proj is
   signal wbs_out : wb32_master_out;
   signal wbs_in  : wb32_master_in;
 
-  signal inp1       : std_logic;
-  signal inp2       : std_logic;
-  signal out0       : std_logic;
+  signal inps : std_logic_vector(11 downto 0);
+  signal outs : std_logic_vector(11 downto 0);
+
+  alias inp1 : std_logic is inps (0);
+  alias inp2 : std_logic is inps (1);
+  alias out0 : std_logic is outs (0);
+
   signal rst_time_n : std_logic;
 
   signal fd0_time : time;
@@ -85,6 +89,8 @@ architecture behav of tb_proj is
     wait until rising_edge(clk);
   end wb32_read32;
 begin
+  inps (inps'left downto 2) <= (others => '0');
+
   process
   begin
     --  Important: start at level 1, so that a rising_edge happen every
@@ -212,13 +218,13 @@ begin
       report "(18) bad tdc2 scan val #6" severity failure;
 
     --  Program fd.
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_00ac", x"0000_0027");
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_01ac", x"0000_0027");
     d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
-    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_00a8", d32);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_01a8", d32);
 --  wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_000c", x"0001_0000", "1100");
 
     --  Check busy status (before the trigger).
-    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_00a0", d32_a);
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_01a0", d32_a);
     assert d32_a = x"0000_0001"
       report "(19) bad busy value for fd0" severity failure;
 
@@ -261,10 +267,7 @@ begin
       wbs_adr_i    => wbs_out.adr,
       wbs_ack_o    => wbs_in.ack,
       wbs_dat_o    => wbs_in.dati,
-      inp1_i       => inp1,
-      inp2_i       => inp2,
-      inp3_i       => '0',
-      inp4_i       => '0',
-      out0_o       => out0,
+      inp_i        => inps,
+      out_o        => outs,
       rst_time_n_i => rst_time_n);
 end behav;

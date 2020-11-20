@@ -5,16 +5,16 @@
 
 ${GHDL:-ghdl} -c --std=08 \
  ../openlane/macros/opentdc_comps.vhdl \
- ../rtl/opentdc_delay.vhdl \
- ../rtl/opentdc_sync.vhdl \
- ../rtl/opentdc_tapline.vhdl \
- ../rtl/opentdc_time.vhdl \
  ../rtl/opentdc_pkg.vhdl \
- ../rtl/opentdc_core2.vhdl \
+ ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_delay-sim.vhdl \
+ ../rtl/opentdc_sync.vhdl \
+ ../rtl/opentdc_time.vhdl \
+ ../rtl/opentdc_tapline.vhdl \
  ../rtl/openfd_delayline.vhdl \
+ ../rtl/opentdc_core2.vhdl \
  ../rtl/openfd_core2.vhdl \
- ../rtl/opentdc_wb.vhdl \
+ ../rtl/opentdc_wb.vhdl  \
  tb_proj.vhdl \
- -r tb_proj --wave=tb_proj.ghw --stop-time=4us
+ -r tb_proj # --wave=tb_proj.ghw --stop-time=4us --backtrace-severity=warning
