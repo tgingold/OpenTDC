@@ -222,8 +222,9 @@ class GenDef:
         assert pin.place is None, "pin already placed"
         assert place in "NSEW"
         pin.place = place
+        offset += self.hmargin if place in "NS" else self.vmargin
         # Adjust pin position
-        idx = 1 if place in "NS" else 0
+        idx = 0 if place in "NS" else 1
         layer = self.tech['pins'][idx]
         wd = self.tech['tracks'][layer][idx]
         offset -= wd // 2
