@@ -6,7 +6,7 @@ set script_dir [file dirname [file normalize [info script]]]
 set ::env(DESIGN_NAME) user_project_wrapper
 set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
 
-set ::env(VERILOG_FILES) "$script_dir/user_project_wrapper.v $script_dir/../../src/opentdc.v"
+set ::env(VERILOG_FILES) "$script_dir/user_project_wrapper.v $script_dir/../../src/opentdc.v $script_dir/../../src/bb.v"
 set ::env(VERILOG_FILES_BLACKBOX) "$script_dir/../../src/bb.v"
 
 #set ::env(CLOCK_PORT) "user_clock2"
@@ -18,10 +18,16 @@ set ::env(BASE_SDC_FILE) "$script_dir/opentdc_wb.sdc"
 set ::env(CLOCK_PERIOD) "20"
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 2700 2700"
+#set ::env(DIE_AREA) "0 0 2920 3520"
+set ::env(DIE_AREA) "0 0 2920 840" ; # / 10
 set ::env(PL_TARGET_DENSITY) 0.3
 
-set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref" "delayline_8_hd"]
+#set ::env(DIODE_INSERTION_STRATEGY) 3
+#set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
+
+#set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref" "delayline_8_hd"]
+set macros [list "delayline_9_hd"]
+#set macros [list]
 set macros_lef ""
 set macros_gds ""
 foreach m $macros {

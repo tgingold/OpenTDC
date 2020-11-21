@@ -14,3 +14,15 @@ gen_pdn
 run_routing
 run_magic
 run_magic_drc
+
+
+# antenna:
+# runs/user/logs/routing/or_antenna.log
+# runs/user/reports/routing/antenna.rpt
+
+# STA:
+# runs/user/reports/synthesis/opensta_spef.timing.rpt
+
+# DRC:
+# runs/user/logs/magic/magic.drc
+
