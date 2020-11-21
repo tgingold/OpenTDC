@@ -360,23 +360,23 @@ class GenDef:
                 {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
             if p.place in "NS":
-                pinwd = 140
+                pinwd = 140 * 4
                 if p.place == 'S':
                     y = pinwd
                 else:
                     y = self.y_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
-                    self.hmargin + p.offset, y), end='', file=f)
+                    p.offset, y), end='', file=f)
                 print(' + LAYER met2 ( {} {} ) ( {} {} )'.format(
                     -140, -pinwd, 140, pinwd), end='', file=f)
             elif p.place in "EW":
-                pinwd = 300
+                pinwd = 300* 4
                 if p.place == 'W':
                     x = pinwd
                 else:
                     x = self.x_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
-                    x, self.vmargin + p.offset), end='', file=f)
+                    x, p.offset), end='', file=f)
                 print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
                     -pinwd, -300, pinwd, 300), end='', file=f)
             print(' ;', file=f)
@@ -412,18 +412,22 @@ class GenDef:
             print('set ::env(STD_CELL_LIBRARY) "{}"'.format(
                 self.tech['libname']), file=f)
             print(file=f)
+            # Horizontal lines must agree with the parent
+            pdn_hpitch = 153180  # From configuration/floorplan.tcl
+            if self.y_size < pdn_hpitch // 2:
+                print('Design is too small: height={}, power pitch={}'.format(
+                    self.y_size, pdn_hpitch))
             pdn_vpitch = 153600
             if self.x_size > pdn_vpitch:
                 vpitch = (pdn_vpitch // self.row_width) * self.row_width
             else:
-                vpitch = self.x_size / 4
+                vpitch = self.rowl * self.row_width
             print('set ::env(FP_PDN_VOFFSET) 0', file=f)
             print('set ::env(FP_PDN_VPITCH) {}'.format(vpitch / 1000), file=f)
             print('set ::env(FP_PDN_HOFFSET) {}'.format(
                 self.row_height / 1000), file=f)
             print('set ::env(FP_PDN_HPITCH) {}'.format(
-                3 * self.row_height / 1000), file=f)
-
+                pdn_hpitch / 1000), file=f)
             print(file=f)
             print('set ::env(FP_SIZING) absolute', file=f)
             print('set ::env(DIE_AREA) "0 0 {} {}"'.format(
