@@ -19,6 +19,19 @@ for f in $files; do
     mkdir -p $DESIGN_NAME
     cp config.tcl $DESIGN_NAME/
     /openLANE_flow/openlane/flow.tcl -it -file build.tcl
+    if ! grep "COUNT: 0" $DESIGN_NAME/runs/user/logs/magic/magic.drc.log; then
+        echo "DRC failures"
+        # exit 1
+    fi
+    if ! grep "Number of pins violated: 0" $DESIGN_NAME/runs/user/logs/routing/or_antenna.log; then
+        echo "Antenna violations (pins)"
+        exit 1
+    fi
+    if ! grep "Number of nets violated: 0" $DESIGN_NAME/runs/user/logs/routing/or_antenna.log; then
+        echo "Antenna violations (nets)"
+        exit 1
+    fi
+
     cp $DESIGN_NAME/runs/user/results/magic/${DESIGN_NAME}.gds ../../gds
     cp $DESIGN_NAME/runs/user/results/magic/${DESIGN_NAME}.lef ../../lef
     cp $DESIGN_NAME/runs/user/results/magic/${DESIGN_NAME}.mag ../../mag
@@ -29,16 +42,5 @@ done
 exit 0
 
 
-cp runs/user/results/routing/$DESIGN_NAME.def .
-cp runs/user/results/magic/$DESIGN_NAME.mag .
-cp runs/user/results/magic/$DESIGN_NAME.drc.mag .
-cp runs/user/logs/magic/magic.drc* .
-cp runs/user/results/magic/$DESIGN_NAME.gds .
-cp runs/user/results/magic/$DESIGN_NAME.lef .
-
-if ! grep "COUNT: 0" runs/user/logs/magic/magic.drc.log; then
-    echo "DRC failures"
-    exit 1
-fi
 
 echo "Done"
