@@ -18,14 +18,22 @@ VHDL_SRCS=\
  openlane/macros/opentdc_comps.vhdl \
  rtl/opentdc_wb.vhdl
 
+# Create macros: generate the sources and gds
+macros:
+	cd openlane/macros; ./build-src.sh && ./openlane-all.sh
+
+clean:
+	$(RM) -f gds/*.gds lef/*.lef def/*.def  mag/*.mag
+
+# Create gds from verilog sources + macros
 build:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -design opentdc_wb -tag user -overwrite
 
 ibuild:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
 
-report.html:
-	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i openlane/opentdc_wb/runs/user/reports/final_summary_report.csv -o report.html
+report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
+	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i $< -o $@
 
 src/opentdc.v: $(VHDL_SRCS)
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog src/opentdc.v; write_verilog -blackboxes src/bb.v"
