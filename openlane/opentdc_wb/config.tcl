@@ -31,7 +31,7 @@ set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
 
 set macros [list]
 #set macros [list "tapline_200_x2_hd" "tapline_200_x2_hd_ref" "delayline_8_hd"]
-set macros [list "delayline_9_hd"]
+set macros [list "delayline_9_hd" "delayline_9_hs"]
 set macros_lef ""
 set macros_gds ""
 foreach m $macros {

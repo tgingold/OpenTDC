@@ -12,8 +12,8 @@ set ::env(CLOCK_NET) $::env(CLOCK_PORT)
 # turn off CTS
 set ::env(CLOCK_TREE_SYNTH) 0
 
-# Disable diode insertion
-# set ::env(DIODE_INSERTION_STRATEGY) 0
+# Disable diode insertion (not supported by fd_sc_hs)
+set ::env(DIODE_INSERTION_STRATEGY) 0
 
 # Use default hpitch.
 #set ::env(FP_PDN_VOFFSET) 10.88

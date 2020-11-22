@@ -42,8 +42,8 @@ architecture behav of opentdc_wb is
   --  Config (not generics to keep the same name).
   --  XX_MACROS is the number of hard macros in XX
   constant NTDC : natural := 3;
-  constant NFD : natural := 2;
-  constant NFD_MACROS : natural := 1;
+  constant NFD_MACROS : natural := 2;
+  constant NFD : natural := 1 + NFD_MACROS + 0;
 
   --  Regs for the bus interface.
   signal b_idle : std_logic;
@@ -293,7 +293,7 @@ begin
   end generate;
 
   --  fd0: inline delay
-  b_fd1: block
+  b_fd0: block
     constant length : natural := 8;
     signal delay : std_logic_vector(length - 1 downto 0);
     signal pulse : std_logic;
@@ -318,8 +318,8 @@ begin
         bout => devs_out(FFD + 0));
   end block;
 
-  --  fd2: macro
-  b_mac_fd2: if NFD_MACROS >= 1 generate
+  --  fd1: macro (fd_hd)
+  b_mac_fd1: if NFD_MACROS >= 1 generate
     constant length : natural := 9;
     signal delay : std_logic_vector(length - 1 downto 0);
     signal pulse : std_logic;
@@ -339,6 +339,29 @@ begin
         ipulse_o => pulse,
         bin => devs_in(FFD + 1),
         bout => devs_out(FFD + 1));
+  end generate;
+  
+  --  fd2: macro (fd_hs)
+  b_mac_fd2: if NFD_MACROS >= 2 generate
+    constant length : natural := 9;
+    signal delay : std_logic_vector(length - 1 downto 0);
+    signal pulse : std_logic;
+  begin
+    inst_delay_line: delayline_9_hs
+      port map (
+        inp_i => pulse, out_o => out_o(2), en_i => delay);
+
+    inst_core: entity work.openfd_core2
+      generic map (
+        g_with_ref => false,
+        plen => length)
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        idelay_o => delay,
+        ipulse_o => pulse,
+        bin => devs_in(FFD + 2),
+        bout => devs_out(FFD + 2));
   end generate;
   
   b_fd2: for cell in NFD - 1 downto NFD_MACROS + 1 generate
