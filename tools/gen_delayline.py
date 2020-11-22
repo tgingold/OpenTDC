@@ -31,9 +31,10 @@ class DelayLine(GenDef):
         res['inp'] = self.add_pin('inp_i', 'I')
         res['out'] = self.add_pin('out_o', 'O')
         last = res['inp'].net
-        for i in range(self.nstages):
+        res['stages'] = [None] * self.nstages
+        for i in range(self.nstages-1,-1,-1):
             stage = { }
-            res['stages'].append(stage)
+            res['stages'][i] = stage
             # Enable input
             en = self.add_pin('en_i[{}]'.format(i), 'I')
             stage['en'] = en
@@ -45,7 +46,7 @@ class DelayLine(GenDef):
                     'delay_{}_{}'.format(i, k), self.cells['delay'])
                 stage['delays'].append(delay)
                 self.connect(last_delay, delay, 'input')
-                last_delay = self.add_net('in{}_d{}'.format(i, k))
+                last_delay = self.add_net('in{}_d{}'.format(i, k + 1))
                 self.connect(last_delay, delay, 'output')
             # Mux
             mux = self.add_component('mux_{}'.format(i), self.cells['mux2'])

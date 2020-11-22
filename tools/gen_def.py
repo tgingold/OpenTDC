@@ -117,46 +117,46 @@ config_sky130_fd_ms = {
 }
 
 # with/height: from the site size in tech LEF.
-# tracks: from track file, or PITCH of LAYER.
+# Tracks: layer: (HPITCH, VPITCH, WD)
 # pins: layer used to place pins
 TECHS = {
     'fd_hd': {'cells': config_sky130_fd_hd, 'width': 460, 'height': 2720,
-              'tracks': {'li1': (460, 340),
-                         'met1': (340, 340),
-                         'met2': (460, 460),
-                         'met3': (680, 680),
-                         'met4': (920, 920),
-                         'met5': (3400, 3400)},
+              'tracks': {'li1': (460, 340, 170),
+                         'met1': (340, 340, 140),
+                         'met2': (460, 460, 140),
+                         'met3': (680, 680, 300),
+                         'met4': (920, 920, 300),
+                         'met5': (3400, 3400, 1600)},
               'site': 'unithd',
               'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_hd'},
     'fd_hs': {'cells': config_sky130_fd_hs, 'width': 480, 'height': 3330,
-              'tracks': {'li1': (480, 370),
-                         'met1': (370, 370),
-                         'met2': (480, 480),
-                         'met3': (740, 740),
-                         'met4': (960, 960),
-                         'met5': (3330, 3330)},
+              'tracks': {'li1': (480, 370, 170),
+                         'met1': (370, 370, 140),
+                         'met2': (480, 480, 140),
+                         'met3': (740, 740, 300),
+                         'met4': (960, 960, 300),
+                         'met5': (3330, 3330, 1600)},
               'site': 'unit',
               'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_hs'},
     'fd_ls': {'cells': config_sky130_fd_ls, 'width': 480, 'height': 3330,
-              'tracks': {'li1': (480, 480),
-                         'met1': (370, 370),
-                         'met2': (480, 480),
-                         'met3': (740, 740),
-                         'met4': (960, 960),
-                         'met5': (3330, 3330)},
+              'tracks': {'li1': (480, 480, 170),
+                         'met1': (370, 370, 140),
+                         'met2': (480, 480, 140),
+                         'met3': (740, 740, 300),
+                         'met4': (960, 960, 300),
+                         'met5': (3330, 3330, 1600)},
               'site': 'unit',
               'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_ls'},
     'fd_ms': {'cells': config_sky130_fd_ms, 'width': 480, 'height': 3330,
-              'tracks': {'li1': (480, 480),
-                         'met1': (370, 370),
-                         'met2': (480, 480),
-                         'met3': (740, 740),
-                         'met4': (960, 960),
-                         'met5': (3330, 3330)},
+              'tracks': {'li1': (480, 480, 170),
+                         'met1': (370, 370, 140),
+                         'met2': (480, 480, 140),
+                         'met3': (740, 740, 300),
+                         'met4': (960, 960, 300),
+                         'met5': (3330, 3330, 1600)},
               'site': 'unit',
               'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_ms'},
@@ -167,6 +167,7 @@ class GenDef:
     def __init__(self, tech, name):
         self.name = name
         self.tech = TECHS[tech]
+        self.pintech = TECHS['fd_hd']
         self.row_width = self.tech['width']
         self.row_height = self.tech['height']
         self.cells = self.tech['cells']
@@ -207,6 +208,7 @@ class GenDef:
             self.net = None
             self.place = None
             self.offset = None
+            self.layer = None
 
     def add_pin(self, name, io):
         """Add a pin, return the corresponding net"""
@@ -218,18 +220,18 @@ class GenDef:
         n.conn.append((None, p))
         return p
 
-    def place_pin(self, pin, place, offset):
+    def place_pin(self, pin, orient, offset):
         assert pin.place is None, "pin already placed"
-        assert place in "NSEW"
-        pin.place = place
-        offset += self.hmargin if place in "NS" else self.vmargin
-        # Adjust pin position
-        idx = 0 if place in "NS" else 1
-        layer = self.tech['pins'][idx]
-        wd = self.tech['tracks'][layer][idx]
-        offset -= wd // 2
-        offset = (offset // wd) * wd
-        offset += wd // 2
+        assert orient in "NSEW"
+        pin.place = orient
+        offset += self.hmargin if orient in "NS" else self.vmargin
+        # Adjust pin position: put it on the grid
+        idx = 0 if orient in "NS" else 1
+        pin.layer = self.pintech['pins'][idx]
+        pitch = self.pintech['tracks'][pin.layer][idx]
+        offset -= pitch // 2
+        offset = (offset // pitch) * pitch
+        offset += pitch // 2
         pin.offset = offset
 
     class Component:
@@ -321,12 +323,14 @@ class GenDef:
                   file=f)
 
     def disp_def_tracks(self, f):
-        for layer, (xstep, ystep) in self.tech['tracks'].items():
+        for layer, (xpitch, ypitch, wd) in self.tech['tracks'].items():
             print("TRACKS X {} DO {} STEP {} LAYER {} ;".format(
-                xstep // 2, (self.x_size + xstep // 2) // xstep, xstep, layer),
+                xpitch // 2,
+                (self.x_size + xpitch // 2) // xpitch, xpitch, layer),
                   file=f)
             print("TRACKS Y {} DO {} STEP {} LAYER {} ;".format(
-                ystep // 2, (self.y_size + ystep // 2) // ystep, ystep, layer),
+                ypitch // 2,
+                (self.y_size + ypitch // 2) // ypitch, ypitch, layer),
                   file=f)
 
     def disp_def_components(self, f):
@@ -360,28 +364,41 @@ class GenDef:
             print(' + DIRECTION {}'.format(
                 {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
+            pinwd = self.pintech['tracks'][p.layer][2]
+            idx = 0 if p.place in "NS" else 1
+            corepitch = self.tech['tracks'][p.layer][idx]
+            corewd = self.tech['tracks'][p.layer][2]
             if p.place in "NS":
-                pinwd = 140
+                # In general: met2
                 pinln = pinwd
                 if p.place == 'S':
                     y = pinwd
                 else:
                     y = self.y_size - pinwd
-                print(' + PLACED ( {} {} ) N '.format(
-                    p.offset, y), end='', file=f)
-                print(' + LAYER met2 ( {} {} ) ( {} {} )'.format(
+                print(' + PLACED ( {} {} ) {} '.format(
+                    p.offset, y, p.place), end='', file=f)
+                print(' + LAYER {} ( {} {} ) ( {} {} )'.format(
+                    p.layer,
                     -pinwd, -pinln, pinwd, pinln), end='', file=f)
             elif p.place in "EW":
-                pinwd = 300
-                pinln = pinwd
+                # In general: met3
                 if p.place == 'W':
                     x = pinwd
                 else:
                     x = self.x_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
                     x, p.offset), end='', file=f)
-                print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
-                    -pinln, -pinwd, pinln, pinwd), end='', file=f)
+                coreoff = ((p.offset - corepitch // 2) // corepitch) * corepitch
+                coreoff += corepitch // 2
+                if coreoff < p.offset:
+                    coreoff += corepitch
+                pinln = pinwd + (coreoff - p.offset)
+                print('off: {}, coreoff: {}, pinln: {}'.format(
+                    p.offset, coreoff, pinln))
+                assert coreoff >= p.offset
+                print(' + LAYER {} ( {} {} ) ( {} {} )'.format(
+                    p.layer,
+                    -pinwd, -pinwd, pinwd, pinln), end='', file=f)
             print(' ;', file=f)
         print('END PINS', file=f)
 
