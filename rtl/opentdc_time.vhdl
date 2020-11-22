@@ -93,7 +93,7 @@ begin
         --  A pulse is detected
         --   and not yet triggered or restarted
         triggered <= '1';
-        coarse_o <= std_logic_vector(unsigned(cur_cycles_i) - 2);
+        coarse_o <= std_logic_vector(unsigned(cur_cycles_i));
         fine_o <= std_logic_vector(to_unsigned(ffs (tap_i), 16));
       elsif restart_i = '1' then
         triggered <= '0';
