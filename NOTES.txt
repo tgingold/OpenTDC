@@ -248,3 +248,48 @@ TDCs (hd, hs, ls, ms, osu_sc_t18): [x5]
 
 TODO: enable for ref TDCs and FDs.
 TODO: detect unhandled macro in placement
+
+
+Powers:
+First h strap: first_row_Y - rail_width/2  + strap_offset
+               10880       - 480/2         + 16650 = 27290
+              (first_row_y = bottom_margin * site_height = 4 * 2720)
+site: 460x2720
+TRACKS X 1700 DO 859 STEP 3400 LAYER met5 ;
+ROW ROW_0 unithd 5520 10880 FS DO 6323 BY 1 STEP 460 0 ;
+Params:
+Type: stdcell, grid
+    Stdcell Rails
+      Layer: met1 -  width: 0.480  pitch: 2.720  offset: 0.000 
+    Straps
+      Layer: met4 -  width: 1.600  pitch: 153.600  offset: 16.320 
+      Layer: met5 -  width: 1.600  pitch: 153.180  offset: 16.650 
+    Connect: {met1 met4} {met4 met5}
+- VPWR + NET VPWR + DIRECTION INPUT + USE SIGNAL 
+  + LAYER met5 ( -1454290 -800 ) ( 1454290 800 )
+  + FIXED ( 1459810 27290 ) N + SPECIAL ;
+    NEW met5 1600 + SHAPE STRIPE ( 5520 793190 ) ( 2914100 793190 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 640010 ) ( 2914100 640010 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 486830 ) ( 2914100 486830 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 333650 ) ( 2914100 333650 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 180470 ) ( 2914100 180470 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 27290 ) ( 2914100 27290 ) 
+- VGND + NET VGND + DIRECTION INPUT + USE SIGNAL 
+  + LAYER met5 ( -1454290 -800 ) ( 1454290 800 )
+  + FIXED ( 1459810 103880 ) N + SPECIAL ;
+    NEW met5 1600 + SHAPE STRIPE ( 5520 716600 ) ( 2914100 716600 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 563420 ) ( 2914100 563420 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 410240 ) ( 2914100 410240 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 257060 ) ( 2914100 257060 ) 
+    NEW met5 1600 + SHAPE STRIPE ( 5520 103880 ) ( 2914100 103880 ) 
+
+
+
+
+
+Macros placement:
+in pdn: look for met5 VPWR layers (bottom one), select one strip (eg: 486.830)
+# in macro: look for bottom met5 VPWR: 8010
+in macro.lef: look for VPWR RECT, compute middle: (8.010 + 6.410)/2 = 7.210
+substract: 486.830 - 7.210 = 479.620
+
