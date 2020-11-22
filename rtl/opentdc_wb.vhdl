@@ -43,7 +43,7 @@ architecture behav of opentdc_wb is
   --  XX_MACROS is the number of hard macros in XX
   constant NTDC : natural := 3;
   constant NFD : natural := 2;
-  constant NFD_MACROS : natural := 1;
+  constant NFD_MACROS : natural := 0;
 
   --  Regs for the bus interface.
   signal b_idle : std_logic;
@@ -71,7 +71,16 @@ architecture behav of opentdc_wb is
 begin
   rst_n <= not wb_rst_i;
 
-  oen_o <= oen;
+  process (wb_clk_i)
+  begin
+    if rising_edge(wb_clk_i) then
+      if rst_n = '0' then
+        oen_o <= (others => '0');
+      else
+        oen_o <= oen;
+      end if;
+    end if;
+  end process;
 
   --  Wishbone out process
   process (wb_clk_i)
