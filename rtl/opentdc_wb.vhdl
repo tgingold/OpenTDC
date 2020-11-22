@@ -43,7 +43,7 @@ architecture behav of opentdc_wb is
   --  XX_MACROS is the number of hard macros in XX
   constant NTDC : natural := 3;
   constant NFD : natural := 2;
-  constant NFD_MACROS : natural := 0;
+  constant NFD_MACROS : natural := 1;
 
   --  Regs for the bus interface.
   signal b_idle : std_logic;

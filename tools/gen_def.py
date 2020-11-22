@@ -361,7 +361,8 @@ class GenDef:
                 {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
             if p.place in "NS":
-                pinwd = 140 * 4
+                pinwd = 140
+                pinln = pinwd
                 if p.place == 'S':
                     y = pinwd
                 else:
@@ -369,9 +370,10 @@ class GenDef:
                 print(' + PLACED ( {} {} ) N '.format(
                     p.offset, y), end='', file=f)
                 print(' + LAYER met2 ( {} {} ) ( {} {} )'.format(
-                    -140, -pinwd, 140, pinwd), end='', file=f)
+                    -pinwd, -pinln, pinwd, pinln), end='', file=f)
             elif p.place in "EW":
-                pinwd = 300* 4
+                pinwd = 300
+                pinln = pinwd
                 if p.place == 'W':
                     x = pinwd
                 else:
@@ -379,7 +381,7 @@ class GenDef:
                 print(' + PLACED ( {} {} ) N '.format(
                     x, p.offset), end='', file=f)
                 print(' + LAYER met3 ( {} {} ) ( {} {} )'.format(
-                    -pinwd, -300, pinwd, 300), end='', file=f)
+                    -pinln, -pinwd, pinln, pinwd), end='', file=f)
             print(' ;', file=f)
         print('END PINS', file=f)
 
@@ -420,13 +422,14 @@ class GenDef:
                     self.y_size, pdn_hpitch))
             pdn_vpitch = 153600
             if self.x_size > pdn_vpitch:
+                # Align
                 vpitch = (pdn_vpitch // self.row_width) * self.row_width
             else:
-                vpitch = self.rowl * self.row_width
+                vpitch = (self.rowl // 2) * self.row_width
             print('set ::env(FP_PDN_VOFFSET) 0', file=f)
             print('set ::env(FP_PDN_VPITCH) {}'.format(vpitch / 1000), file=f)
             print('set ::env(FP_PDN_HOFFSET) {}'.format(
-                self.row_height / 1000), file=f)
+                (90 + self.row_height) / 1000), file=f)
             print('set ::env(FP_PDN_HPITCH) {}'.format(
                 pdn_hpitch / 1000), file=f)
             print(file=f)
