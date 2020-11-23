@@ -20,12 +20,20 @@ VHDL_SRCS= $(VHDL_COMMON_SRCS) \
  rtl/openfd_core2.vhdl \
  rtl/opentdc_wb.vhdl
 
+define build-macro
+DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
+(cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
+cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
+endef
+
 # Create macros: generate the sources and gds
 macros:
 	cd openlane/macros; ./build-src.sh && ./openlane-all.sh
 
 clean:
-	$(RM) -f gds/*.gds lef/*.lef def/*.def  mag/*.mag
+	$(RM) -f gds/*.gds lef/*.lef def/*.def mag/*.mag
 
 # Create gds from verilog sources + macros
 build:
@@ -43,8 +51,14 @@ src/opentdc.v: $(VHDL_SRCS)
 src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd2; write_verilog $@; write_verilog -blackboxes src/fd2_bb.v"
 
-build-fd2:
-	cd openlane; /openLANE_flow/openlane/flow.tcl -design fd2 -tag user -overwrite
+gds/fd2.gds lef/fd2.lef &: src/fd2.v src/fd2_bb.v
+	$(build-macro)
+
+src/fd1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd1.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd1; write_verilog $@; write_verilog -blackboxes src/fd1_bb.v"
+
+gds/fd1.gds lef/fd1.lef: src/fd1.v src/fd1_bb.v
+	$(build-macro)
 
 verilog: src/opentdc.v
 
@@ -57,5 +71,4 @@ compress:
 
 verify:
 
-clean:
 

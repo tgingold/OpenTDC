@@ -43,4 +43,3 @@ begin
       bin => bus_in,
       bout => bus_out);
 end behav;
-  
