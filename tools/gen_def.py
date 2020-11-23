@@ -68,7 +68,7 @@ config_sky130_fd_hd = {
 config_sky130_fd_hs = {
     'dff': {'name': 'sky130_fd_sc_hs__dfxtp_4', 'width': 20 * 480,
             'input': 'D', 'output': 'Q', 'clock': 'CLK'},
-    'dly4_1':  {'name': 'sky130_fd_sc_hs__dlygate4sd1', 'width': 8 * 480,
+    'dly4_1':  {'name': 'sky130_fd_sc_hs__dlygate4sd1_1', 'width': 8 * 480,
                 'input': 'A', 'output': 'X'},
     'cdinv_1': {'name': 'sky130_fd_sc_hs__clkdlyinv3sd1_1', 'width': 6 * 480,
                 'input': 'A', 'output': 'Y'},
@@ -364,8 +364,9 @@ class GenDef:
             print(' + DIRECTION {}'.format(
                 {'I': 'INPUT', 'O': 'OUTPUT'}[p.dir]), end='', file=f)
             print(' + USE SIGNAL', end='', file=f)
-            pinwd = self.pintech['tracks'][p.layer][2]
             idx = 0 if p.place in "NS" else 1
+            pinwd = self.pintech['tracks'][p.layer][2]
+            pinpitch = self.pintech['tracks'][p.layer][idx]
             corepitch = self.tech['tracks'][p.layer][idx]
             corewd = self.tech['tracks'][p.layer][2]
             if p.place in "NS":
@@ -388,14 +389,10 @@ class GenDef:
                     x = self.x_size - pinwd
                 print(' + PLACED ( {} {} ) N '.format(
                     x, p.offset), end='', file=f)
-                coreoff = ((p.offset - corepitch // 2) // corepitch) * corepitch
-                coreoff += corepitch // 2
-                if coreoff < p.offset:
-                    coreoff += corepitch
-                pinln = pinwd + (coreoff - p.offset)
-                print('off: {}, coreoff: {}, pinln: {}'.format(
-                    p.offset, coreoff, pinln))
-                assert coreoff >= p.offset
+                if corepitch != pinpitch:
+                    pinln = pinpitch + pinwd
+                else:
+                    pinln = pinwd
                 print(' + LAYER {} ( {} {} ) ( {} {} )'.format(
                     p.layer,
                     -pinwd, -pinwd, pinwd, pinln), end='', file=f)

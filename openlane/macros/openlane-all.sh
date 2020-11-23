@@ -19,6 +19,7 @@ for f in $files; do
     mkdir -p $DESIGN_NAME
     cp config.tcl $DESIGN_NAME/
     /openLANE_flow/openlane/flow.tcl -it -file build.tcl
+    echo "openlane $DESIGN_NAME done"
     if ! grep "COUNT: 0" $DESIGN_NAME/runs/user/logs/magic/magic.drc.log; then
         echo "DRC failures $DESIGN_NAME/runs/user/logs/magic/magic.drc.log"
         # exit 1

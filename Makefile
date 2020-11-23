@@ -5,17 +5,19 @@ CP=cp
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
-VHDL_SRCS=\
+VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \
  rtl/opentdc_delay-sky130.vhdl \
+ rtl/opentdc_pkg.vhdl \
+ openlane/macros/opentdc_comps.vhdl
+
+VHDL_SRCS= $(VHDL_COMMON_SRCS) \
  rtl/opentdc_sync.vhdl \
  rtl/opentdc_tapline.vhdl \
- rtl/opentdc_pkg.vhdl \
  rtl/opentdc_time.vhdl \
  rtl/opentdc_core2.vhdl \
  rtl/openfd_delayline.vhdl \
  rtl/openfd_core2.vhdl \
- openlane/macros/opentdc_comps.vhdl \
  rtl/opentdc_wb.vhdl
 
 # Create macros: generate the sources and gds
@@ -32,11 +34,17 @@ build:
 ibuild:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
 
-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
+opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
 	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i $< -o $@
 
 src/opentdc.v: $(VHDL_SRCS)
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog src/opentdc.v; write_verilog -blackboxes src/bb.v"
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog $@; write_verilog -blackboxes src/bb.v"
+
+src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd2; write_verilog $@; write_verilog -blackboxes src/fd2_bb.v"
+
+build-fd2:
+	cd openlane; /openLANE_flow/openlane/flow.tcl -design fd2 -tag user -overwrite
 
 verilog: src/opentdc.v
 
