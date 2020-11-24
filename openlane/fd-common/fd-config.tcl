@@ -20,6 +20,13 @@ set ::env(PL_TARGET_DENSITY) 0.3
 set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
 
+# Avoid weird optims
+set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
+
+# Reduce vpitch so that all parts are powered (the band on the right hand
+# side is narrow)
+set ::env(FP_PDN_VPITCH) 26.64
+
 if { [llength $macros] != 0 } {
     set macros_lef ""
     set macros_gds ""

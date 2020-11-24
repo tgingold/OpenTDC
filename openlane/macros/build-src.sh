@@ -47,6 +47,7 @@ $GEN_TAPLINE -n tapline_200_x2_s1_dly4_ls_ref -t fd_ls -l $L -g 2 -r -c s1 -d dl
 fi
 
 $GEN_DELAYLN -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
+$GEN_DELAYLN -n delayline_9_ms -l 9 -t fd_ms -d dly4_1
 $GEN_DELAYLN -n delayline_9_hd -l 9
 
 {

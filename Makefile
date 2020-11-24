@@ -23,9 +23,14 @@ VHDL_SRCS= $(VHDL_COMMON_SRCS) \
 define build-macro
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
+grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
 cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
+endef
+
+define yosys_fd
+DESIGN=$(notdir $(basename $@ .v)); $(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e $$DESIGN; write_verilog $@; write_verilog -blackboxes src/$${DESIGN}_bb.v"
 endef
 
 # Create macros: generate the sources and gds
@@ -67,6 +72,22 @@ src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/openfd_delaylin
 
 gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
 	$(build-macro)
+
+
+openlane/macros/delayline_9_ms.def:
+	$(MKDIR) -p $(dir $@)
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
+
+gds/delayline_9_ms.gds: openlane/macros/delayline_9_ms.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+
+
+src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
+	DESIGN=$(notdir $(basename $@ .v)); $(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e $$DESIGN; write_verilog $@; write_verilog -blackboxes src/$${DESIGN}_bb.v"
+
+gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v
+	$(build-macro)
+
 
 
 verilog: src/opentdc.v
