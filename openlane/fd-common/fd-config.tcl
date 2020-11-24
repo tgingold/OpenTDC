@@ -20,13 +20,15 @@ set ::env(PL_TARGET_DENSITY) 0.3
 set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
 
-set macros_lef ""
-set macros_gds ""
-foreach m $macros {
-    set macros_lef "$macros_lef $script_dir/../../lef/$m.lef"
-    set macros_gds "$macros_gds $script_dir/../../gds/$m.gds"
-}
-set ::env(EXTRA_LEFS)      "$macros_lef"
-set ::env(EXTRA_GDS_FILES) "$macros_gds"
+if { [llength $macros] != 0 } {
+    set macros_lef ""
+    set macros_gds ""
+    foreach m $macros {
+        set macros_lef "$macros_lef $script_dir/../../lef/$m.lef"
+        set macros_gds "$macros_gds $script_dir/../../gds/$m.gds"
+    }
+    set ::env(EXTRA_LEFS)      "$macros_lef"
+    set ::env(EXTRA_GDS_FILES) "$macros_gds"
 
-set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
+    set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
+}

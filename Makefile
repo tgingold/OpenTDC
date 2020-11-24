@@ -48,17 +48,26 @@ opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.
 src/opentdc.v: $(VHDL_SRCS)
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog $@; write_verilog -blackboxes src/bb.v"
 
-src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd2; write_verilog $@; write_verilog -blackboxes src/fd2_bb.v"
-
-gds/fd2.gds lef/fd2.lef &: src/fd2.v src/fd2_bb.v
-	$(build-macro)
 
 src/fd1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd1.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd1; write_verilog $@; write_verilog -blackboxes src/fd1_bb.v"
 
 gds/fd1.gds lef/fd1.lef: src/fd1.v src/fd1_bb.v
 	$(build-macro)
+
+src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd2; write_verilog $@; write_verilog -blackboxes src/fd2_bb.v"
+
+gds/fd2.gds lef/fd2.lef: src/fd2.v src/fd2_bb.v
+	$(build-macro)
+
+
+src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/openfd_delayline.vhdl rtl/fd_inline.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=1 $^ -e fd_inline; rename fd_inline fd_inline_1; write_verilog $@; write_verilog -blackboxes src/fd_inline_1_bb.v"
+
+gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
+	$(build-macro)
+
 
 verilog: src/opentdc.v
 
