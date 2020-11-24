@@ -1,4 +1,4 @@
--- Fine Delay #2
+-- Fine Delay with hd tech
 --
 -- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
 -- SPDX-License-Identifier: Apache-2.0
@@ -10,7 +10,7 @@ use ieee.numeric_std.all;
 use work.opentdc_pkg.all;
 use work.opentdc_comps.all;
 
-entity fd2 is
+entity fd_hd is
   port (
     --  Control
     clk_i : std_logic;
@@ -20,14 +20,14 @@ entity fd2 is
     bus_out : out tdc_bus_out;
 
     out_o : out std_logic);
-end fd2;
+end fd_hd;
 
-architecture behav of fd2 is
+architecture behav of fd_hd is
   constant length : natural := 9;
   signal delay : std_logic_vector(length - 1 downto 0);
   signal pulse : std_logic;
 begin
-  inst_delay_line: delayline_9_hs
+  inst_delay_line: delayline_9_hd
     port map (
       inp_i => pulse, out_o => out_o, en_i => delay);
 

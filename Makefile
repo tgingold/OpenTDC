@@ -5,6 +5,9 @@ CP=cp
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
+FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
+MACROS=$(FD_MACROS)
+
 VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \
  rtl/opentdc_delay-sky130.vhdl \
@@ -54,16 +57,25 @@ src/opentdc.v: $(VHDL_SRCS)
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog $@; write_verilog -blackboxes src/bb.v"
 
 
+# Fine delays
+
 src/fd_hd.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd.vhdl
 	$(yosys_fd)
 
-gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v
+gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v gds/delayline_9_hd.gds
 	$(build-macro)
 
-src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd2; write_verilog $@; write_verilog -blackboxes src/fd2_bb.v"
+src/fd_hs.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hs.vhdl
+	$(yosys_fd)
 
-gds/fd2.gds lef/fd2.lef: src/fd2.v src/fd2_bb.v
+gds/fd_hs.gds lef/fd_hs.lef: src/fd_hs.v src/fd_hs_bb.v gds/delayline_9_hs.gds
+	$(build-macro)
+
+
+src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
+	$(yosys_fd)
+
+gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v gds/delayline_9_ms.gds
 	$(build-macro)
 
 
@@ -76,21 +88,31 @@ gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
 
 openlane/macros/delayline_9_ms.def:
 	$(MKDIR) -p $(dir $@)
-	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_ms -l 9 -t fd_ms -d dly4_1
 
 gds/delayline_9_ms.gds: openlane/macros/delayline_9_ms.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
-src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
-	$(yosys_fd)
+openlane/macros/delayline_9_hs.def:
+	$(MKDIR) -p $(dir $@)
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
 
-gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v
-	$(build-macro)
+gds/delayline_9_hs.gds: openlane/macros/delayline_9_hs.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+
+
+openlane/macros/delayline_9_hd.def:
+	$(MKDIR) -p $(dir $@)
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd -l 9
+
+gds/delayline_9_hd.gds: openlane/macros/delayline_9_hd.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
 
-verilog: src/opentdc.v
+
+verilog: $(foreach v,$(MACROS),src/$(v).v)
 
 synth-tapline:
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -glength=2 rtl/opentdc_delay.vhdl rtl/opentdc_delay-sky130.vhdl rtl/tap_line.vhdl -e; flatten; clean; chtype -map sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog src/tap_line.v; rename sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog -blackboxes src/bb.v"

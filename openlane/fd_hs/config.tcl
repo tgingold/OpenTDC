@@ -3,7 +3,7 @@
 
 set script_dir [file dirname [file normalize [info script]]]
 
-set ::env(DESIGN_NAME) fd2
+set ::env(DESIGN_NAME) fd_hs
 set macros [list "delayline_9_hs"]
 
 source $script_dir/../fd-common/fd-config.tcl
