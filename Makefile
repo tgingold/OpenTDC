@@ -54,10 +54,10 @@ src/opentdc.v: $(VHDL_SRCS)
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $(VHDL_SRCS) -e; write_verilog $@; write_verilog -blackboxes src/bb.v"
 
 
-src/fd1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd1.vhdl
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e fd1; write_verilog $@; write_verilog -blackboxes src/fd1_bb.v"
+src/fd_hd.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd.vhdl
+	$(yosys_fd)
 
-gds/fd1.gds lef/fd1.lef: src/fd1.v src/fd1_bb.v
+gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v
 	$(build-macro)
 
 src/fd2.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd2.vhdl
@@ -83,7 +83,7 @@ gds/delayline_9_ms.gds: openlane/macros/delayline_9_ms.def
 
 
 src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
-	DESIGN=$(notdir $(basename $@ .v)); $(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e $$DESIGN; write_verilog $@; write_verilog -blackboxes src/$${DESIGN}_bb.v"
+	$(yosys_fd)
 
 gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v
 	$(build-macro)
