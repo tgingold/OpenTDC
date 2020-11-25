@@ -142,6 +142,8 @@ if __name__ == '__main__':
                         help='technology')
     parser.add_argument('--delay', '-d', default='cdly15_1',
                         help='select delay gate')
+    parser.add_argument('--magic-net', default=False, action='store_true',
+                        help='generate a magic netlist')
     args = parser.parse_args()
 
     inst = DelayLine(args.name, args.length, args.tech, args.delay)
@@ -151,3 +153,5 @@ if __name__ == '__main__':
     inst.write_config(args.name + '.tcl')
     inst.write_verilog(open(args.name + '.v', 'w'))
     inst.write_vhdl_component(open(args.name + '_comp.vhdl', 'w'))
+    if args.magic_net:
+        inst.write_magic_net(open(args.name + '.net', 'w'))

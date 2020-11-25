@@ -116,6 +116,23 @@ config_sky130_fd_ms = {
     'fill8': {'name': 'sky130_fd_sc_ms__fill_8', 'width': 8 * 480},
 }
 
+config_sky130_osu_18T_hs = {
+    'dff': {'name': 'sky130_osu_sc_18T_hs__dff_1', 'width': 66 * 110,
+            'input': 'D', 'output': 'Q', 'clock': 'CK'},
+    'buf_1':  {'name': 'sky130_osu_sc_18T_hs__buf_1', 'width': 13 * 110,
+                'input': 'A', 'output': 'Y'},
+    'mux2':  {'name': 'sky130_osu_sc_18T_hs__mux2_1', 'width': 25 * 110,
+              'in0': 'A0', 'in1': 'A1', 'sel': 'S0', 'output': 'Y'},
+    'decap': {'name': 'sky130_osu_sc_18T_hs__decap_1', 'width': 9 * 110},
+    'fill1': {'name': 'sky130_osu_sc_18T_hs__fill_1', 'width': 1 * 110},
+    'fill2': {'name': 'sky130_osu_sc_18T_hs__fill_2', 'width': 2 * 110},
+    'fill4': {'name': 'sky130_osu_sc_18T_hs__fill_4', 'width': 4 * 110},
+    'fill8': {'name': 'sky130_osu_sc_18T_hs__fill_8', 'width': 8 * 110},
+    'fill16': {'name': 'sky130_osu_sc_18T_hs__fill_16', 'width': 16 * 110},
+    'fill32': {'name': 'sky130_osu_sc_18T_hs__fill_32', 'width': 32 * 110},
+}
+
+
 # with/height: from the site size in tech LEF.
 # Tracks: layer: (HPITCH, VPITCH, WD)
 # pins: layer used to place pins
@@ -160,6 +177,15 @@ TECHS = {
               'site': 'unit',
               'pins': ('met2', 'met3'),
               'libname': 'sky130_fd_sc_ms'},
+    'osu_18T_hs': {'cells': config_sky130_osu_18T_hs, 'width': 110, 'height': 6660,
+                   'tracks': {'met1': (370, 370, 140),
+                              'met2': (480, 480, 140),
+                              'met3': (740, 740, 300),
+                              'met4': (960, 960, 300),
+                              'met5': (3330, 3330, 1600)},
+                   'site': '18T',
+                   'pins': ('met2', 'met3'),
+                   'libname': 'sky130_osu_sc_18T_hs'},
 }
 
 
@@ -288,9 +314,10 @@ class GenDef:
 
     def build_tap_decap(self, row, idx):
         # tap
-        tap = self.add_component('tap{}_{}'.format(row, idx),
-                                 self.cells['tap'])
-        self.place_component(tap, row)
+        if 'tap' in self.cells:
+            tap = self.add_component('tap{}_{}'.format(row, idx),
+                                     self.cells['tap'])
+            self.place_component(tap, row)
         # decap
         decap = self.add_component('decap{}_{}'.format(row, idx),
                                    self.cells['decap'])
@@ -402,7 +429,7 @@ class GenDef:
     def disp_def_nets(self, f):
         print('NETS {} ;'.format(len(self.nets)), file=f)
         for n in self.nets:
-            print('  - {}'.format(n.name), end='', file=f)
+            print(' - {}'.format(n.name), end='', file=f)
             for inst, port in n.conn:
                 if inst is None:
                     # This is a pin.
@@ -411,7 +438,8 @@ class GenDef:
                     # This is an instance
                     print(' ( {} {} )'.format(
                         inst.name, inst.model[port]), end='', file=f)
-            print(' + USE SIGNAL ;', file=f)
+            print(file=f)
+            print('   + USE SIGNAL ;', file=f)
         print('END NETS', file=f)
 
     def disp_def(self, filename):
@@ -538,3 +566,17 @@ class GenDef:
                 f.write("      \\{}\\: std_logic".format(self.pgnd))
         f.write(");\n")
         f.write("  end component;\n")
+
+    def write_magic_net(self, f):
+        print(' Netlist File', file=f)
+        for n in self.nets:
+            # print(' {}'.format(n.name), file=f)
+            print(file=f)
+            for inst, port in n.conn:
+                if inst is None:
+                    # This is a pin.
+                    print('{}'.format(port.name), file=f)
+                else:
+                    # This is an instance
+                    print('{}/{}'.format(
+                        inst.name, inst.model[port]), file=f)
