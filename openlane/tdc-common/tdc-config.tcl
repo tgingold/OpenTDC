@@ -17,7 +17,7 @@ set ::env(CLOCK_PERIOD) "20"
 
 set ::env(PL_TARGET_DENSITY) 0.5
 
-set ::env(DIODE_INSERTION_STRATEGY) 1
+set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
 
 # Avoid weird optims

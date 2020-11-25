@@ -24,7 +24,7 @@ entity tdc_inline is
 end tdc_inline;
 
 architecture behav of tdc_inline is
-  constant ndly : natural := 160;
+  constant ndly : natural := 200;
 
   signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
   signal clks, rclks : std_logic_vector (2*ndly - 1 downto 0);
