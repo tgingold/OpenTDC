@@ -24,8 +24,8 @@ entity openfd_core2 is
     ipulse_o : out std_logic;
     rpulse_o : out std_logic;
 
-    bin : tdc_bus_in;
-    bout : out tdc_bus_out);
+    bin : dev_bus_in;
+    bout : out dev_bus_out);
 end openfd_core2;
 
 --  This core is made of 2 submodules, so that it is easy to harden

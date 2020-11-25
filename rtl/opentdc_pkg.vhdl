@@ -15,7 +15,7 @@ package opentdc_pkg is
   --  2: 31-16: coarse
   --  3: 15-0:  find
 
-  type tdc_bus_in is record
+  type dev_bus_in is record
     adr : std_logic_vector(4 downto 2);
     dati : std_logic_vector(31 downto 0);
     sel : std_logic_vector (3 downto 0);
@@ -28,10 +28,14 @@ package opentdc_pkg is
     cycles_rst_n : std_logic;
   end record;
 
-  type tdc_bus_out is record
+  type dev_bus_out is record
     dato : std_logic_vector(31 downto 0);
     trig : std_logic;
     wack : std_logic;
     rack : std_logic;
   end record;
+
+  type dev_in_array is array(natural range <>) of dev_bus_in;
+  type dev_out_array is array(natural range <>) of dev_bus_out;
+
 end opentdc_pkg;

@@ -17,8 +17,8 @@ entity tdc_inline is
     clk_i : std_logic;
     rst_n_i : std_logic;
 
-    bus_in : tdc_bus_in;
-    bus_out : out tdc_bus_out;
+    bus_in : dev_bus_in;
+    bus_out : out dev_bus_out;
 
     inp_i : std_logic);
 end tdc_inline;

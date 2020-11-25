@@ -10,7 +10,7 @@ HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
-MACROS=$(FD_MACROS) $(TDC_MACROS)
+MACROS=wb_interface $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \
@@ -25,10 +25,13 @@ VHDL_TDC_EXTRA_SRCS=\
  rtl/opentdc_time.vhdl \
  rtl/opentdc_core2.vhdl
 
+VHDL_FD_EXTRA_SRCS=\
+ rtl/openfd_delayline.vhdl \
+ rtl/openfd_core2.vhdl
+
 VHDL_SRCS= $(VHDL_COMMON_SRCS) \
  $(VHDL_TDC_EXTRA_SRCS) \
- rtl/openfd_delayline.vhdl \
- rtl/openfd_core2.vhdl \
+ $(VHDL_FD_EXTRA_SRCS) \
  rtl/openfd_comps.vhdl \
  rtl/opentdc_comps.vhdl \
  rtl/opentdc_wb.vhdl
@@ -164,8 +167,8 @@ rtl/openfd_comps.vhdl: Makefile
 	echo "    port ("; \
 	echo "      clk_i : std_logic;"; \
 	echo "      rst_n_i : std_logic;"; \
-	echo "      bus_in : tdc_bus_in;"; \
-	echo "      bus_out : out tdc_bus_out;"; \
+	echo "      bus_in : dev_bus_in;"; \
+	echo "      bus_out : out dev_bus_out;"; \
 	echo "      out_o : out std_logic);"; \
 	echo "  end component $$M;"; \
 	echo; \
@@ -200,14 +203,23 @@ rtl/opentdc_comps.vhdl: Makefile
 	echo "    port ("; \
 	echo "      clk_i : std_logic;"; \
 	echo "      rst_n_i : std_logic;"; \
-	echo "      bus_in : tdc_bus_in;"; \
-	echo "      bus_out : out tdc_bus_out;"; \
+	echo "      bus_in : dev_bus_in;"; \
+	echo "      bus_out : out dev_bus_out;"; \
 	echo "      inp_i : std_logic);"; \
 	echo "  end component $$M;"; \
 	echo; \
 	done; \
 	echo "end opentdc_comps;"; \
 	} > $@
+
+
+# WB interface
+
+src/wb_interface.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) $(VHDL_FD_EXTRA_SRCS) rtl/wb_interface.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e wb_interface; write_verilog $@; write_verilog -blackboxes src/wb_interface_bb.v"
+
+gds/wb_interface.gds lef/wb_interface.lef: src/wb_interface.v src/wb_interface_bb.v
+	$(build-macro)
 
 
 verilog: $(foreach v,$(MACROS),src/$(v).v) src/opentdc_wb.v
