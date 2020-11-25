@@ -12,3 +12,5 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 280 280"
 
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
+
+set ::env(PL_RESIZER_OVERBUFFER) 1

@@ -9,5 +9,6 @@ set macros [list]
 source $script_dir/../tdc-common/tdc-config.tcl
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 506 460"
+set ::env(DIE_AREA) "0 0 460 460"
 
+set ::env(PL_RESIZER_OVERBUFFER) 1

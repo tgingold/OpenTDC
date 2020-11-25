@@ -21,7 +21,7 @@ set ::env(CLOCK_PERIOD) "20"
 set ::env(FP_SIZING) absolute
 #set ::env(DIE_AREA) "0 0 2920 3520"
 set ::env(DIE_AREA) "0 0 2920 1760" ; # / 2
-set ::env(PL_TARGET_DENSITY) 0.3
+set ::env(PL_TARGET_DENSITY) 0.2
 
 set ::env(DIODE_INSERTION_STRATEGY) 0
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3

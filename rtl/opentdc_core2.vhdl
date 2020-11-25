@@ -47,13 +47,13 @@ architecture behav of opentdc_core2 is
   signal scan_reg : std_logic_vector(31 downto 0);
   signal scan_cnt : std_logic_vector(7 downto 0);
   signal scan_rd : std_logic;
-  signal cur_cycles : std_logic_vector(31 downto 0);
+  signal cur_icycles : std_logic_vector(31 downto 0);
 begin
-  i_cycles: entity work.counter
+  i_icycles: entity work.counter
     port map (
       clk_i => clk_i,
       rst_n_i => bin.cycles_rst_n,
-      cur_cycles_o => cur_cycles);
+      cur_cycles_o => cur_icycles);
 
   inst_itime: entity work.opentdc_time
     generic map (
@@ -61,7 +61,7 @@ begin
     port map (
       clk_i => clk_i,
       rst_n_i => rst_n_i,
-      cur_cycles_i => cur_cycles,
+      cur_cycles_i => cur_icycles,
       restart_i => restart,
       detect_rise_i => detect_rise,
       detect_fall_i => detect_fall,
@@ -119,13 +119,21 @@ begin
   end generate;
 
   gen_rtime: if g_with_ref generate
+    signal cur_rcycles : std_logic_vector(31 downto 0);
+  begin
+    i_rcycles: entity work.counter
+      port map (
+        clk_i => clk_i,
+        rst_n_i => bin.cycles_rst_n,
+        cur_cycles_o => cur_rcycles);
+    
     inst_rtime: entity work.opentdc_time
       generic map (
         length => length)
       port map (
         clk_i => clk_i,
         rst_n_i => rst_n_i,
-        cur_cycles_i => cur_cycles,
+        cur_cycles_i => cur_rcycles,
         restart_i => rrestart,
         detect_rise_i => rdetect_rise,
         detect_fall_i => rdetect_fall,
