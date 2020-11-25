@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 CP=cp
+MKDIR=mkdir
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
-HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms
+HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
@@ -94,6 +95,14 @@ gds/delayline_9_hd.gds: openlane/macros/delayline_9_hd.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
+openlane/macros/delayline_9_osu_18hs.def:
+	$(MKDIR) -p $(dir $@)
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_osu_18hs -l 9 --tech osu_18T_hs --delay buf_1
+
+gds/delayline_9_osu_18hs.gds: openlane/macros/delayline_9_osu_18hs.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+
+
 openlane/macros/opendelay_comps.vhdl: Makefile
 	{ \
 	echo "library ieee;"; \
@@ -115,6 +124,7 @@ src/fd_hd.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd.vhdl
 gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v gds/delayline_9_hd.gds
 	$(build-macro)
 
+
 src/fd_hs.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hs.vhdl
 	$(yosys_fd)
 
@@ -126,6 +136,13 @@ src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
 	$(yosys_fd)
 
 gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v gds/delayline_9_ms.gds
+	$(build-macro)
+
+
+src/fd_18hs.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_18hs.vhdl
+	$(yosys_fd)
+
+gds/fd_18hs.gds lef/fd_18hs.lef: src/fd_18hs.v src/fd_18hs_bb.v gds/delayline_9_osu_18hs.gds
 	$(build-macro)
 
 
