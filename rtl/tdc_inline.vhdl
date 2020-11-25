@@ -1,4 +1,4 @@
--- Fine Delay with inline delay line.
+-- TDC with inline tap line.
 --
 -- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
 -- SPDX-License-Identifier: Apache-2.0

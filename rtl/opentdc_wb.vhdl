@@ -46,11 +46,9 @@ architecture behav of opentdc_wb is
   constant NFD_MACROS : natural := 2;
   constant NFD : natural := 1 + NFD_MACROS + 0;
 
-  --  Regs for the bus interface.
-  signal b_idle : std_logic;
-
-  signal rst_n : std_logic;
-
+  signal rst_d : std_logic_vector(3 downto 0);
+  alias rst_n : std_logic is rst_d (0);
+  
   signal cycles_rst_n : std_logic;
   signal cur_cycles : std_logic_vector(31 downto 0);
 
@@ -66,13 +64,25 @@ architecture behav of opentdc_wb is
   constant FTDC : natural := 1;
   constant FFD : natural := NTDC + 1;
 
-  signal devs_in: dev_in_array (NTDC + NFD downto 0);
+  signal devs_in, devs_in_d: dev_in_array (NTDC + NFD downto 0);
   signal devs_out, devs_out_d: dev_out_array (NTDC + NFD downto 0);
+
+  signal ctrl_in : tdc_bus_in;
+  signal ctrl_out : tdc_bus_out;
 
   signal areg : std_logic_vector(31 downto 0);
 begin
-  rst_n <= not wb_rst_i;
+  --  Apply reset for at least N cycles.
+  process (wb_clk_i)
+  begin
+    if wb_rst_i = '1' then
+      rst_d <= (others => '0');
+    elsif rising_edge(wb_clk_i) then
+      rst_d <= not wb_rst_i & rst_d (rst_d'left downto 1);
+    end if;
+  end process;
 
+  --  Extra FF for oen.
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
@@ -84,11 +94,12 @@ begin
     end if;
   end process;
 
-  --  FF on devs_out
+  --  FF on devs_out, devs_in
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
       devs_out_d <= devs_out;
+      devs_in_d <= devs_in;
     end if;
   end process;
 
@@ -149,68 +160,72 @@ begin
     end process;
   end generate;
 
+  ctrl_in <= devs_in_d(0);
+  devs_out(0) <= ctrl_out;
+  
   --  Pseudo dev0
   process (wb_clk_i)
   begin
     if rising_edge(wb_clk_i) then
-      devs_out(0).wack <= '0';
-      devs_out(0).rack <= '0';
-      devs_out(0).dato <= (others => '0');
+      ctrl_out.wack <= '0';
+      ctrl_out.rack <= '0';
+      ctrl_out.dato <= (others => '0');
 
       if rst_n = '0' then
-        devs_out(0).trig <= '0';
+        ctrl_out.trig <= '0';
         oen <= (others => '0');
         rst_time_en <= '0';
         areg <= x"10_20_30_40";
       else
         --  Write
-        if devs_in(0).we = '1' then
-          case devs_in(0).adr is
+        if ctrl_in.we = '1' then
+          case ctrl_in.adr is
             when "011" =>
               --  Outputs enable
-              oen <= devs_in(0).dati(oen'range);
+              oen <= ctrl_in.dati(oen'range);
             when "100" =>
-              rst_time_en <= devs_in(0).dati(0);
+              rst_time_en <= ctrl_in.dati(0);
             when "110" =>
               for i in 3 downto 0 loop
-                if devs_in(0).sel (i) = '1' then
-                  areg(i*8+7 downto i*8) <= devs_in(0).dati(i*8+7 downto i*8);
+                if ctrl_in.sel (i) = '1' then
+                  areg(i*8+7 downto i*8) <= ctrl_in.dati(i*8+7 downto i*8);
                 end if;
               end loop;
             when others =>
               null;
           end case;
-          devs_out(0).wack <= '1';
+          ctrl_out.wack <= '1';
         end if;
 
         --  Read
-        if devs_in(0).re = '1' then
-          case devs_in(0).adr is
+        if ctrl_in.re = '1' then
+          case ctrl_in.adr is
             when "000" =>
-              devs_out(0).dato <= x"54_64_63_01";  -- 'Tdc\1'
+              ctrl_out.dato <= x"54_64_63_01";  -- 'Tdc\1'
             when "001" =>
-              devs_out(0).dato <= cur_cycles;
+              ctrl_out.dato <= cur_cycles;
             when "010" =>
               --  Global status
-              devs_out(0).dato (1) <= devs_out(1).trig;
-              devs_out(0).dato (2) <= devs_out(2).trig;
+              for i in NTDC - 1 downto 0 loop
+                ctrl_out.dato (i) <= devs_out_d(i).trig;
+              end loop;
             when "011" =>
               --  Outputs enable
-              devs_out(0).dato(oen'range) <= oen;
+              ctrl_out.dato(oen'range) <= oen;
             when "100" =>
               --  Config
-              devs_out(0).dato(0) <= rst_time_en;
+              ctrl_out.dato(0) <= rst_time_en;
             when "110" =>
-              devs_out(0).dato <= areg;
+              ctrl_out.dato <= areg;
             when "111" =>
-              devs_out(0).dato(31 downto 24) <=
+              ctrl_out.dato(31 downto 24) <=
                 std_logic_vector(to_unsigned(NFD, 8));
-              devs_out(0).dato(23 downto 16) <=
+              ctrl_out.dato(23 downto 16) <=
                 std_logic_vector(to_unsigned(NTDC, 8));
             when others =>
               null;
           end case;
-          devs_out(0).rack <= '1';
+          ctrl_out.rack <= '1';
         end if;
       end if;
     end if;
@@ -261,7 +276,7 @@ begin
         rst_n_i => rst_n,
         itaps => taps,
         rtaps => (others => '0'),
-        bin => devs_in(FTDC + 0),
+        bin => devs_in_d(FTDC + 0),
         bout => devs_out(FTDC + 0));
   end block;
 
@@ -270,7 +285,7 @@ begin
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        bus_in => devs_in(FTDC + 1),
+        bus_in => devs_in_d(FTDC + 1),
         bus_out => devs_out(FTDC + 1),
         inp_i => inp_i(1));
   end generate;
@@ -280,7 +295,7 @@ begin
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        bus_in => devs_in(FTDC + 2),
+        bus_in => devs_in_d(FTDC + 2),
         bus_out => devs_out(FTDC + 2),
         inp_i => inp_i(2));
   end generate;
@@ -324,7 +339,7 @@ begin
         itaps => taps,
         rtaps => rtaps,
         rin_o => rin,
-        bin => devs_in(FTDC + cell),
+        bin => devs_in_d(FTDC + cell),
         bout => devs_out(FTDC + cell));
   end generate;
 
@@ -350,7 +365,7 @@ begin
         rst_n_i => rst_n,
         idelay_o => delay,
         ipulse_o => pulse,
-        bin => devs_in(FFD + 0),
+        bin => devs_in_d(FFD + 0),
         bout => devs_out(FFD + 0));
   end block;
 
@@ -360,7 +375,7 @@ begin
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        bus_in => devs_in(FFD + 1),
+        bus_in => devs_in_d(FFD + 1),
         bus_out => devs_out(FFD + 1),
         out_o => out_o(1));
   end generate;
@@ -371,7 +386,7 @@ begin
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        bus_in => devs_in(FFD + 2),
+        bus_in => devs_in_d(FFD + 2),
         bus_out => devs_out(FFD + 2),
         out_o => out_o(2));
   end generate;
@@ -402,7 +417,7 @@ begin
         rdelay_o => open,
         ipulse_o => ipulse,
         rpulse_o => open,
-        bin => devs_in(FFD + cell),
+        bin => devs_in_d(FFD + cell),
         bout => devs_out(FFD + cell));
   end generate;
 

@@ -141,7 +141,7 @@ begin
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
     report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
-    assert unsigned(d32) < 16 report "(2) bad cycle value" severity failure;
+    assert unsigned(d32) < 18 report "(2) bad cycle value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32_a);
     assert unsigned(d32_a) > unsigned(d32)
       report "(3) cycles not increased" severity failure;
@@ -149,7 +149,7 @@ begin
     --  Check status
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
     --  report "status=" & to_hstring(d32);
-    assert d32 = x"0000_0000" report "(4) bad status" severity failure;
+    assert (d32 and x"0000_0003") = x"0000_0000" report "(4) bad status" severity failure;
 
     --  Start tdc 0 and 1 (set restart bits).
     wb32_write32 (wb_clk, wbs_out, wbs_in, x"0000_0020", x"0005_0100");
@@ -169,40 +169,42 @@ begin
 
     --  Read status
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
-    assert d32 = x"0000_0006" report "(5) bad status" severity failure;
+    assert d32(1) = '1' report "(5) bad status" severity failure;
 
-    --  Read tdc1
+    --  Read tdc0
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0028", d32);
-    report "tdc1 coarse=" & to_hstring(d32);
+    report "tdc0 coarse=" & to_hstring(d32);
     d32_a := d32;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_002c", d32);
-    report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
+    report "tdc0 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 12
       report "(7) bad fine value for tdc0" severity failure;
 
-    --  Read tdc2
+    --  Read tdc1
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0048", d32);
-    report "tdc2 coarse=" & to_hstring(d32);
+    report "tdc1 coarse=" & to_hstring(d32);
     assert unsigned(d32) = unsigned (d32_a) + 1
       report "(8) bad coarse value" severity failure;
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_004c", d32);
-    report "tdc2 fine=" & natural'image(to_integer(unsigned(d32)));
+    report "tdc1 fine=" & natural'image(to_integer(unsigned(d32)));
     assert unsigned(d32) = 200 - 16
       report "(9) bad fine value for tdc1" severity failure;
 
-    --  Read tdc2/ref
+    --  Read tdc1/ref
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0040", d32);
-    assert d32 = x"0305_0003"
-      report "(10) bad tdc2 status" severity failure;
-    report "tdc2 status=" & to_hstring(d32);
+    assert (d32 and x"0003_0001") = x"0001_0001"
+      report "(10) bad tdc1 status" severity failure;
+    report "tdc1 status=" & to_hstring(d32);
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0044", d32);
-    report "tdc2 ref=" & to_hstring(d32);
+    if false then --  No ref
+    report "tdc1 ref=" & to_hstring(d32);
     assert unsigned(d32 (15 downto 0)) = 200 - 1
-      report "(11) bad tdc2 ref fine time" severity failure;
+      report "(11) bad tdc1 ref fine time" severity failure;
     assert unsigned(d32 (31 downto 0)) > 10
-      report "(12) bad tdc2 ref time" severity failure;
+      report "(12) bad tdc1 ref time" severity failure;
+    end if;
 
-    --  Read tdc2/scan
+    --  Read tdc1/scan
     for i in 0 to 4 loop  -- 5*32 = 160
       wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0050", d32);
       assert d32 = std_logic_vector(to_unsigned(i, 32))
@@ -223,7 +225,7 @@ begin
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0054", d32);
     assert d32 = x"0000_0000"
       report "(18) bad tdc2 scan val #6" severity failure;
-
+    
     --  Program fd0.
     wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_000c", x"0000_0027");
     d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
@@ -242,10 +244,10 @@ begin
     report "fd0 time=" & time'image(fd0_time);
     report "ncycles=" & natural'image(ncycles)
       & ", ndelays=" & natural'image(ndelays);
-    report "fd0 coarse=" & to_hstring(d32);
+    report "fd0 coarse=" & to_hstring(d32) & "=" & natural'image(to_integer(unsigned(d32)));
 
     --  cur_cycle start when now = 2 cycles
-    assert ncycles = to_integer(unsigned(d32) + 5)
+    assert ncycles = to_integer(unsigned(d32) + 10)
       report "(20) bad coarse time for fd0" severity failure;
     assert ndelays = 39
       report "(21) bad fine time for fd0" severity failure;

@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 ${GHDL:-ghdl} -c --std=08 \
- ../openlane/macros/opentdc_comps.vhdl \
+ ../openlane/macros/opendelay_comps.vhdl \
  ../rtl/opentdc_pkg.vhdl \
  ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_delay.vhdl \
@@ -17,6 +17,11 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/opentdc_core2.vhdl \
  ../rtl/openfd_core2.vhdl \
  ../rtl/openfd_comps.vhdl \
+ ../rtl/opentdc_comps.vhdl \
+ ../rtl/fd_hs.vhdl \
+ ../rtl/fd_hd.vhdl \
+ ../rtl/tdc_inline.vhdl \
+ ../rtl/tdc_inline_1.vhdl \
  ../rtl/opentdc_wb.vhdl  \
  tb_proj.vhdl \
- -r tb_proj # --wave=tb_proj.ghw --stop-time=4us --backtrace-severity=warning
+ -r tb_proj --wave=tb_proj.ghw #--stop-time=4us #--backtrace-severity=warning
