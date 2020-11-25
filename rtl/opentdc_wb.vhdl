@@ -9,6 +9,7 @@ use ieee.numeric_std.all;
 
 use work.opentdc_pkg.all;
 use work.opentdc_comps.all;
+use work.openfd_comps.all;
 
 entity opentdc_wb is
   port (
@@ -50,6 +51,7 @@ architecture behav of opentdc_wb is
 
   signal rst_n : std_logic;
 
+  signal cycles_rst_n : std_logic;
   signal cur_cycles : std_logic_vector(31 downto 0);
 
   signal start : std_logic;
@@ -65,7 +67,7 @@ architecture behav of opentdc_wb is
   constant FFD : natural := NTDC + 1;
 
   signal devs_in: dev_in_array (NTDC + NFD downto 0);
-  signal devs_out: dev_out_array (NTDC + NFD downto 0);
+  signal devs_out, devs_out_d: dev_out_array (NTDC + NFD downto 0);
 
   signal areg : std_logic_vector(31 downto 0);
 begin
@@ -79,6 +81,14 @@ begin
       else
         oen_o <= oen;
       end if;
+    end if;
+  end process;
+
+  --  FF on devs_out
+  process (wb_clk_i)
+  begin
+    if rising_edge(wb_clk_i) then
+      devs_out_d <= devs_out;
     end if;
   end process;
 
@@ -97,8 +107,8 @@ begin
           -- 8 words per sub-device (so 3+2 bits)
           n := to_integer(unsigned(wbs_adr_i (9 downto 5)));
           -- report "write to device " & natural'image(n);
-          wbs_ack_o <= devs_out(n).wack or devs_out(n).rack;
-          wbs_dat_o <= devs_out(n).dato;
+          wbs_ack_o <= devs_out_d(n).wack or devs_out_d(n).rack;
+          wbs_dat_o <= devs_out_d(n).dato;
           start <= '0';
         else
           start <= '1';
@@ -112,7 +122,7 @@ begin
     process (wb_clk_i)
     begin
       if rising_edge(wb_clk_i) then
-        devs_in (i).cur_cycles <= cur_cycles;
+        devs_in (i).cycles_rst_n <= cycles_rst_n;
 
         if rst_n = '0' then
           devs_in (i).re <= '0';
@@ -211,12 +221,18 @@ begin
   begin
     if rising_edge(wb_clk_i) then
       if (rst_time_en = '1' and rst_time_n_i = '0') or rst_n = '0' then
-        cur_cycles <= (others => '0');
+        cycles_rst_n <= '0';
       else
-        cur_cycles <= std_logic_vector(unsigned(cur_cycles) + 1);
+        cycles_rst_n <= '1';
       end if;
     end if;
   end process;
+
+  i_cycles: entity work.counter
+    port map (
+      clk_i => wb_clk_i,
+      rst_n_i => cycles_rst_n,
+      cur_cycles_o => cur_cycles);
 
   --  Dev 0: tdc (without a macro)
   b_tdc0: block
@@ -249,7 +265,27 @@ begin
         bout => devs_out(FTDC + 0));
   end block;
 
-  g_tdcs: for cell in NTDC - 1 downto 1 generate
+  g_tdc1: if NTDC >= 2 generate
+    inst: tdc_inline_1
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        bus_in => devs_in(FTDC + 1),
+        bus_out => devs_out(FTDC + 1),
+        inp_i => inp_i(1));
+  end generate;
+  
+  g_tdc2: if NTDC >= 3 generate
+    inst: tdc_inline_2
+      port map (
+        clk_i => wb_clk_i,
+        rst_n_i => rst_n,
+        bus_in => devs_in(FTDC + 2),
+        bus_out => devs_out(FTDC + 2),
+        inp_i => inp_i(2));
+  end generate;
+  
+  g_tdcs: for cell in NTDC - 1 downto 3 generate
     constant ndly : natural := 200;
 
     signal taps, rtaps : std_logic_vector (ndly - 1 downto 0);
@@ -320,48 +356,24 @@ begin
 
   --  fd1: macro (fd_hd)
   b_mac_fd1: if NFD_MACROS >= 1 generate
-    constant length : natural := 9;
-    signal delay : std_logic_vector(length - 1 downto 0);
-    signal pulse : std_logic;
-  begin
-    inst_delay_line: delayline_9_hd
-      port map (
-        inp_i => pulse, out_o => out_o(1), en_i => delay);
-
-    inst_core: entity work.openfd_core2
-      generic map (
-        g_with_ref => false,
-        plen => length)
+    inst: fd_hd
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        idelay_o => delay,
-        ipulse_o => pulse,
-        bin => devs_in(FFD + 1),
-        bout => devs_out(FFD + 1));
+        bus_in => devs_in(FFD + 1),
+        bus_out => devs_out(FFD + 1),
+        out_o => out_o(1));
   end generate;
-  
+
   --  fd2: macro (fd_hs)
   b_mac_fd2: if NFD_MACROS >= 2 generate
-    constant length : natural := 9;
-    signal delay : std_logic_vector(length - 1 downto 0);
-    signal pulse : std_logic;
-  begin
-    inst_delay_line: delayline_9_hs
-      port map (
-        inp_i => pulse, out_o => out_o(2), en_i => delay);
-
-    inst_core: entity work.openfd_core2
-      generic map (
-        g_with_ref => false,
-        plen => length)
+    inst: fd_hs
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,
-        idelay_o => delay,
-        ipulse_o => pulse,
-        bin => devs_in(FFD + 2),
-        bout => devs_out(FFD + 2));
+        bus_in => devs_in(FFD + 2),
+        bus_out => devs_out(FFD + 2),
+        out_o => out_o(2));
   end generate;
   
   b_fd2: for cell in NFD - 1 downto NFD_MACROS + 1 generate

@@ -245,7 +245,7 @@ begin
     report "fd0 coarse=" & to_hstring(d32);
 
     --  cur_cycle start when now = 2 cycles
-    assert ncycles = to_integer(unsigned(d32) + 4)
+    assert ncycles = to_integer(unsigned(d32) + 5)
       report "(20) bad coarse time for fd0" severity failure;
     assert ndelays = 39
       report "(21) bad fine time for fd0" severity failure;

@@ -13,8 +13,10 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/opentdc_time.vhdl \
  ../rtl/opentdc_tapline.vhdl \
  ../rtl/openfd_delayline.vhdl \
+ ../rtl/counter.vhdl \
  ../rtl/opentdc_core2.vhdl \
  ../rtl/openfd_core2.vhdl \
+ ../rtl/openfd_comps.vhdl \
  ../rtl/opentdc_wb.vhdl  \
  tb_proj.vhdl \
  -r tb_proj # --wave=tb_proj.ghw --stop-time=4us --backtrace-severity=warning

@@ -57,6 +57,6 @@ $GEN_DELAYLN -n delayline_9_hd -l 9
 	echo
     done
     sed -n -e '/^end/,$p' < opentdc_comps-tpl.vhdl
-} > opentdc_comps.vhdl
+} > opendelay_comps.vhdl
 
 echo "Done."

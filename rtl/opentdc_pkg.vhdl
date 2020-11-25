@@ -25,7 +25,7 @@ package opentdc_pkg is
     we : std_logic;
     re : std_logic;
 
-    cur_cycles : std_logic_vector(31 downto 0);
+    cycles_rst_n : std_logic;
   end record;
 
   type tdc_bus_out is record

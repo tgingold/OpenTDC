@@ -35,13 +35,20 @@ architecture behav of openfd_core2 is
   signal fine, rfine      : std_logic_vector(plen - 1 downto 0);
   signal valid, rvalid    : std_logic;
   signal pulse, rpulse    : std_logic;
+  signal cur_cycles : std_logic_vector(31 downto 0);
 begin
+  i_cycles: entity work.counter
+    port map (
+      clk_i => clk_i,
+      rst_n_i => bin.cycles_rst_n,
+      cur_cycles_o => cur_cycles);
+
   process (clk_i)
   begin
     if rising_edge (clk_i) then
       if rst_n_i = '0' then
         pulse <= '0';
-      elsif valid = '1' and coarse = bin.cur_cycles then
+      elsif valid = '1' and coarse = cur_cycles then
         pulse <= '1';
       else
         pulse <= '0';
@@ -58,7 +65,7 @@ begin
       if rising_edge (clk_i) then
         if rst_n_i = '0' then
           rpulse <= '0';
-        elsif valid = '1' and rcoarse = bin.cur_cycles then
+        elsif valid = '1' and rcoarse = cur_cycles then
           rpulse <= '1';
         else
           rpulse <= '0';

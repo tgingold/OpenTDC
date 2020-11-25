@@ -8,7 +8,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 use work.opentdc_pkg.all;
-use work.opentdc_comps.all;
+use work.opendelay_comps.all;
 
 entity fd_ms is
   port (
