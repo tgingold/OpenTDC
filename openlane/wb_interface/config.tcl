@@ -15,6 +15,8 @@ set ::env(CLOCK_NET) "wb_clk_i"
 
 set ::env(BASE_SDC_FILE) "$script_dir/wb_interface.sdc"
 
+set ::env(SYNTH_NO_FLAT) 1
+
 # mgmt core uses 50, so we have a margin
 set ::env(CLOCK_PERIOD) "20"
 
@@ -26,8 +28,8 @@ set ::env(DIE_AREA) "0 0 460 1360"
 set ::env(PL_TARGET_DENSITY) 0.4
 set ::env(GLB_RT_OVERFLOW_ITERS) 20
 
-set ::env(DIODE_INSERTION_STRATEGY) 0
+set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
 
 # Avoid weird optims
-set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
+set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
