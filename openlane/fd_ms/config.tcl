@@ -10,10 +10,10 @@ source $script_dir/../fd-common/fd-config.tcl
 
 # area: 90*.46  120*2.72
 set ::env(FP_SIZING) absolute
-set x [expr 1210 * 0.46]
+set x [expr 1160 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
-set ::env(PL_TARGET_DENSITY) 0.50
+set ::env(PL_TARGET_DENSITY) 0.45
 
 # set ::env(PL_RESIZER_OVERBUFFER) 1
 set ::env(DIODE_INSERTION_STRATEGY) 0
@@ -24,11 +24,11 @@ set ::env(DIODE_INSERTION_STRATEGY) 0
 # -> y = 18810
 set chan [open $script_dir/macro_placement.cfg w]
 
-set x [expr 340 * 0.46]
+set x [expr 290 * 0.46]
 puts $chan "inst_tdelay_line $x 18.81 N"
-set x [expr 628 * 0.46]
+set x [expr 578 * 0.46]
 puts $chan "inst_idelay_line $x 18.81 N"
-set x [expr 930 * 0.46]
+set x [expr 880 * 0.46]
 puts $chan "inst_rdelay_line $x 18.81 N"
 
 close $chan
