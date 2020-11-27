@@ -93,14 +93,13 @@ begin
     constant length : natural := mini_taps'length;
     signal taps : std_logic_vector(length - 1 downto 0);
     signal taps_clks : std_logic_vector (2 * length - 1 downto 0);
-    signal twrite_d1, twrite_d2 : std_logic;
+    signal twrite_d : std_logic_vector(2 downto 0);
   begin
     process (clk_i)
     begin
       if rising_edge (clk_i) then
         tpulse_o <= tpulse;
-        twrite_d1 <= twrite;
-        twrite_d2 <= twrite_d1;
+        twrite_d <= twrite & twrite_d (twrite_d'left downto 1);
       end if;
     end process;
 
@@ -117,7 +116,7 @@ begin
     
     process (clk_i)
     begin
-      if rising_edge (clk_i) and twrite_d2 = '1' then
+      if rising_edge (clk_i) and twrite_d (0) = '1' then
         mini_taps <= taps;
       end if;
     end process;
@@ -165,10 +164,13 @@ begin
               bout.dato (plen - 1 downto 0) <= rfine;
             end if;
           when "111" =>
-            bout.dato (0) <= '1';
-            bout.dato (1) <= '0';
+            bout.dato (0) <= '1';  -- Config
+            bout.dato (1) <= '0';  -- FD
             if g_with_ref then
               bout.dato (2) <= '1';
+            end if;
+            if g_with_test then
+              bout.dato (3) <= '1';
             end if;
             bout.dato (31 downto 16) <=
               std_logic_vector (to_unsigned(plen, 16));
@@ -191,6 +193,7 @@ begin
       if rst_n_i = '0' then
         valid <= '0';
         rvalid <= '0';
+        tpulse <= '0';
       else
         if bin.we = '1' then
           case bin.adr is

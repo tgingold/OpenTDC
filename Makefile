@@ -133,7 +133,7 @@ gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v gds/delayline_9_hd.gds
 	$(build-macro)
 
 
-src/fd_hs.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hs.vhdl
+src/fd_hs.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_hs.vhdl
 	$(yosys_fd)
 
 gds/fd_hs.gds lef/fd_hs.lef: src/fd_hs.v src/fd_hs_bb.v gds/delayline_9_hs.gds
@@ -174,7 +174,8 @@ rtl/openfd_comps.vhdl: Makefile
 	echo "      rst_n_i : std_logic;"; \
 	echo "      bus_in : dev_bus_in;"; \
 	echo "      bus_out : out dev_bus_out;"; \
-	echo "      out_o : out std_logic);"; \
+	echo "      out1_o : out std_logic;"; \
+	echo "      out2_o : out std_logic);"; \
 	echo "  end component $$M;"; \
 	echo; \
 	done; \

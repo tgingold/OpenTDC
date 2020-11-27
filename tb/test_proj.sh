@@ -5,6 +5,7 @@
 
 ${GHDL:-ghdl} -c --std=08 \
  ../openlane/macros/opendelay_comps.vhdl \
+ delaylines.vhdl \
  ../rtl/opentdc_pkg.vhdl \
  ../rtl/opentdc_delay.vhdl \
  ../rtl/opentdc_delay.vhdl \
@@ -22,6 +23,7 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/fd_hd.vhdl \
  ../rtl/tdc_inline.vhdl \
  ../rtl/tdc_inline_1.vhdl \
+ ../rtl/wb_interface.vhdl  \
  ../rtl/opentdc_wb.vhdl  \
  tb_proj.vhdl \
  -r tb_proj --wave=tb_proj.ghw #--stop-time=4us #--backtrace-severity=warning

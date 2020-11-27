@@ -39,10 +39,14 @@ architecture behav of tb_proj is
   alias inp1 : std_logic is inps (0);
   alias inp2 : std_logic is inps (1);
   alias out0 : std_logic is outs (0);
+  alias out1i : std_logic is outs (1);
+  alias out1r : std_logic is outs (2);
 
   signal rst_time_n : std_logic;
 
   signal fd0_time : time;
+  signal fd1_itime : time;
+  signal fd1_rtime : time;     
 
   signal done : std_logic := '0';
 
@@ -88,6 +92,35 @@ architecture behav of tb_proj is
     wb_out.stb <= '0';
     wait until rising_edge(clk);
   end wb32_read32;
+
+  procedure wait_fd_check (signal clk : std_logic;
+                           signal fd_time : time;
+                           coarse : std_logic_vector(31 downto 0);
+                           fine : natural)
+  is
+    variable ncycles : natural;
+    variable ndelays : natural;
+  begin
+    wait on fd_time for 5 * cycle;
+    wait until rising_edge(clk);
+    report "fd time=" & time'image(fd_time);
+    assert fd_time > 0 ns
+      report "(20.0) fd not triggered" severity failure;
+    ncycles := fd_time / cycle;
+    ndelays := (fd_time - ncycles * cycle) / 100 ps;
+    report "ncycles=" & natural'image(ncycles)
+      & ", ndelays=" & natural'image(ndelays);
+    
+    report "fd coarse=" & to_hstring(coarse)
+      & "=" & natural'image(to_integer(unsigned(coarse)));
+
+    --  cur_cycle start when now = 2 cycles
+    assert ncycles = to_integer(unsigned(coarse) + 10)
+      report "(20) bad coarse time for fd" severity failure;
+    assert ndelays = fine
+      report "(21) bad fine time for fd" severity failure;
+  end wait_fd_check;
+  
 begin
   inps (inps'left downto 2) <= (others => '0');
 
@@ -109,9 +142,19 @@ begin
     fd0_time <= now;
   end process;
 
+  process (out1i)
+  begin
+    fd1_itime <= now;
+  end process;
+
+  process (out1r)
+  begin
+    fd1_rtime <= now;
+  end process;
+
   process
     variable d32, d32_a : std_logic_vector (31 downto 0);
-    variable fd0 : std_logic_vector (31 downto 0);
+    variable fd0, fd1 : std_logic_vector (31 downto 0);
     variable ncycles : natural;
     variable ndelays : natural;
   begin
@@ -138,6 +181,8 @@ begin
     report "Nbr FDs: " & natural'image(to_integer(unsigned(d32(31 downto 24))));
     fd0 := (31 downto 13 => '0') & std_logic_vector(unsigned(d32 (23 downto 16)) + 1) & b"000_00";
 
+    report "fd0 address: " & to_hstring(fd0);
+    
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
     report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
@@ -225,8 +270,11 @@ begin
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0054", d32);
     assert d32 = x"0000_0000"
       report "(18) bad tdc2 scan val #6" severity failure;
+
+    --------------- FD 0
     
     --  Program fd0.
+    report "FD0";
     wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_000c", x"0000_0027");
     d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
     wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_0008", d32);
@@ -237,26 +285,66 @@ begin
     assert d32_a = x"0000_0001"
       report "(19) bad busy value for fd0" severity failure;
 
-    wait on fd0_time for 5 * cycle;
-    wait until rising_edge(wb_clk);
-    ncycles := fd0_time / cycle;
-    ndelays := (fd0_time - ncycles * cycle) / 100 ps;
-    report "fd0 time=" & time'image(fd0_time);
-    report "ncycles=" & natural'image(ncycles)
-      & ", ndelays=" & natural'image(ndelays);
-    report "fd0 coarse=" & to_hstring(d32) & "=" & natural'image(to_integer(unsigned(d32)));
+    wait_fd_check (wb_clk, fd0_time, d32, 16#27#);
 
-    --  cur_cycle start when now = 2 cycles
-    assert ncycles = to_integer(unsigned(d32) + 10)
-      report "(20) bad coarse time for fd0" severity failure;
-    assert ndelays = 39
-      report "(21) bad fine time for fd0" severity failure;
-
-    --  Check busy status (before the trigger).
+    --  Check busy status (after the trigger).
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32_a);
     assert d32_a(16) = '0'
       report "(22) bad busy value for fd0" severity failure;
 
+    --------------- FD 1
+
+    fd1 := std_logic_vector (unsigned(fd0) + x"20");
+
+    --  FD1i
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_001c", d32);
+    report "FD1i  id: " & to_hstring(d32);
+    assert d32 (3 downto 0) = b"1101"
+      report "(25.0) bad fd1 id" severity failure;
+
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_000c", x"0000_005d");
+    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0008", d32);
+
+    --  Check busy status (before the trigger).
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0000", d32_a);
+    assert d32_a(0) = '1'
+      report "(25) bad busy value for fd1i" severity failure;
+
+    wait_fd_check (wb_clk, fd1_itime, d32, 16#5d#);
+
+    report "FD1r";
+
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0014", x"0000_0071");
+    d32 := std_logic_vector(to_unsigned(now / 20 ns, 32) + 7);
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0010", d32);
+
+    --  Check busy status (before the trigger).
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0000", d32_a);
+    assert d32_a(1) = '1'
+      report "(26) bad busy value for fd1r" severity failure;
+
+    wait_fd_check (wb_clk, fd1_rtime, d32, 16#71#);
+
+    report "FD1t";
+
+    -- 0xc4 = 196
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0018", x"8000_00c4");
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0004", d32);
+    report "fd mini tap: " & to_hstring(d32);
+    assert d32 = x"0000_001f"
+      report "(27.0) bad minitap value" severity failure;
+    
+    wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0018", x"0000_00c3");
+    wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0004", d32);
+    report "fd mini tap: " & to_hstring(d32);
+    assert d32 = x"0000_00c0"
+      report "(27.1) bad minitap value" severity failure;
+    
+    --  TODO: read back regs.
+    
+    ---------------- wb_interface
+    
     --  Check register access
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
     assert d32 = x"10_20_30_40"

@@ -189,8 +189,8 @@ begin
           when "110" =>
             null;
           when "111" =>
-            bout.dato (0) <= '1';
-            bout.dato (1) <= '1';
+            bout.dato (0) <= '1';  --  Config
+            bout.dato (1) <= '1';  --  TDC
             if g_with_ref then
               bout.dato (2) <= '1';
             end if;

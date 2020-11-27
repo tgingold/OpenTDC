@@ -164,7 +164,8 @@ begin
       rst_n_i => fd_rst_n(1),
       bus_in => fd_bus_in(1),
       bus_out => fd_bus_out(1),
-      out_o => out_o(1));
+      out1_o => out_o(1),
+      out2_o => out_o(2));
 
   --  fd2: macro (fd_hs)
   i_fd2: fd_hs
@@ -173,7 +174,8 @@ begin
       rst_n_i => fd_rst_n(2),
       bus_in => fd_bus_in(2),
       bus_out => fd_bus_out(2),
-      out_o => out_o(2));
+      out1_o => out_o(3),
+      out2_o => out_o(4));
 
-  out_o (15 downto 3) <= (others => '0');
+  out_o (15 downto 5) <= (others => '0');
 end behav;

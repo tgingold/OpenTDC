@@ -19,7 +19,8 @@ entity fd_hs is
     bus_in : dev_bus_in;
     bus_out : out dev_bus_out;
 
-    out_o : out std_logic);
+    out1_o : out std_logic;
+    out2_o : out std_logic);
 end fd_hs;
 
 architecture behav of fd_hs is
@@ -29,7 +30,9 @@ architecture behav of fd_hs is
 begin
   inst_delay_line: delayline_9_hs
     port map (
-      inp_i => pulse, out_o => out_o, en_i => delay);
+      inp_i => pulse, out_o => out1_o, en_i => delay);
+
+  out2_o <= '0';
 
   inst_core: entity work.openfd_core2
     generic map (
