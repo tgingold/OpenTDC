@@ -296,9 +296,14 @@ class GenDef:
     def pad_rows(self):
         """Add fillers so that all rows have the same length"""
         wd = max([r['width'] for r in self.rows])
+        tap = self.cells.get('tap')
         for i, r in enumerate(self.rows):
             for f in self.fillers:
                 while r['width'] + f['width'] <= wd:
+                    # Also add taps in case of very long fill.
+                    if (tap and f is self.fillers[0]
+                            and r['width'] + f['width'] + tap['width'] <= wd):
+                        self._add_fill(i, tap)
                     self._add_fill(i, f)
             assert r['width'] == wd
 
