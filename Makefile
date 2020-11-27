@@ -43,6 +43,7 @@ define build-macro
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
 grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log && \
+grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
 cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
@@ -66,13 +67,16 @@ build: src/opentdc_wb.v openlane/opentdc_wb/macros.tcl $(foreach m,$(MACROS),gds
 ibuild:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
 
+user_project: # src/opentdc_wb.v openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
+	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file user_project_wrapper/interactive.tcl
+
 opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
 	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i $< -o $@
 
 src/opentdc_wb.v: $(VHDL_SRCS)
 	$(yosys_fd)
 
-openlane/opentdc_wb/macros.tcl: Makefile
+openlane/user_project_wrapper/macros.tcl: Makefile
 	echo 'set macros [list $(foreach n,$(MACROS),"$(n)")]' > $@
 
 # Delay lines
@@ -140,7 +144,7 @@ gds/fd_hs.gds lef/fd_hs.lef: src/fd_hs.v src/fd_hs_bb.v gds/delayline_9_hs.gds
 	$(build-macro)
 
 
-src/fd_ms.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
+src/fd_ms.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
 	$(yosys_fd)
 
 gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v gds/delayline_9_ms.gds

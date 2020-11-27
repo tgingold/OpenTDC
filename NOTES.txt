@@ -293,3 +293,24 @@ in pdn: look for met5 VPWR layers (bottom one), select one strip (eg: 486.830)
 in macro.lef: look for VPWR RECT, compute middle: (8.010 + 6.410)/2 = 7.210
 substract: 486.830 - 7.210 = 479.620
 
+ghdl improvements
+* name of cells
+* blackbox
+* labels
+* split records
+
+tools improvements:
+* place io (distance, groups)
+* visualize nets
+* visualize timing issues
+* visualize congestion
+
+
+FD:
+fd_hd
+fd_hs
+fd_ms
+fd_ls
++ inline ?
++ hd with cdly25
+

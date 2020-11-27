@@ -11,7 +11,7 @@ TDC could be used to measure distances using time-of-flight of laser
 pulses.  It is also used to measure the time-of-flight of particules
 in High Energy Physic experiments.  A TDC could also be used in LIDAR.
 
-The first implementation aims at providing a very simple TDC
+The first implementation aims at providing a very simple TDC+FD
 implementation (based only on standard cells) and to test different
 cell libraries, different delay elements and different layouts.
 We will evaluate stability over time, power consumption and accuracy
@@ -28,7 +28,7 @@ You can also read the blog in the repository that tells about the
 progress of this project.
 
 Particularities of the design:
-* Mixes different cell libraries
+* Mixes different cell libraries (hd, hs)
 * Tool generated macros
 * mixed languages (VHDL and verilog)
 
@@ -72,6 +72,5 @@ Please use issues and pull-requests from github
 
 ## Copyright
 
-SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
-
-SPDX-License-Identifier: Apache-2.0
+### SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+### SPDX-License-Identifier: Apache-2.0

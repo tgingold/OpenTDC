@@ -15,14 +15,20 @@ set ::env(DIE_AREA) "0 0 $x 231.2"
 
 # 0.35 -> 1 antenna, 21 DRC
 # 0.30 -> 4 antennas, 21 DRC
-set ::env(PL_TARGET_DENSITY) 0.35
+set ::env(PL_TARGET_DENSITY) 0.45
 
-set ::env(PL_RESIZER_OVERBUFFER) 1
+#set ::env(FILL_INSERTION) 0
 
+#set ::env(PL_RESIZER_OVERBUFFER) 1
+
+# Diode strategy:
+# 2 -> creates LVS errors (as diodes and fakediodes mismatch)
+set ::env(DIODE_INSERTION_STRATEGY) 0
+#set ::env(RUN_SPEF_EXTRACTION) 0
 
 # Macros
-# 9_hd VPWR: 6.410 8.010 -> y = 7.210
-# prj  VPWR: 27290
+# macro VPWR: 6.410 8.010 -> y = 7.210
+# prj   VPWR: 27290
 set y 20.080
 set chan [open $script_dir/macro_placement.cfg w]
 
