@@ -48,6 +48,10 @@ entity wb_interface is
     fd2_bus_in : out dev_bus_in;
     fd2_bus_out : dev_bus_out;
 
+    fd3_rst_n : out std_logic;
+    fd3_bus_in : out dev_bus_in;
+    fd3_bus_out : dev_bus_out;
+
     --  Outputs enable
     oen_o : out std_logic_vector(15 downto 0);
 
@@ -58,7 +62,7 @@ architecture behav of wb_interface is
   --  Config (not generics to keep the same name).
   --  XX_MACROS is the number of hard macros in XX
   constant NTDC : natural := 3;
-  constant NFD_MACROS : natural := 2;
+  constant NFD_MACROS : natural := 3;
   constant NFD : natural := 1 + NFD_MACROS + 0;
 
   signal rst_d : std_logic_vector(3 downto 0);
@@ -342,5 +346,12 @@ begin
     fd2_rst_n <= rst_n;
     fd2_bus_in <= devs_in_d(FFD + 2);
     devs_out(FFD + 2) <= fd2_bus_out;
+  end generate;
+
+  --  fd3: macro (fd_ms)
+  b_mac_fd3: if NFD_MACROS >= 3 generate
+    fd3_rst_n <= rst_n;
+    fd3_bus_in <= devs_in_d(FFD + 3);
+    devs_out(FFD + 3) <= fd3_bus_out;
   end generate;
 end behav;
