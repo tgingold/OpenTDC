@@ -195,7 +195,7 @@ gds/tdc_inline_1.gds lef/tdc_inline_1.lef: src/tdc_inline_1.v src/tdc_inline_1_b
 	$(build-macro)
 
 src/tdc_inline_2.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vhdl
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=2 $^ -e tdc_inline; rename tdc_inline tdc_inline_2; write_verilog $@; write_verilog -blackboxes src/tdc_inline_2_bb.v"
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=3 $^ -e tdc_inline; rename tdc_inline tdc_inline_2; write_verilog $@; write_verilog -blackboxes src/tdc_inline_2_bb.v"
 
 gds/tdc_inline_2.gds lef/tdc_inline_2.lef: src/tdc_inline_2.v src/tdc_inline_2_bb.v
 	$(build-macro)
