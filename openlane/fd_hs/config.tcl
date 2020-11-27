@@ -13,7 +13,8 @@ set ::env(FP_SIZING) absolute
 set x [expr 1110 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 280.2"
 
-set ::env(PL_RESIZER_OVERBUFFER) 1
+# set ::env(PL_RESIZER_OVERBUFFER) 1
+set ::env(DIODE_INSERTION_STRATEGY) 0
 
 # Macros
 # 9_hs VPWR: 7.680-9.280 -> y = 8.480
@@ -21,11 +22,11 @@ set ::env(PL_RESIZER_OVERBUFFER) 1
 # -> y = 18810
 set chan [open $script_dir/macro_placement.cfg w]
 
-set x [expr 200 * 0.46]
+set x [expr 220 * 0.46]
 puts $chan "inst_tdelay_line $x 18.81 N"
-set x [expr 478 * 0.46]
+set x [expr 518 * 0.46]
 puts $chan "inst_idelay_line $x 18.81 N"
-set x [expr 835 * 0.46]
+set x [expr 830 * 0.46]
 puts $chan "inst_rdelay_line $x 18.81 N"
 
 close $chan
