@@ -12,23 +12,26 @@ source $script_dir/../fd-common/fd-config.tcl
 set ::env(FP_SIZING) absolute
 set x [expr 1200 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
-set ::env(PL_TARGET_DENSITY) 0.4
+
+# 0.35 -> 1 antenna, 21 DRC
+# 0.30 -> 4 antennas, 21 DRC
+set ::env(PL_TARGET_DENSITY) 0.35
 
 set ::env(PL_RESIZER_OVERBUFFER) 1
 
 
 # Macros
-# 9_hd VPWR: 7.680-9.280 -> y = 8.010
+# 9_hd VPWR: 6.410 8.010 -> y = 7.210
 # prj  VPWR: 27290
-# -> y = 19980
+set y 20.080
 set chan [open $script_dir/macro_placement.cfg w]
 
 set x [expr 340 * 0.46]
-puts $chan "inst_tdelay_line $x 19.98 N"
+puts $chan "inst_tdelay_line $x $y N"
 set x [expr 638 * 0.46]
-puts $chan "inst_idelay_line $x 19.98 N"
+puts $chan "inst_idelay_line $x $y N"
 set x [expr 935 * 0.46]
-puts $chan "inst_rdelay_line $x 19.98 N"
+puts $chan "inst_rdelay_line $x $y N"
 
 close $chan
 

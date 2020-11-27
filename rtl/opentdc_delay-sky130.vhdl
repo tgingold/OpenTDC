@@ -77,7 +77,7 @@ begin
       port map (out_o, inp_i);
   end generate;
 
-  g_clkdly15_1: if cell = 5 or cell = 0 generate
+  g_clkdly15_1: if cell = 5 generate
     dly: \sky130_fd_sc_hd__clkdlybuf4s15_1\
       port map (out_o, inp_i);
   end generate;
@@ -107,7 +107,7 @@ begin
       port map (out_o, inp_i);
   end generate;
 
-  g_clkdly15_2: if cell = 8 generate
+  g_clkdly15_2: if cell = 8 or cell = 0 generate
     dly: \sky130_fd_sc_hd__clkdlybuf4s15_2\
       port map (out_o, inp_i);
   end generate;
