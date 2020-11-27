@@ -92,7 +92,9 @@ gds/delayline_9_hs.gds: openlane/macros/delayline_9_hs.def
 
 openlane/macros/delayline_9_hd.def:
 	$(MKDIR) -p $(dir $@)
-	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd -l 9
+# Note: OK: cdly15_2, cdly25_1
+#       KO: cdly15_1, cdly18_1
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd -l 9 -d cdly15_2
 
 gds/delayline_9_hd.gds: openlane/macros/delayline_9_hd.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
