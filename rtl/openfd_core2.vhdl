@@ -132,7 +132,7 @@ begin
   process (clk_i) is
   begin
     if rising_edge (clk_i) then
-      bout.trig <= '0';
+      bout.trig <= valid;
 
       bout.dato <= (others => '0');
       bout.rack <= '0';
