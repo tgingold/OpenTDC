@@ -39,14 +39,25 @@ VHDL_SRCS= $(VHDL_COMMON_SRCS) \
  rtl/opentdc_comps.vhdl \
  rtl/opentdc_wb.vhdl
 
-define build-macro
-DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
-(cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
+define build-status
+echo "Status $$DESIGN" && \
 grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log && \
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
 cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
+endef
+
+define build-script
+DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
+(cd openlane; /openLANE_flow/openlane/flow.tcl -it -file zero/interactive.tcl ) && \
+$(build-status)
+endef
+
+define build-flow
+DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
+(cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
+$(build-status)
 endef
 
 define yosys_fd
@@ -67,7 +78,7 @@ build: src/opentdc_wb.v openlane/opentdc_wb/macros.tcl $(foreach m,$(MACROS),gds
 ibuild:
 	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
 
-user_project: # src/opentdc_wb.v openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
+gds/user_project_wrapper.gds: rtl/user_project_wrapper.v src/opentdc_wb.v # openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
 	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file user_project_wrapper/interactive.tcl
 
 opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
@@ -134,35 +145,35 @@ src/fd_hd.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/
 	$(yosys_fd)
 
 gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v gds/delayline_9_hd.gds
-	$(build-macro)
+	$(build-flow)
 
 
 src/fd_hs.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_hs.vhdl
 	$(yosys_fd)
 
 gds/fd_hs.gds lef/fd_hs.lef: src/fd_hs.v src/fd_hs_bb.v gds/delayline_9_hs.gds
-	$(build-macro)
+	$(build-flow)
 
 
 src/fd_ms.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_ms.vhdl
 	$(yosys_fd)
 
 gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v gds/delayline_9_ms.gds
-	$(build-macro)
+	$(build-flow)
 
 
 src/fd_18hs.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_18hs.vhdl
 	$(yosys_fd)
 
 gds/fd_18hs.gds lef/fd_18hs.lef: src/fd_18hs.v src/fd_18hs_bb.v gds/delayline_9_osu_18hs.gds
-	$(build-macro)
+	$(build-flow)
 
 
 src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/openfd_delayline.vhdl rtl/fd_inline.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=1 $^ -e fd_inline; rename fd_inline fd_inline_1; write_verilog $@; write_verilog -blackboxes src/fd_inline_1_bb.v"
 
 gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
-	$(build-macro)
+	$(build-flow)
 
 rtl/openfd_comps.vhdl: Makefile
 	{ \
@@ -192,13 +203,13 @@ src/tdc_inline_1.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vh
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=1 $^ -e tdc_inline; rename tdc_inline tdc_inline_1; write_verilog $@; write_verilog -blackboxes src/tdc_inline_1_bb.v"
 
 gds/tdc_inline_1.gds lef/tdc_inline_1.lef: src/tdc_inline_1.v src/tdc_inline_1_bb.v
-	$(build-macro)
+	$(build-flow)
 
 src/tdc_inline_2.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=3 $^ -e tdc_inline; rename tdc_inline tdc_inline_2; write_verilog $@; write_verilog -blackboxes src/tdc_inline_2_bb.v"
 
 gds/tdc_inline_2.gds lef/tdc_inline_2.lef: src/tdc_inline_2.v src/tdc_inline_2_bb.v
-	$(build-macro)
+	$(build-flow)
 
 
 rtl/opentdc_comps.vhdl: Makefile
@@ -229,7 +240,13 @@ src/wb_interface.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) $(VHDL_FD_EXTRA_S
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e wb_interface; write_verilog $@; write_verilog -blackboxes src/wb_interface_bb.v"
 
 gds/wb_interface.gds lef/wb_interface.lef: src/wb_interface.v src/wb_interface_bb.v
-	$(build-macro)
+	$(build-flow)
+
+
+# Zero
+
+gds/zero.gds lef/zero.lef: rtl/zero.v
+	$(build-script)
 
 
 verilog: $(foreach v,$(MACROS),src/$(v).v) src/opentdc_wb.v
