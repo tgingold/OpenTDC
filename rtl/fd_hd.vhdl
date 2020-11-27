@@ -25,8 +25,9 @@ end fd_hd;
 
 architecture behav of fd_hd is
   constant length : natural := 9;
-  signal idelay, rdelay : std_logic_vector(length - 1 downto 0);
+  signal idelay, rdelay, tdelay : std_logic_vector(length - 1 downto 0);
   signal ipulse, rpulse : std_logic;
+  signal tpulse_in, tpulse_out : std_logic;
 begin
   inst_idelay_line: delayline_9_hd
     port map (
@@ -36,17 +37,25 @@ begin
     port map (
       inp_i => rpulse, out_o => out2_o, en_i => rdelay);
 
+  inst_tdelay_line: delayline_9_hd
+    port map (
+      inp_i => tpulse_in, out_o => tpulse_out, en_i => tdelay);
+
   inst_core: entity work.openfd_core2
     generic map (
       g_with_ref => true,
+      g_with_test => true,
       plen => length)
     port map (
       clk_i => clk_i,
       rst_n_i => rst_n_i,
       idelay_o => idelay,
-      ipulse_o => ipulse,
       rdelay_o => rdelay,
+      tdelay_o => tdelay,
+      ipulse_o => ipulse,
       rpulse_o => rpulse,
+      tpulse_o => tpulse_in,
+      tpulse_i => tpulse_out,
       bin => bus_in,
       bout => bus_out);
 end behav;

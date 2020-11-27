@@ -19,9 +19,12 @@ VHDL_COMMON_SRCS=\
  rtl/counter.vhdl \
  openlane/macros/opendelay_comps.vhdl
 
-VHDL_TDC_EXTRA_SRCS=\
+VHDL_TAPLINE_SRCS=\
  rtl/opentdc_sync.vhdl \
- rtl/opentdc_tapline.vhdl \
+ rtl/opentdc_tapline.vhdl
+
+VHDL_TDC_EXTRA_SRCS=\
+ $(VHDL_TAPLINE_SRCS) \
  rtl/opentdc_time.vhdl \
  rtl/opentdc_core2.vhdl
 
@@ -123,7 +126,7 @@ openlane/macros/opendelay_comps.vhdl: Makefile
 
 # Fine delays
 
-src/fd_hd.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd.vhdl
+src/fd_hd.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd.vhdl
 	$(yosys_fd)
 
 gds/fd_hd.gds lef/fd_hd.lef: src/fd_hd.v src/fd_hd_bb.v gds/delayline_9_hd.gds
