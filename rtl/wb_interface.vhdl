@@ -286,7 +286,8 @@ begin
     inst_core: entity work.opentdc_core2
       generic map (
         g_with_ref => false,
-        length => ndly)
+        length => ndly,
+        fine_bits => 8)
       port map (
         clk_i => wb_clk_i,
         rst_n_i => rst_n,

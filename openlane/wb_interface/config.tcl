@@ -27,7 +27,7 @@ set ::env(FP_SIZING) absolute
 
 # .46 2.72
 set ::env(DIE_AREA) "0 0 460 1360"
-set ::env(PL_TARGET_DENSITY) 0.25
+set ::env(PL_TARGET_DENSITY) 0.20
 set ::env(GLB_RT_OVERFLOW_ITERS) 20
 
 set ::env(DIODE_INSERTION_STRATEGY) 3
@@ -40,4 +40,7 @@ set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
 # Too much memory
 set ::env(RUN_SPEF_EXTRACTION) 0
 
-# set ::env(FILL_INSERTION) 0
+# Cheat to avoid DRC issues with conb_1
+# set ::env(DECAP_CELL) "sky130_fd_sc_hd__decap_6 sky130_fd_sc_hd__decap_12 sky130_fd_sc_hd__decap_4"
+
+#set ::env(FILL_INSERTION) 0

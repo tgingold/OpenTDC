@@ -12,7 +12,13 @@ entity opentdc_core2 is
   generic (
     g_with_ref : boolean := True;
     g_with_scan : boolean := False;
-    length : natural := 1024);
+
+    --  Number of taps
+    length : natural := 1024;
+
+    --  Number of bits in fine_o
+    --  2**fine_bits >= length
+    fine_bits : natural := 10);
   port (
     clk_i : std_logic;
     rst_n_i : std_logic;
@@ -34,7 +40,7 @@ architecture behav of opentdc_core2 is
   signal restart, rrestart : std_logic;
 
   signal coarse, rcoarse  : std_logic_vector(31 downto 0);
-  signal fine, rfine      : std_logic_vector(15 downto 0);
+  signal fine, rfine      : std_logic_vector(fine_bits - 1 downto 0);
   signal detect_rise, detect_fall : std_logic;
   signal rdetect_rise, rdetect_fall : std_logic;
   signal detect : std_logic;
@@ -57,7 +63,8 @@ begin
 
   inst_itime: entity work.opentdc_time
     generic map (
-      length => length)
+      length => length,
+      fine_bits => 8)
     port map (
       clk_i => clk_i,
       rst_n_i => rst_n_i,
@@ -126,7 +133,7 @@ begin
         clk_i => clk_i,
         rst_n_i => bin.cycles_rst_n,
         cur_cycles_o => cur_rcycles);
-    
+
     inst_rtime: entity work.opentdc_time
       generic map (
         length => length)
@@ -174,14 +181,12 @@ begin
             bout.dato (27 downto 24) <= clk_div;
           when "001" =>
             bout.dato (31 downto 16) <= rcoarse(15 downto 0);
-            bout.dato (15 downto 0) <= rfine(15 downto 0);
+            bout.dato (fine_bits - 1 downto 0) <= rfine(fine_bits - 1 downto 0);
           when "010" =>
             bout.dato <= coarse;
           when "011" =>
-            bout.dato (31 downto 16) <= (others => '0');
-            bout.dato (15 downto 0) <= fine;
+            bout.dato (fine_bits - 1 downto 0) <= fine;
           when "100" =>
-            bout.dato <= (others => '0');
             bout.dato (7 downto 0) <= scan_cnt;
           when "101" =>
             bout.dato <= scan_reg;

@@ -9,7 +9,12 @@ use ieee.numeric_std.all;
 
 entity opentdc_time is
   generic (
-    length : natural := 1024);
+    --  Number of taps
+    length : natural := 1024;
+
+    --  Number of bits in fine_o
+    --  2**fine_bits >= length
+    fine_bits : natural := 10);
   port (
     clk_i : std_logic;
     rst_n_i : std_logic;
@@ -37,7 +42,7 @@ entity opentdc_time is
 
     --  Registers.
     coarse_o  : out std_logic_vector(31 downto 0);
-    fine_o    : out std_logic_vector(15 downto 0));
+    fine_o    : out std_logic_vector(fine_bits - 1 downto 0));
 end opentdc_time;
 
 architecture behav of opentdc_time is
@@ -65,6 +70,8 @@ architecture behav of opentdc_time is
   signal edge : std_logic;
   signal detect : std_logic;
 begin
+  assert 2**fine_bits >= length;
+
   --  FF at the input to detect pulses (longer than the cycle).
   process (clk_i) is
   begin
@@ -94,7 +101,7 @@ begin
         --   and not yet triggered or restarted
         triggered <= '1';
         coarse_o <= std_logic_vector(unsigned(cur_cycles_i));
-        fine_o <= std_logic_vector(to_unsigned(ffs (tap_i), 16));
+        fine_o <= std_logic_vector(to_unsigned(ffs (tap_i), fine_bits));
       elsif restart_i = '1' then
         triggered <= '0';
       end if;
