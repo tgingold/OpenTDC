@@ -10,7 +10,7 @@ HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
-MACROS=wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
+MACROS=wb_extender_last wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \
@@ -81,8 +81,9 @@ ibuild:
 gds/user_project_wrapper.gds: src/user_project_wrapper.v # openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
 	$(build-script)
 
-src/user_project_wrapper.v: rtl/user_project_wrapper.v src/opentdc_wb.v
-	$(YOSYS) -p "read_verilog $^; hierarchy -top user_project_wrapper; flatten; opt_clean -purge; write_verilog -noattr $@"
+src/user_project_wrapper.v: rtl/user_project_wrapper.vhdl rtl/opentdc_pkg.vhdl rtl/openfd_comps.vhdl rtl/opentdc_comps.vhdl
+	$(yosys_fd)
+#	$(YOSYS) -p "read_verilog $^; hierarchy -top user_project_wrapper; flatten; opt_clean -purge; splitnets; write_verilog -noattr $@"
 
 opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
 	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i $< -o $@

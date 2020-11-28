@@ -115,7 +115,7 @@ architecture behav of tb_proj is
       & "=" & natural'image(to_integer(unsigned(coarse)));
 
     --  cur_cycle start when now = 2 cycles
-    assert ncycles = to_integer(unsigned(coarse) + 10)
+    assert ncycles = to_integer(unsigned(coarse) + 9)
       report "(20) bad coarse time for fd" severity failure;
     assert ndelays = fine
       report "(21) bad fine time for fd" severity failure;

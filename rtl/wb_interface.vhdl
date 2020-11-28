@@ -25,6 +25,12 @@ entity wb_interface is
     wbs_ack_o : out std_logic;
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
+    --  Downstream interface
+    down_rst_n_o : out std_logic;
+    down_bus_in : out dev_bus_in;
+    down_bus_out : dev_bus_out;
+    down_adr_o : out std_logic_vector (4 downto 0);
+
     --  TDCs
     
     tdc0_inp_i : std_logic;
@@ -71,6 +77,7 @@ architecture behav of wb_interface is
   signal cycles_rst_n : std_logic;
   signal cur_cycles : std_logic_vector(31 downto 0);
 
+  --  Set when a WB transaction can start
   signal start : std_logic;
 
   signal oen : std_logic_vector(oen_o'range);
@@ -85,6 +92,8 @@ architecture behav of wb_interface is
 
   signal ctrl_in : dev_bus_in;
   signal ctrl_out : dev_bus_out;
+
+  signal down_bus_out_r : dev_bus_out;
 
   signal areg : std_logic_vector(31 downto 0);
 begin
@@ -116,12 +125,14 @@ begin
     if rising_edge(wb_clk_i) then
       devs_out_d <= devs_out;
       devs_in_d <= devs_in;
+      down_rst_n_o <= rst_n;
+      down_bus_out_r <= down_bus_out;
     end if;
   end process;
 
   --  Wishbone out process
   process (wb_clk_i)
-    variable n : natural range 0 to 15;
+    variable n : natural range 0 to 7;
   begin
     if rising_edge(wb_clk_i) then
       wbs_ack_o <= '0';
@@ -131,12 +142,19 @@ begin
         start <= '1';
       else
         if wbs_stb_i = '1' and wbs_cyc_i = '1' then
-          -- 8 words per sub-device (so 3+2 bits)
-          n := to_integer(unsigned(wbs_adr_i (9 downto 5)));
-          -- report "write to device " & natural'image(n);
-          wbs_ack_o <= devs_out_d(n).wack or devs_out_d(n).rack;
-          wbs_dat_o <= devs_out_d(n).dato;
-          start <= '0';
+          if wbs_adr_i (9 downto 8) = "00" then
+            -- 8 words per sub-device (so 3+2 bits)
+            n := to_integer(unsigned(wbs_adr_i (7 downto 5)));
+            -- report "write to device " & natural'image(n);
+            wbs_ack_o <= devs_out_d(n).wack or devs_out_d(n).rack;
+            wbs_dat_o <= devs_out_d(n).dato;
+
+            --  Freeze until the end of the transfer
+            start <= '0';
+          else
+            wbs_ack_o <= down_bus_out_r.wack or down_bus_out_r.rack;
+            wbs_dat_o <= down_bus_out_r.dato;
+          end if;
         else
           start <= '1';
         end if;
@@ -156,7 +174,8 @@ begin
           devs_in (i).we <= '0';
         else
           if wbs_stb_i = '1' and wbs_cyc_i = '1' then
-            if wbs_adr_i (9 downto 5) = std_logic_vector(to_unsigned(i, 5))
+            if wbs_adr_i (9 downto 8) = "00"
+              and wbs_adr_i (7 downto 5) = std_logic_vector(to_unsigned(i, 3))
             then
               devs_in (i).adr <= wbs_adr_i (4 downto 2);
               devs_in (i).dati <= wbs_dat_i;
@@ -164,17 +183,38 @@ begin
               devs_in (i).we <= start and wbs_we_i;
               devs_in (i).re <= start and not wbs_we_i;
             else
-              devs_in (i).adr <= (others => '0');
-              devs_in (i).dati <= (others => '0');
-              devs_in (i).sel <= (others => '0');
-              devs_in (i).we <= '0';
-              devs_in (i).re <= '0';
+              devs_in (i) <= null_dev_bus_in;
             end if;
           end if;
         end if;
       end if;
     end process;
   end generate;
+
+  process (wb_clk_i)
+  begin
+    if rising_edge(wb_clk_i) then
+      down_bus_in <= null_dev_bus_in;
+      down_bus_in.cycles_rst_n <= cycles_rst_n;
+
+      if rst_n = '0' then
+        null;
+      else
+        if (wbs_stb_i = '1' and wbs_cyc_i = '1')
+          and wbs_adr_i (9 downto 7) /= "00"
+        then
+          down_bus_in.adr <= wbs_adr_i (4 downto 2);
+          down_bus_in.dati <= wbs_dat_i;
+          down_bus_in.sel <= wbs_sel_i;
+          down_bus_in.we <= start and wbs_we_i;
+          down_bus_in.re <= start and not wbs_we_i;
+
+          down_adr_o <=
+            std_logic_vector (unsigned (wbs_adr_i (9 downto 5)) - "1000");
+        end if;
+      end if;
+    end if;
+  end process;
 
   ctrl_in <= devs_in_d(0);
   devs_out(0) <= ctrl_out;
