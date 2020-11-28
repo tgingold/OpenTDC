@@ -8,10 +8,12 @@ set macros [list]
 
 source $script_dir/../tdc-common/tdc-config.tcl
 
-# x = X * .460; y = Y * 2.72
+# x = X * .460; y = 125 * 2.72
 set ::env(FP_SIZING) absolute
 #set ::env(DIE_AREA) "0 0 828 380"
-set ::env(DIE_AREA) "0 0 414 408"
+set ::env(DIE_AREA) "0 0 414 340"
 
 set ::env(PL_RESIZER_OVERBUFFER) 1
 set ::env(PL_TARGET_DENSITY) 0.4
+
+set ::env(DESIGN_IS_CORE) 0
