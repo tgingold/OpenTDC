@@ -262,10 +262,9 @@ gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
 	$(build-flow)
 
 
-verilog: $(foreach v,$(MACROS),src/$(v).v) src/user_project_wrapper.v
+#  Source generation
 
-synth-tapline:
-	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -glength=2 rtl/opentdc_delay.vhdl rtl/opentdc_delay-sky130.vhdl rtl/tap_line.vhdl -e; flatten; clean; chtype -map sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog src/tap_line.v; rename sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog -blackboxes src/bb.v"
+verilog: $(foreach v,$(MACROS),src/$(v).v) src/user_project_wrapper.v
 
 add-spdx-src:
 	cd src; \
@@ -273,6 +272,17 @@ add-spdx-src:
 	sed -i -e '1i//SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>' \
 	-e '1i//SPDX-License-Identifier: Apache-2.0' $$f; \
 	fi; done
+
+# Aboard
+
+ship: gds/caravel.gds
+
+gds/caravel.gds: # gds/user_project_wrapper.gds
+	if [ "$(CARAVEL)" = "" ]; then echo "Define CARAVEL!"; exit 1; fi
+	if [ "$(PDK_ROOT)" = "" ]; then echo "Define PDK_ROOT!"; exit 1; fi
+	cp gds/user_project_wrapper.gds $(CARAVEL)/gds
+	cd $(CARAVEL); make ship PDK_ROOT=$(PDK_ROOT)
+	cp $(CARAVEL)/gds/caravel_out.gds $@
 
 uncompress:
 
