@@ -25,8 +25,8 @@ set ::env(CLOCK_PERIOD) "20"
 set ::env(FP_SIZING) absolute
 #set ::env(DIE_AREA) "0 0 2920 3520"
 
-# .46 2.72
-set ::env(DIE_AREA) "0 0 460 1360"
+# .46 2.72*350
+set ::env(DIE_AREA) "0 0 460 952"
 set ::env(PL_TARGET_DENSITY) 0.20
 set ::env(GLB_RT_OVERFLOW_ITERS) 20
 
