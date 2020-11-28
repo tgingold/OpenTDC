@@ -25,6 +25,8 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/wb_interface.vhdl  \
  ../rtl/rescue.vhdl \
  ../rtl/rescue_top.vhdl \
- ../rtl/opentdc_wb.vhdl  \
+ ../rtl/wb_extender.vhdl \
+ ../rtl/wb_extender_last.vhdl \
+ ../rtl/user_project_wrapper.vhdl  \
  tb_proj.vhdl \
- -r tb_proj --wave=tb_proj.ghw #--stop-time=4us #--backtrace-severity=warning
+ -r tb_proj --wave=tb_proj.ghw --stop-time=8us #--backtrace-severity=warning

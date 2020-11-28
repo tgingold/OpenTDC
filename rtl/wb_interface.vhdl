@@ -148,13 +148,13 @@ begin
             -- report "write to device " & natural'image(n);
             wbs_ack_o <= devs_out_d(n).wack or devs_out_d(n).rack;
             wbs_dat_o <= devs_out_d(n).dato;
-
-            --  Freeze until the end of the transfer
-            start <= '0';
           else
             wbs_ack_o <= down_bus_out_r.wack or down_bus_out_r.rack;
             wbs_dat_o <= down_bus_out_r.dato;
           end if;
+          
+          --  Freeze until the end of the transfer
+          start <= '0';
         else
           start <= '1';
         end if;

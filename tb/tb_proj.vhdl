@@ -33,16 +33,15 @@ architecture behav of tb_proj is
   signal wbs_out : wb32_master_out;
   signal wbs_in  : wb32_master_in;
 
-  signal inps : std_logic_vector(15 downto 0);
-  signal outs : std_logic_vector(15 downto 0);
+  signal inps : std_logic_vector(37 downto 0);
+  signal outs : std_logic_vector(37 downto 0);
 
-  alias inp1 : std_logic is inps (0);
-  alias inp2 : std_logic is inps (1);
-  alias out0 : std_logic is outs (0);
-  alias out1i : std_logic is outs (1);
-  alias out1r : std_logic is outs (2);
-
-  signal rst_time_n : std_logic;
+  alias inp1 : std_logic is inps (21);
+  alias inp2 : std_logic is inps (22);
+  alias out0 : std_logic is outs (12);
+  alias out1i : std_logic is outs (13);
+  alias out1r : std_logic is outs (14);
+  alias rst_time_n : std_logic is inps (37);
 
   signal fd0_time : time;
   signal fd1_itime : time;
@@ -122,7 +121,7 @@ architecture behav of tb_proj is
   end wait_fd_check;
   
 begin
-  inps (inps'left downto 2) <= (others => '0');
+--  inps (inps'left downto 2) <= (others => '0');
 
   process
   begin
@@ -342,7 +341,20 @@ begin
       report "(27.1) bad minitap value" severity failure;
     
     --  TODO: read back regs.
-    
+
+    --  Extender
+
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_011c", d32);
+    assert d32 = x"00_c8_00_0B"
+      report "(30) bad init value for areg" severity failure;
+
+    -- Test unhandled address (must not freeze)
+
+    wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_031c", d32);
+    report to_hstring(d32);
+    assert d32 = x"ffff_ffff"
+      report "(31) expect all 1 for unhandled address" severity failure;
+
     ---------------- wb_interface
     
     --  Check register access
@@ -371,7 +383,7 @@ begin
   end process;
 
   --  WB driver
-  opentdc_wb_1: entity work.opentdc_wb
+  opentdc_wb_1: entity work.user_project_wrapper
     port map (
       wb_clk_i     => wb_clk,
       wb_rst_i     => wb_rst,
@@ -388,6 +400,5 @@ begin
       la_data_out  => open,
       la_oen       => (others => '0'),
       inp_i        => inps,
-      out_o        => outs,
-      rst_time_n_i => rst_time_n);
+      out_o        => outs);
 end behav;
