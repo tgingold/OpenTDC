@@ -43,7 +43,7 @@ architecture behav of opentdc_wb is
   --  Config (not generics to keep the same name).
   --  XX_MACROS is the number of hard macros in XX
   constant NTDC : natural := 2;
-  constant NFD : natural := 2;
+  constant NFD : natural := 3;
 
   constant FTDC : natural := 0;
   constant FFD : natural := NTDC;
@@ -86,6 +86,10 @@ architecture behav of opentdc_wb is
       fd2_rst_n : out std_logic;
       fd2_bus_in : out dev_bus_in;
       fd2_bus_out : dev_bus_out;
+
+      fd3_rst_n : out std_logic;
+      fd3_bus_in : out dev_bus_in;
+      fd3_bus_out : dev_bus_out;
 
       --  Outputs enable
       oen_o : out std_logic_vector(15 downto 0);
@@ -140,6 +144,10 @@ begin
       fd2_bus_in => fd_bus_in(2),
       fd2_bus_out => fd_bus_out(2),
 
+      fd3_rst_n => fd_rst_n(3),
+      fd3_bus_in => fd_bus_in(3),
+      fd3_bus_out => fd_bus_out(3),
+
       oen_o => oen_o,
 
       rst_time_n_i => rst_time_n_i);
@@ -181,6 +189,16 @@ begin
       out1_o => out_o(3),
       out2_o => out_o(4));
 
+  --  fd3: macro (fd_ms)
+  i_fd3: fd_hs
+    port map (
+      clk_i => wb_clk_i,
+      rst_n_i => fd_rst_n(3),
+      bus_in => fd_bus_in(3),
+      bus_out => fd_bus_out(3),
+      out1_o => out_o(5),
+      out2_o => out_o(6));
+
   b_zero: block
     signal z_n, z_s, z_e, z_w : std_logic;
   begin
@@ -191,6 +209,6 @@ begin
         e_o => z_e,
         w_o => z_w);
     
-    out_o (15 downto 5) <= (others => z_w);
+    out_o (15 downto 7) <= (others => z_w);
   end block;
 end behav;
