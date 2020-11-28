@@ -51,7 +51,7 @@ the [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin).
   make verilog
 ```
 
-Harden the design using openlane:
+Start an OpenLANE docker shell and harden the design:
 
 ```bash
   make gds/user_project_wrapper.gds
