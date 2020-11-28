@@ -133,7 +133,9 @@ architecture behav of user_project_wrapper is
   end component wb_extender_last;
 
   component zero is
-    port (e_o, n_o, s_o, w_o : out std_logic);
+    port (e_o, n_o, s_o, w_o : out std_logic;
+          clk_i : std_logic;
+          clk_o : out std_logic_vector(3 downto 0));
   end component;
 
   component rescue_top is
@@ -168,12 +170,13 @@ architecture behav of user_project_wrapper is
 
   signal wio_out : std_logic_vector(37 downto 0);
 
+  signal clk_b : std_logic_vector (3 downto 0);
 begin
   rst_time_n <= io_in(37);
 
   i_itf: wb_interface
     port map (
-      wb_clk_i => wb_clk_i,
+      wb_clk_i => clk_b(0),
       wb_rst_i => wb_rst_i,
 
       wbs_stb_i => wbs_stb_i,
@@ -221,7 +224,7 @@ begin
 
   i_tdc1: tdc_inline_1
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(0),
       rst_n_i => tdc_rst_n(1),
       bus_in => tdc_bus_in(1),
       bus_out => tdc_bus_out(1),
@@ -229,7 +232,7 @@ begin
   
   i_tdc2: tdc_inline_2
       port map (
-        clk_i => wb_clk_i,
+        clk_i => clk_b(0),
         rst_n_i => tdc_rst_n(2),
         bus_in => tdc_bus_in(2),
         bus_out => tdc_bus_out(2),
@@ -238,7 +241,7 @@ begin
   --  fd1: macro (fd_hd)
   i_fd1: fd_hd
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(0),
       rst_n_i => fd_rst_n(1),
       bus_in => fd_bus_in(1),
       bus_out => fd_bus_out(1),
@@ -248,7 +251,7 @@ begin
   --  fd2: macro (fd_hs)
   i_fd2: fd_hs
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(0),
       rst_n_i => fd_rst_n(2),
       bus_in => fd_bus_in(2),
       bus_out => fd_bus_out(2),
@@ -258,7 +261,7 @@ begin
   --  fd3: macro (fd_ms)
   i_fd3: fd_ms
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(0),
       rst_n_i => fd_rst_n(3),
       bus_in => fd_bus_in(3),
       bus_out => fd_bus_out(3),
@@ -267,7 +270,7 @@ begin
 
   i_itf2 : wb_extender_last
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(3),
       up_rst_n_i => down0_rst_n,
       up_bus_in  => down0_bus_in,
       up_bus_out => down0_bus_out,
@@ -292,7 +295,7 @@ begin
 
   i_tdc2_0: tdc_inline_1
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(0),
       bus_in => itf2_bus_in(0),
       bus_out => itf2_bus_out(0),
@@ -300,7 +303,7 @@ begin
   
   i_tdc2_1: tdc_inline_2
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(1),
       bus_in => itf2_bus_in(1),
       bus_out => itf2_bus_out(1),
@@ -308,7 +311,7 @@ begin
   
   i_fd2_2: fd_hd
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(2),
       bus_in => itf2_bus_in(2),
       bus_out => itf2_bus_out(2),
@@ -317,7 +320,7 @@ begin
 
   i_fd2_3: fd_hs
     port map (
-      clk_i => wb_clk_i,
+      clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(2),
       bus_in  => itf2_bus_in(2),
       bus_out => itf2_bus_out(2),
@@ -342,7 +345,9 @@ begin
         n_o => z_n,
         s_o => z_s,
         e_o => z_e,
-        w_o => z_w);
+        w_o => z_w,
+        clk_i => wb_clk_i,
+        clk_o => clk_b);
 
     wio_out (FOUT - 1 downto 0) <= (others => z_w);
     wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_e);

@@ -54,7 +54,7 @@ add_macro_placement i_fd2_3 $x2 1838.4 N
 add_macro_placement i_tdc2_1 $x0 1618.4 N
 
 
-add_macro_placement b_zero.i_zero 2448.0 1241.697 N
+add_macro_placement b_zero.i_zero 1200 1524 N
 
 # x = 4500 * .46
 add_macro_placement inst_rescue 2070.0 68 N
