@@ -10,7 +10,7 @@ source $script_dir/../fd-common/fd-config.tcl
 
 # area: 90*.46  120*2.72
 set ::env(FP_SIZING) absolute
-set x [expr 1218 * 0.46]
+set x [expr 1209 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
 # 0.35 -> 1 antenna, 21 DRC
