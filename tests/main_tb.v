@@ -1,3 +1,8 @@
+/*
+/ SPDX-FileCopyrightText: Changes by (c) 2020 Tristan Gingold <tgingold@free.fr>
+/ SPDX-License-Identifier: Apache-2.0
+*/
+
 `default_nettype wire
 /*
  *  StriVe - A full example SoC using PicoRV32 in SkyWater s8

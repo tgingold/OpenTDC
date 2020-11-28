@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-FileCopyrightText: (Based on caravel file by efabless)
+# SPDX-License-Identifier: Apache-2.0
+
 CARAVEL=../../caravel
 CROSS=riscv32-elf-
 

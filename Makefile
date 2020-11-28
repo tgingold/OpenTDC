@@ -264,6 +264,13 @@ verilog: $(foreach v,$(MACROS),src/$(v).v) src/opentdc_wb.v
 synth-tapline:
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -glength=2 rtl/opentdc_delay.vhdl rtl/opentdc_delay-sky130.vhdl rtl/tap_line.vhdl -e; flatten; clean; chtype -map sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog src/tap_line.v; rename sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog -blackboxes src/bb.v"
 
+add-spdx-src:
+	cd src; \
+	for f in *.v; do if ! grep -q SPDX $$f ; then \
+	sed -i -e '1i//SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>' \
+	-e '1i//SPDX-License-Identifier: Apache-2.0' $$f; \
+	fi; done
+
 uncompress:
 
 compress:

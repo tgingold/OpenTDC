@@ -1,3 +1,9 @@
+/*
+/ SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+/ SPDX-FileCopyrightText: (Based on caravel file by efabless)
+/ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "defs.h"
 
 #define USE_UART 0
