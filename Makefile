@@ -41,7 +41,7 @@ VHDL_SRCS= $(VHDL_COMMON_SRCS) \
 
 define build-status
 echo "Status $$DESIGN" && \
-grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log && \
+grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log ; \
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
@@ -64,19 +64,13 @@ define yosys_fd
 DESIGN=$(notdir $(basename $@ .v)); $(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e $$DESIGN; write_verilog $@; write_verilog -blackboxes src/$${DESIGN}_bb.v"
 endef
 
+all: gds/user_project_wrapper.gds
+
 # Create macros: generate the sources and gds
 macros:
 	cd openlane/macros; ./build-src.sh && ./openlane-all.sh
 
-clean:
-	$(RM) -f gds/*.gds lef/*.lef def/*.def mag/*.mag
-
-# Create gds from verilog sources + macros
-build: src/opentdc_wb.v openlane/opentdc_wb/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
-	cd openlane; /openLANE_flow/openlane/flow.tcl -design opentdc_wb -tag user -overwrite
-
-ibuild:
-	cd openlane; /openLANE_flow/openlane/flow.tcl -it -file opentdc_wb/interractive.tcl
+# Project
 
 gds/user_project_wrapper.gds: src/user_project_wrapper.v # openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
 	$(build-script)
@@ -84,12 +78,6 @@ gds/user_project_wrapper.gds: src/user_project_wrapper.v # openlane/user_project
 src/user_project_wrapper.v: rtl/user_project_wrapper.vhdl rtl/opentdc_pkg.vhdl rtl/openfd_comps.vhdl rtl/opentdc_comps.vhdl
 	$(yosys_fd)
 #	$(YOSYS) -p "read_verilog $^; hierarchy -top user_project_wrapper; flatten; opt_clean -purge; splitnets; write_verilog -noattr $@"
-
-opentdc-report.html: openlane/opentdc_wb/runs/user/reports/final_summary_report.csv
-	 python3 /openLANE_flow/openlane/scripts/csv2html/csv2html.py -i $< -o $@
-
-src/opentdc_wb.v: $(VHDL_SRCS)
-	$(yosys_fd)
 
 openlane/user_project_wrapper/macros.tcl: Makefile
 	echo 'set macros [list $(foreach n,$(MACROS),"$(n)")]' > $@
@@ -282,4 +270,6 @@ compress:
 
 verify:
 
+clean:
+	$(RM) -f gds/*.gds lef/*.lef def/*.def mag/*.mag
 
