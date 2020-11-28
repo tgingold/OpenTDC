@@ -18,11 +18,11 @@ set ::env(FP_SIZING) absolute
 
 set ::env(DESIGN_IS_CORE) 0
 
-set ::env(PL_TARGET_DENSITY) .40  ; # y=690, density = .35 -> ant:1
+set ::env(PL_TARGET_DENSITY) .25  ; # y=690, density = .35 -> ant:1
 
-set ::env(DIE_AREA) "0 0 690.0 176.8"
+set ::env(DIE_AREA) "0 0 690.0 272"
 
-set ::env(DIODE_INSERTION_STRATEGY) 0
+set ::env(DIODE_INSERTION_STRATEGY) 3
 # set ::env(RUN_SPEF_EXTRACTION) 0
 set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
 #set ::env(PL_RESIZER_OVERBUFFER) 1
