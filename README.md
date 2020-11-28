@@ -1,3 +1,7 @@
+<!--
+< SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+< SPDX-License-Identifier: Apache-2.0
+-->
 # OpenTDC
 
 ## Intro
@@ -30,32 +34,28 @@ progress of this project.
 Particularities of the design:
 * Mixes different cell libraries (hd, hs)
 * Tool generated macros
+* Macros within macros
 * mixed languages (VHDL and verilog)
+
+## License
+
+Apache 2.0
 
 ## Building
 
-Regenerate verilog sources:
+As most of the sources are in VHDL, you need to first synthesis them and generate very
+simple verilog.  This verilog will be the source for OpenLANE.  This is done with
+the [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin).
 
 ```bash
   make verilog
 ```
 
-Harden the chip using openlane:
+Harden the design using openlane:
 
 ```bash
-  make build
+  make gds/user_project_wrapper.gds
 ```
-
-TODO: export the result:
-
-```bash
-  make result
-```
-
-## Dependencies
-
-As the sources are partially written in VHDL, you need
-(ghdl-yosys-plugin)[https://github.com/ghdl/ghdl-yosys-plugin]
 
 
 ## Testing
@@ -65,12 +65,27 @@ There are functional unit tests in `tb/`.
 And a simple integration test with caraval in `tests/`.
 
 
+## Global Architecture
+
+Each TDC or FD is within a macro, which is connected to the wishbone bus either through
+the main block [wb_interface](rtl/wb_interface.vhdl) or through an extender
+[wb_extender](rtl/wb_extender.vhdl) (which is connected to the main block).
+
+In addition, there is one TDC and one FD in the main block.
+
+And finally, there is an independant [rescue block](rtl/rescue_top.vhdl) which contains one
+TDC and one FD and connected to the logical analyzer interface.
+
+## Register map
+
+Not documented outside the source files!
+But each device uses 8 words.  A device is either a TDC or a FD, except device 0 which is
+a control device.  You can identify a device by reading at offset 0x1c.
+See [tdc core](rtl/opentdc_core2.vhdl) and [fd core](rtl/openfd_core2.vhdl) source files
+for the registers, and [wb_interface](rtl/wb_interface.vhdl) for the main controller.
+
 ## Contributing
 
 Please use issues and pull-requests from github
 
 
-## Copyright
-
-### SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
-### SPDX-License-Identifier: Apache-2.0
