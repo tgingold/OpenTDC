@@ -31,12 +31,21 @@ module sky130_fd_sc_hd__conb_1 (HI, LO);
    input LO;
 endmodule
 
-module zero(n_o, s_o, w_o, e_o);
+(* blackbox *)
+module sky130_fd_sc_hd__clkbuf_16 (A, X);
+   input A;
+   output X;
+endmodule
+
+module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
    output e_o;
    output n_o;
    output s_o;
    output w_o;
+   input clk_i;
+   output [3:0] clk_o;
    wire  w;
+   wire  clk;
    
    sky130_fd_sc_hd__buf_2 LEFT1a (.A(w), .X(w_o));
    sky130_fd_sc_hd__buf_2 LEFT2a (.A(w), .X(n_o));
@@ -52,6 +61,7 @@ module zero(n_o, s_o, w_o, e_o);
    sky130_fd_sc_hd__fill_4 RIGHT2 ();
    sky130_fd_sc_hd__buf_2 RIGHT1a (.A(w), .X(s_o));
    sky130_fd_sc_hd__buf_2 RIGHT2a (.A(w), .X(e_o));
-endmodule
 
-   
+   sky130_fd_sc_hd__clkbuf_16 CLKBUF (.A(clk_i), .X(clk));
+   assign clk_o = {4{clk}};
+endmodule
