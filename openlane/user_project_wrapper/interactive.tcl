@@ -9,7 +9,11 @@ verilog_elaborate
 
 init_floorplan
 
-place_io_ol -cfg $::env(FP_PIN_ORDER_CFG)
+place_io_ol ; # -cfg $::env(FP_PIN_ORDER_CFG)
+
+set ::env(FP_DEF_TEMPATE) $script_dir/../../def/user_project_wrapper_empty.def
+
+apply_def_template
 
 # user_prj: vcc at  27530, 333890, 640250, 793430, 1099790, 1406150
 
@@ -45,15 +49,43 @@ add_macro_placement i_fd2_3 $x2 1838.4 N
 
 add_macro_placement b_zero.i_zero 2448.0 1241.697 N
 
-# x = 3000 * .46
-add_macro_placement inst_rescue 1380.0 56.75 N
-
+# x = 4500 * .46
+add_macro_placement inst_rescue 2070.0 68 N
 
 manual_macro_placement f
 
 run_placement
 
-gen_pdn
+set ::env(_SPACING) 1.6
+set ::env(_WIDTH) 3
+
+# We only use vccd1/vssd1
+set power_domains [list {vccd1 vssd1} {vccd2 vssd2} {vdda1 vssa1} {vdda2 vssa2}]
+
+set ::env(_VDD_NET_NAME) vccd1
+set ::env(_GND_NET_NAME) vssd1
+set ::env(_V_OFFSET) 14
+set ::env(_H_OFFSET) $::env(_V_OFFSET)
+set ::env(_V_PITCH) 180
+set ::env(_H_PITCH) 180
+set ::env(_V_PDN_OFFSET) 0
+set ::env(_H_PDN_OFFSET) 0
+set ::env(_NO_STRAPS) 0
+
+foreach domain $power_domains {
+	set ::env(_VDD_NET_NAME) [lindex $domain 0]
+	set ::env(_GND_NET_NAME) [lindex $domain 1]
+	gen_pdn
+
+    set ::env(_NO_STRAPS) 1
+    
+	set ::env(_V_OFFSET) \
+		[expr $::env(_V_OFFSET) + 2*($::env(_WIDTH)+$::env(_SPACING))]
+	set ::env(_H_OFFSET) \
+		[expr $::env(_H_OFFSET) + 2*($::env(_WIDTH)+$::env(_SPACING))]
+	set ::env(_V_PDN_OFFSET) [expr $::env(_V_PDN_OFFSET)+6*$::env(_WIDTH)]
+	set ::env(_H_PDN_OFFSET) [expr $::env(_H_PDN_OFFSET)+6*$::env(_WIDTH)]
+}
 
 global_routing_or
 detailed_routing
