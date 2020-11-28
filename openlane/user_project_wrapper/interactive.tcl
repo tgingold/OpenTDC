@@ -15,37 +15,44 @@ set ::env(FP_DEF_TEMPATE) $script_dir/../../def/user_project_wrapper_empty.def
 
 apply_def_template
 
-# user_prj: vcc at  27530, 333890, 640250, 793430, 1099790, 1406150
-
-# fd_hd at 27290, x = .460 * 400
-set x0 110.4 ; # 64.4
-add_macro_placement i_tdc1 $x0 306.6 N
-
-# VPWR at 1099550
-#  x = .460 * 2500 = 1104.0
-add_macro_placement i_tdc2 $x0 766.14 N
-
-# in macro: VPWR at 27290
-set x1 [expr $x0 + 598]
-add_macro_placement i_itf $x1 306.6 N
+set x0 [expr 140 * .46]
+set x1 [expr $x0 + 598]  ; # ~ width of tdc
+set x2 [expr $x1 + 598]  ; # ~ width of wb_interface
 
 # From pdn.def runs/user/tmp/floorplan/pdn.def
 # x = .460 * 4100
-set x2 [expr $x1 + 598]
-add_macro_placement i_fd1 $x2 306.6 N
+set y0 [expr ( 190880 - 33680 ) / 1000 ]
+add_macro_placement i_fd1 $x2 $y0 N
+
+# in macro: VPWR at 27290
+add_macro_placement i_itf $x1 $y0 N
+
+# fd_hd at 27290, x = .460 * 400
+add_macro_placement i_tdc1 $x0 $y0 N
 
 # x = .460 * 5400
-add_macro_placement i_fd2 $x2 612.96 N
+set y1 [expr ( 550880 - 33680 ) / 1000 ]
+add_macro_placement i_fd2 $x2 $y1 N
+
+# VPWR at 1099550
+#  x = .460 * 2500 = 1104.0
+add_macro_placement i_tdc2 $x0 636.14 N
 
 # x = .460 * 5400
-add_macro_placement i_fd3 $x2 919.32 N
+set y2 [expr ( 910880 - 33680 ) / 1000 ]
+add_macro_placement i_fd3 $x2 $y2 N
 
-# 
-add_macro_placement i_itf2 $x1 1378.86 N
-add_macro_placement i_tdc2_0 $x0 1378.86 N
-add_macro_placement i_tdc2_1 $x0 1838.4 N
-add_macro_placement i_fd2_2 $x2 1378.86 N
+#  Extender 2
+set y2_2 [expr ( 1270880 - 33680 ) / 1000 ]
+add_macro_placement i_fd2_2 $x2 $y2_2 N
+
+add_macro_placement i_itf2 $x1 $y2_2 N
+add_macro_placement i_tdc2_0 $x0 $y2_2 N
+
 add_macro_placement i_fd2_3 $x2 1838.4 N
+
+add_macro_placement i_tdc2_1 $x0 1618.4 N
+
 
 add_macro_placement b_zero.i_zero 2448.0 1241.697 N
 
