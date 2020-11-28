@@ -6,7 +6,7 @@ MKDIR=mkdir
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
-HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_osu_18hs
+HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms # delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
