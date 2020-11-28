@@ -10,10 +10,10 @@ source $script_dir/../fd-common/fd-config.tcl
 
 # area: 90*.46  120*2.72
 set ::env(FP_SIZING) absolute
-set x [expr 1210 * 0.46]
+set x [expr 1220 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
-set ::env(PL_TARGET_DENSITY) 0.47
+set ::env(PL_TARGET_DENSITY) 0.30
 
 # set ::env(PL_RESIZER_OVERBUFFER) 1
 set ::env(DIODE_INSERTION_STRATEGY) 3
