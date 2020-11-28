@@ -464,6 +464,7 @@ class GenDef:
             print(file=f)
             # Horizontal lines must agree with the parent
             pdn_hpitch = 153180  # From configuration/floorplan.tcl
+            pdn_hoffset = 90 + self.row_height
             if self.y_size < pdn_hpitch // 2:
                 print('Design is too small: height={}, power pitch={}'.format(
                     self.y_size, pdn_hpitch))
@@ -476,7 +477,7 @@ class GenDef:
             print('set ::env(FP_PDN_VOFFSET) 0', file=f)
             print('set ::env(FP_PDN_VPITCH) {}'.format(vpitch / 1000), file=f)
             print('set ::env(FP_PDN_HOFFSET) {}'.format(
-                (90 + self.row_height) / 1000), file=f)
+                pdn_hoffset / 1000), file=f)
             print('set ::env(FP_PDN_HPITCH) {}'.format(
                 pdn_hpitch / 1000), file=f)
             print(file=f)
