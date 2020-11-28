@@ -84,7 +84,7 @@ openlane/user_project_wrapper/macros.tcl: Makefile
 
 # Delay lines
 
-openlane/macros/delayline_9_ms.def:
+openlane/macros/delayline_9_ms.def openlane/macros/delayline_9_ms_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_ms -l 9 -t fd_ms -d dly4_1
 
@@ -92,7 +92,7 @@ gds/delayline_9_ms.gds: openlane/macros/delayline_9_ms.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
-openlane/macros/delayline_9_hs.def:
+openlane/macros/delayline_9_hs.def openlane/macros/delayline_9_hs_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
 
@@ -100,7 +100,7 @@ gds/delayline_9_hs.gds: openlane/macros/delayline_9_hs.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
-openlane/macros/delayline_9_hd.def:
+openlane/macros/delayline_9_hd.def openlane/macros/delayline_9_hd_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 # Note: OK: cdly15_2, cdly25_1
 #       KO: cdly15_1, cdly18_1
@@ -118,7 +118,7 @@ gds/delayline_9_osu_18hs.gds: openlane/macros/delayline_9_osu_18hs.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
-rtl/opendelay_comps.vhdl: Makefile
+rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/macros/$(x)_comp.vhdl)
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
@@ -161,7 +161,7 @@ gds/fd_18hs.gds lef/fd_18hs.lef: src/fd_18hs.v src/fd_18hs_bb.v gds/delayline_9_
 	$(build-flow)
 
 
-src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/openfd_core2.vhdl rtl/openfd_delayline.vhdl rtl/fd_inline.vhdl
+src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/opentdc_sync.vhdl rtl/opentdc_tapline.vhdl rtl/openfd_core2.vhdl rtl/openfd_delayline.vhdl rtl/fd_inline.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=1 $^ -e fd_inline; rename fd_inline fd_inline_1; write_verilog $@; write_verilog -blackboxes src/fd_inline_1_bb.v"
 
 gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
