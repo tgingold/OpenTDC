@@ -13,10 +13,10 @@ set ::env(FP_SIZING) absolute
 set x [expr 1160 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
-set ::env(PL_TARGET_DENSITY) 0.45
+set ::env(PL_TARGET_DENSITY) 0.50
 
 # set ::env(PL_RESIZER_OVERBUFFER) 1
-set ::env(DIODE_INSERTION_STRATEGY) 0
+set ::env(DIODE_INSERTION_STRATEGY) 3
 
 # Macros
 # 9_hs VPWR: 7.680-9.280 -> y = 8.480
