@@ -15,9 +15,9 @@ set ::env(FP_DEF_TEMPATE) $script_dir/../../def/user_project_wrapper_empty.def
 
 apply_def_template
 
-set x0 [expr 140 * .46]
-set x1 [expr $x0 + 598]  ; # ~ width of tdc
-set x2 [expr $x1 + 598]  ; # ~ width of wb_interface
+set x0 [expr 90 * .46]
+set x1 [expr $x0 + 1200 * .46]  ; # ~ width of tdc
+set x2 [expr $x1 + 1200 * .46]  ; # ~ width of wb_interface
 
 # From pdn.def runs/user/tmp/floorplan/pdn.def
 # x = .460 * 4100

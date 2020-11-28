@@ -34,13 +34,13 @@ entity user_project_wrapper is
     la_oen : std_logic_vector(127 downto 0);
 
     --  Tdc input signals
-    inp_i : std_logic_vector(37 downto 0);
+    io_in : std_logic_vector(37 downto 0);
 
     --  Fd output signals
-    out_o : out std_logic_vector(37 downto 0);
+    io_out : out std_logic_vector(37 downto 0);
 
     --  Outputs enable
-    oen_o : out std_logic_vector(37 downto 0));
+    io_oeb : out std_logic_vector(37 downto 0));
 end user_project_wrapper;
 
 architecture behav of user_project_wrapper is
@@ -166,10 +166,10 @@ architecture behav of user_project_wrapper is
   signal itf2_bus_in: dev_in_array (3 downto 0);
   signal itf2_bus_out: dev_out_array (3 downto 0);
 
-  signal io_out : std_logic_vector(37 downto 0);
+  signal wio_out : std_logic_vector(37 downto 0);
 
 begin
-  rst_time_n <= inp_i (37);
+  rst_time_n <= io_in(37);
 
   i_itf: wb_interface
     port map (
@@ -190,7 +190,7 @@ begin
       down_bus_out => down0_bus_out,
       down_adr_o   => down0_adr,
       
-      tdc0_inp_i => inp_i(FIN + 0),
+      tdc0_inp_i => io_in(FIN + 0),
     
       tdc1_rst_n => tdc_rst_n(1),
       tdc1_bus_in => tdc_bus_in(1),
@@ -200,7 +200,7 @@ begin
       tdc2_bus_in => tdc_bus_in(2),
       tdc2_bus_out => tdc_bus_out(2),
 
-      fd0_out_o => io_out(FOUT + 0),
+      fd0_out_o => wio_out(FOUT + 0),
     
       fd1_rst_n => fd_rst_n(1),
       fd1_bus_in => fd_bus_in(1),
@@ -214,7 +214,7 @@ begin
       fd3_bus_in => fd_bus_in(3),
       fd3_bus_out => fd_bus_out(3),
 
-      oen_o => oen_o (FOUT + 15 downto FOUT),
+      oen_o => io_oeb (FOUT + 15 downto FOUT),
 
       rst_time_n_i => rst_time_n);
 
@@ -225,7 +225,7 @@ begin
       rst_n_i => tdc_rst_n(1),
       bus_in => tdc_bus_in(1),
       bus_out => tdc_bus_out(1),
-      inp_i => inp_i(FIN + 1));
+      inp_i => io_in(FIN + 1));
   
   i_tdc2: tdc_inline_2
       port map (
@@ -233,7 +233,7 @@ begin
         rst_n_i => tdc_rst_n(2),
         bus_in => tdc_bus_in(2),
         bus_out => tdc_bus_out(2),
-        inp_i => inp_i(FIN + 2));
+        inp_i => io_in(FIN + 2));
   
   --  fd1: macro (fd_hd)
   i_fd1: fd_hd
@@ -242,8 +242,8 @@ begin
       rst_n_i => fd_rst_n(1),
       bus_in => fd_bus_in(1),
       bus_out => fd_bus_out(1),
-      out1_o => io_out(FOUT + 1),
-      out2_o => io_out(FOUT + 2));
+      out1_o => wio_out(FOUT + 1),
+      out2_o => wio_out(FOUT + 2));
 
   --  fd2: macro (fd_hs)
   i_fd2: fd_hs
@@ -252,8 +252,8 @@ begin
       rst_n_i => fd_rst_n(2),
       bus_in => fd_bus_in(2),
       bus_out => fd_bus_out(2),
-      out1_o => io_out(FOUT + 3),
-      out2_o => io_out(FOUT + 4));
+      out1_o => wio_out(FOUT + 3),
+      out2_o => wio_out(FOUT + 4));
 
   --  fd3: macro (fd_ms)
   i_fd3: fd_ms
@@ -262,8 +262,8 @@ begin
       rst_n_i => fd_rst_n(3),
       bus_in => fd_bus_in(3),
       bus_out => fd_bus_out(3),
-      out1_o => io_out(FOUT + 5),
-      out2_o => io_out(FOUT + 6));
+      out1_o => wio_out(FOUT + 5),
+      out2_o => wio_out(FOUT + 6));
 
   i_itf2 : wb_extender_last
     port map (
@@ -296,7 +296,7 @@ begin
       rst_n_i => itf2_bus_rst_n(0),
       bus_in => itf2_bus_in(0),
       bus_out => itf2_bus_out(0),
-      inp_i => inp_i(FIN + 3));
+      inp_i => io_in(FIN + 3));
   
   i_tdc2_1: tdc_inline_2
     port map (
@@ -304,7 +304,7 @@ begin
       rst_n_i => itf2_bus_rst_n(1),
       bus_in => itf2_bus_in(1),
       bus_out => itf2_bus_out(1),
-      inp_i => inp_i(FIN + 4));
+      inp_i => io_in(FIN + 4));
   
   i_fd2_2: fd_hd
     port map (
@@ -312,8 +312,8 @@ begin
       rst_n_i => itf2_bus_rst_n(2),
       bus_in => itf2_bus_in(2),
       bus_out => itf2_bus_out(2),
-      out1_o => io_out(FOUT + 7),
-      out2_o => io_out(FOUT + 8));
+      out1_o => wio_out(FOUT + 7),
+      out2_o => wio_out(FOUT + 8));
 
   i_fd2_3: fd_hs
     port map (
@@ -321,8 +321,8 @@ begin
       rst_n_i => itf2_bus_rst_n(2),
       bus_in  => itf2_bus_in(2),
       bus_out => itf2_bus_out(2),
-      out1_o  => io_out(FOUT + 9),
-      out2_o  => io_out(FOUT + 10));
+      out1_o  => wio_out(FOUT + 9),
+      out2_o  => wio_out(FOUT + 10));
 
   inst_rescue: rescue_top
     port map (
@@ -331,8 +331,8 @@ begin
       la_data_out => la_data_out,
       la_oen => la_oen,
 
-      tdc_inp_i => inp_i(FIN + 3),
-      fd_out_o => io_out (FOUT + 15));
+      tdc_inp_i => io_in(FIN + 3),
+      fd_out_o => wio_out (FOUT + 15));
 
   b_zero: block
     signal z_n, z_s, z_e, z_w : std_logic;
@@ -344,11 +344,11 @@ begin
         e_o => z_e,
         w_o => z_w);
 
-    io_out (FOUT - 1 downto 0) <= (others => z_w);
-    io_out (FOUT + 14 downto FOUT + 11) <= (others => z_e);
-    io_out (out_o'left downto FOUT + 16) <= (others => z_e);
-    out_o <= io_out;
-    oen_o (FOUT - 1 downto 0) <= (others => z_s);
-    oen_o (37 downto FOUT + 16) <= (others => z_s);
+    wio_out (FOUT - 1 downto 0) <= (others => z_w);
+    wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_e);
+    wio_out (wio_out'left downto FOUT + 16) <= (others => z_e);
+    io_out <= wio_out;
+    io_oeb (FOUT - 1 downto 0) <= (others => z_s);
+    io_oeb (37 downto FOUT + 16) <= (others => z_s);
   end block;
 end behav;
