@@ -25,7 +25,7 @@ set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
 
 # Reduce vpitch so that all parts are powered (the band on the right hand
 # side is narrow)
-set ::env(FP_PDN_VPITCH) 26.64
+#set ::env(FP_PDN_VPITCH) 26.64
 
 if { [llength $macros] != 0 } {
     set macros_lef ""
@@ -39,3 +39,9 @@ if { [llength $macros] != 0 } {
 
     set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 }
+
+# For caravel
+set ::env(FP_PDN_HOFFSET) [expr 9.2 + 13.84 ]
+set ::env(FP_PDN_HPITCH) 180
+
+set ::env(FP_PDN_HWIDTH) 3

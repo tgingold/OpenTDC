@@ -10,12 +10,10 @@ source $script_dir/../fd-common/fd-config.tcl
 
 # area: 90*.46  120*2.72
 set ::env(FP_SIZING) absolute
-set x [expr 1209 * 0.46]
+set x [expr 1186 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
-# 0.35 -> 1 antenna, 21 DRC
-# 0.30 -> 4 antennas, 21 DRC
-set ::env(PL_TARGET_DENSITY) 0.52
+set ::env(PL_TARGET_DENSITY) 0.32
 
 #set ::env(FILL_INSERTION) 0
 
@@ -23,7 +21,7 @@ set ::env(PL_TARGET_DENSITY) 0.52
 
 # Diode strategy:
 # 2 -> creates LVS errors (as diodes and fakediodes mismatch)
-set ::env(DIODE_INSERTION_STRATEGY) 0
+set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(RUN_SPEF_EXTRACTION) 0
 
 # Macros
