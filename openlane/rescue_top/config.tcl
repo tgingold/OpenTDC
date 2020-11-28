@@ -18,12 +18,11 @@ set ::env(FP_SIZING) absolute
 
 set ::env(DESIGN_IS_CORE) 0
 
-# The tricky part: we want to intersect with parent power straps
-#set ::env(FP_PDN_VOFFSET) 16.32
-#set ::env(FP_PDN_VPITCH) 153.6
-#set ::env(FP_PDN_HOFFSET) 16.65
-#set ::env(FP_PDN_HPITCH) 153.18
-set ::env(DIE_AREA) "0 0 544.0 176.8"
+set ::env(PL_TARGET_DENSITY) .40  ; # y=690, density = .35 -> ant:1
+
+set ::env(DIE_AREA) "0 0 690.0 176.8"
 
 set ::env(DIODE_INSERTION_STRATEGY) 0
+# set ::env(RUN_SPEF_EXTRACTION) 0
 set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
+#set ::env(PL_RESIZER_OVERBUFFER) 1
