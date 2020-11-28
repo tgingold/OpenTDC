@@ -93,6 +93,10 @@ architecture behav of opentdc_wb is
       rst_time_n_i : std_logic);
   end component;
 
+  component zero is
+    port (e_o, n_o, s_o, w_o : out std_logic);
+  end component;
+  
   signal tdc_bus_in: dev_in_array (NTDC downto 1);
   signal tdc_bus_out: dev_out_array (NTDC downto 1);
   signal tdc_rst_n : std_logic_vector (NTDC downto 1);
@@ -177,5 +181,16 @@ begin
       out1_o => out_o(3),
       out2_o => out_o(4));
 
-  out_o (15 downto 5) <= (others => '0');
+  b_zero: block
+    signal z_n, z_s, z_e, z_w : std_logic;
+  begin
+    i_zero: zero
+      port map (
+        n_o => z_n,
+        s_o => z_s,
+        e_o => z_e,
+        w_o => z_w);
+    
+    out_o (15 downto 5) <= (others => z_w);
+  end block;
 end behav;
