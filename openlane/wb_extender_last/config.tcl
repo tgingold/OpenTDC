@@ -21,15 +21,14 @@ set ::env(FP_SIZING) absolute
 
 # .46 2.72*320
 set ::env(DIE_AREA) "0 0 460 870.4"
-set ::env(PL_TARGET_DENSITY) 0.04
-set ::env(GLB_RT_OVERFLOW_ITERS) 20
+set ::env(PL_TARGET_DENSITY) 0.038
 
 set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
-set ::env(PL_RESIZER_OVERBUFFER) 1
+#set ::env(PL_RESIZER_OVERBUFFER) 1
 
 # Avoid weird optims
-set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
+set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
 
 # Too much memory
 set ::env(RUN_SPEF_EXTRACTION) 0
