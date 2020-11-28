@@ -64,7 +64,7 @@ begin
   inst_itime: entity work.opentdc_time
     generic map (
       length => length,
-      fine_bits => 8)
+      fine_bits => fine_bits)
     port map (
       clk_i => clk_i,
       rst_n_i => rst_n_i,

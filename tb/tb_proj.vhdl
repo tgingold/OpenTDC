@@ -383,6 +383,10 @@ begin
       wbs_adr_i    => wbs_out.adr,
       wbs_ack_o    => wbs_in.ack,
       wbs_dat_o    => wbs_in.dati,
+      user_clock2  => '0',
+      la_data_in   => (others => '0'),
+      la_data_out  => open,
+      la_oen       => (others => '0'),
       inp_i        => inps,
       out_o        => outs,
       rst_time_n_i => rst_time_n);

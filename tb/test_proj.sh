@@ -23,6 +23,8 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/tdc_inline.vhdl \
  ../rtl/tdc_inline_1.vhdl \
  ../rtl/wb_interface.vhdl  \
+ ../rtl/rescue.vhdl \
+ ../rtl/rescue_top.vhdl \
  ../rtl/opentdc_wb.vhdl  \
  tb_proj.vhdl \
  -r tb_proj --wave=tb_proj.ghw #--stop-time=4us #--backtrace-severity=warning
