@@ -17,7 +17,7 @@ VHDL_COMMON_SRCS=\
  rtl/opentdc_delay-sky130.vhdl \
  rtl/opentdc_pkg.vhdl \
  rtl/counter.vhdl \
- openlane/macros/opendelay_comps.vhdl
+ rtl/opendelay_comps.vhdl
 
 VHDL_TAPLINE_SRCS=\
  rtl/opentdc_sync.vhdl \
@@ -118,7 +118,7 @@ gds/delayline_9_osu_18hs.gds: openlane/macros/delayline_9_osu_18hs.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
-openlane/macros/opendelay_comps.vhdl: Makefile
+rtl/opendelay_comps.vhdl: Makefile
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
@@ -246,6 +246,9 @@ gds/wb_extender_last.gds lef/wb_extender_last.lef: src/wb_extender_last.v
 
 # Zero
 
+src/zero.v: rtl/zero.v
+	$(CP) $< $@
+
 gds/zero.gds lef/zero.lef: rtl/zero.v
 	$(build-script)
 
@@ -259,7 +262,7 @@ gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
 	$(build-flow)
 
 
-verilog: $(foreach v,$(MACROS),src/$(v).v) src/opentdc_wb.v
+verilog: $(foreach v,$(MACROS),src/$(v).v) src/user_project_wrapper.v
 
 synth-tapline:
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -glength=2 rtl/opentdc_delay.vhdl rtl/opentdc_delay-sky130.vhdl rtl/tap_line.vhdl -e; flatten; clean; chtype -map sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog src/tap_line.v; rename sky130_delay sky130_fd_sc_hd__clkdlybuf4s15_1; write_verilog -blackboxes src/bb.v"
