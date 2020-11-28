@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-FileCopyrightText: (Based on caravel file by efabless)
+# SPDX-License-Identifier: Apache-2.0
+
 package require openlane
 set script_dir [file dirname [file normalize [info script]]]
 

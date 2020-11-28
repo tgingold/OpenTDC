@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
+# SPDX-License-Identifier: Apache-2.0
+
 package require openlane
 set script_dir [file dirname [file normalize [info script]]]
 
@@ -32,13 +35,6 @@ run_routing
 
 run_magic
 run_magic_spice_export
-
-#save_views       -lef_path $::env(magic_result_file_tag).lef \
-                 -def_path $::env(tritonRoute_result_file_tag).def \
-                 -gds_path $::env(magic_result_file_tag).gds \
-                 -mag_path $::env(magic_result_file_tag).mag \
-                 -save_path $save_path \
-                 -tag $::env(RUN_TAG)
 
 run_magic_drc
 
