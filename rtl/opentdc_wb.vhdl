@@ -27,6 +27,12 @@ entity opentdc_wb is
     wbs_ack_o : out std_logic;
     wbs_dat_o : out std_logic_vector(31 downto 0);
 
+    --  LA (Logic analyzer)
+    user_clock2 : std_logic;
+    la_data_in : std_logic_vector(127 downto 0);
+    la_data_out : out std_logic_vector(127 downto 0);
+    la_oen : std_logic_vector(127 downto 0);
+
     --  Tdc input signals
     inp_i : std_logic_vector(15 downto 0);
 
@@ -47,6 +53,10 @@ architecture behav of opentdc_wb is
 
   constant FTDC : natural := 0;
   constant FFD : natural := NTDC;
+
+  --  IO pad usage
+  constant FIN : natural := 21;
+  constant FOUT : natural := 12;
 
   component wb_interface is
     port (
@@ -100,7 +110,18 @@ architecture behav of opentdc_wb is
   component zero is
     port (e_o, n_o, s_o, w_o : out std_logic);
   end component;
-  
+
+  component rescue_top is
+    port (
+      clk_i : std_logic;
+      la_data_in : std_logic_vector(127 downto 0);
+      la_data_out : out std_logic_vector(127 downto 0);
+      la_oen : std_logic_vector(127 downto 0);
+
+      tdc_inp_i : std_logic;
+      fd_out_o : out std_logic);
+  end component;
+
   signal tdc_bus_in: dev_in_array (NTDC downto 1);
   signal tdc_bus_out: dev_out_array (NTDC downto 1);
   signal tdc_rst_n : std_logic_vector (NTDC downto 1);
@@ -199,6 +220,16 @@ begin
       out1_o => out_o(5),
       out2_o => out_o(6));
 
+  inst_rescue: rescue_top
+    port map (
+      clk_i => user_clock2,
+      la_data_in => la_data_in,
+      la_data_out => la_data_out,
+      la_oen => la_oen,
+
+      tdc_inp_i => inp_i(3),
+      fd_out_o => out_o (7));
+
   b_zero: block
     signal z_n, z_s, z_e, z_w : std_logic;
   begin
@@ -209,6 +240,6 @@ begin
         e_o => z_e,
         w_o => z_w);
     
-    out_o (15 downto 7) <= (others => z_w);
+    out_o (15 downto 8) <= (others => z_w);
   end block;
 end behav;

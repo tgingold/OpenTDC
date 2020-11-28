@@ -39,6 +39,9 @@ add_macro_placement mprj.i_fd3 $x2 919.32 N
 add_macro_placement mprj.b_zero.i_zero 220.8 1241.697 N
 add_macro_placement gbl_z 506.0 1241.697 N
 
+# x = 3000 * .46
+add_macro_placement mprj.inst_rescue 1380.0 56.75 N
+
 
 manual_macro_placement f
 

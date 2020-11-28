@@ -10,7 +10,7 @@ HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
-MACROS=wb_interface zero $(FD_MACROS) $(TDC_MACROS)
+MACROS=wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \
@@ -250,6 +250,15 @@ gds/wb_interface.gds lef/wb_interface.lef: src/wb_interface.v src/wb_interface_b
 
 gds/zero.gds lef/zero.lef: rtl/zero.v
 	$(build-script)
+
+
+# Rescue
+
+src/rescue_top.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) $(VHDL_FD_EXTRA_SRCS) rtl/rescue.vhdl rtl/rescue_top.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e rescue_top; write_verilog $@; write_verilog -blackboxes src/rescue_top_bb.v"
+
+gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
+	$(build-flow)
 
 
 verilog: $(foreach v,$(MACROS),src/$(v).v) src/opentdc_wb.v
