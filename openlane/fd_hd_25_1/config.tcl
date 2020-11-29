@@ -25,15 +25,15 @@ set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(RUN_SPEF_EXTRACTION) 0
 
 # Macros
-set y [expr (33680 - 14400) / 1000]
+set y [expr (33230 - 14400) / 1000]
 set chan [open $script_dir/macro_placement.cfg w]
 
-set x [expr 20 * 0.46]
+set x [expr 120 * 0.46]
 puts $chan "inst_tdelay_line $x $y FN"
-set x [expr 400 * 0.46]
+set x [expr 500 * 0.46]
 puts $chan "inst_idelay_line $x $y N"
-set x [expr 665 * 0.46]
-puts $chan "inst_rdelay_line $x $y FN"
+set x [expr 765 * 0.46]
+puts $chan "inst_rdelay_line $x $y N"
 
 close $chan
 
