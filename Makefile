@@ -112,6 +112,16 @@ gds/delayline_9_hd.gds: openlane/macros/delayline_9_hd.def
 	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 
+openlane/macros/delayline_9_hd_25_1.def openlane/macros/delayline_9_hd_25_1_comp.vhdl:
+	$(MKDIR) -p $(dir $@)
+# Note: OK: cdly15_2, cdly25_1
+#       KO: cdly15_1, cdly18_1
+	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd_25_1 -l 9 -d cdly25_1
+
+gds/delayline_9_hd_25_1.gds: openlane/macros/delayline_9_hd_25_1.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+
+
 openlane/macros/delayline_9_osu_18hs.def:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_osu_18hs -l 9 --tech osu_18T_hs --delay buf_1
