@@ -33,6 +33,9 @@ entity user_project_wrapper is
     la_data_out : out std_logic_vector(127 downto 0);
     la_oen : std_logic_vector(127 downto 0);
 
+    --  Unused
+    analog_io : std_logic_vector(30 downto 0);
+    
     --  Tdc input signals
     io_in : std_logic_vector(37 downto 0);
 
@@ -321,9 +324,9 @@ begin
   i_fd2_3: fd_hs
     port map (
       clk_i => clk_b(3),
-      rst_n_i => itf2_bus_rst_n(2),
-      bus_in  => itf2_bus_in(2),
-      bus_out => itf2_bus_out(2),
+      rst_n_i => itf2_bus_rst_n(3),
+      bus_in  => itf2_bus_in(3),
+      bus_out => itf2_bus_out(3),
       out1_o  => wio_out(FOUT + 9),
       out2_o  => wio_out(FOUT + 10));
 
