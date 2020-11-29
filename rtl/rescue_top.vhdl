@@ -13,7 +13,8 @@ entity rescue_top is
     la_oen : std_logic_vector(127 downto 0);
 
     tdc_inp_i : std_logic;
-    fd_out_o : out std_logic);
+    fd_out_o : out std_logic;
+    fd_oen_o : out std_logic);
 end rescue_top;
 
 architecture rtl of rescue_top is
@@ -33,6 +34,8 @@ begin
       fd_force   => la_data_in(107),
       tdc_inp_i  => tdc_inp_i,
       fd_out_o   => fd_out_o);
+
+  fd_oen_o <= la_data_in(108);
 
   la_data_out(104 downto 42) <= (others => '0');
   la_data_out(127 downto 106) <= (others => '0');
