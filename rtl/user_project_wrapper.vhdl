@@ -59,6 +59,8 @@ architecture behav of user_project_wrapper is
   constant FIN : natural := 21;
   constant FOUT : natural := 12;
 
+  --  TODO: add blackbox for direct binding in ghdl.
+
   component wb_interface is
     port (
       --  Control
@@ -114,13 +116,17 @@ architecture behav of user_project_wrapper is
       rst_time_n_i : std_logic);
   end component;
 
-  component wb_extender_last is
+  component wb_extender is
     port (
       clk_i        :     std_logic;
       up_rst_n_i   :     std_logic;
       up_bus_in    :     dev_bus_in;
       up_bus_out   : out dev_bus_out;
       up_adr_i     :     std_logic_vector (4 downto 0);
+      down_rst_n_o : out std_logic;
+      down_bus_in : out dev_bus_in;
+      down_bus_out : dev_bus_out;
+      down_adr_o : out std_logic_vector (4 downto 0);
       dev0_rst_n   : out std_logic;
       dev0_bus_in  : out dev_bus_in;
       dev0_bus_out :     dev_bus_out;
@@ -133,10 +139,11 @@ architecture behav of user_project_wrapper is
       dev3_rst_n   : out std_logic;
       dev3_bus_in  : out dev_bus_in;
       dev3_bus_out :     dev_bus_out); 
-  end component wb_extender_last;
+  end component wb_extender;
 
   component zero is
-    port (e_o, n_o, s_o, w_o : out std_logic;
+    port (e_o : out std_logic_vector(11 downto 0);
+          n_o, s_o, w_o : out std_logic;
           clk_i : std_logic;
           clk_o : out std_logic_vector(3 downto 0));
   end component;
@@ -165,6 +172,14 @@ architecture behav of user_project_wrapper is
   signal down0_bus_out : dev_bus_out;
   signal down0_adr : std_logic_vector (4 downto 0);
 
+  signal down2_rst_n : std_logic;
+  signal down2_bus_in : dev_bus_in;
+  signal down2_bus_out : dev_bus_out;
+  signal down2_adr : std_logic_vector (4 downto 0);
+
+  signal lp_data : std_logic_vector (31 downto 0);
+  signal lp_trig : std_logic;
+  
   signal rst_time_n : std_logic;
 
   signal itf2_bus_rst_n : std_logic_vector(3 downto 0);
@@ -271,7 +286,7 @@ begin
       out1_o => wio_out(FOUT + 5),
       out2_o => wio_out(FOUT + 6));
 
-  i_itf2 : wb_extender_last
+  i_itf2 : wb_extender
     port map (
       clk_i => clk_b(3),
       up_rst_n_i => down0_rst_n,
@@ -279,6 +294,11 @@ begin
       up_bus_out => down0_bus_out,
       up_adr_i   => down0_adr,
 
+      down_rst_n_o => down2_rst_n,
+      down_bus_in  => down2_bus_in,
+      down_bus_out => down2_bus_out,
+      down_adr_o   => down2_adr,
+      
       dev0_rst_n   => itf2_bus_rst_n(0),
       dev0_bus_in  => itf2_bus_in(0),
       dev0_bus_out => itf2_bus_out(0),
@@ -307,17 +327,17 @@ begin
   i_tdc2_1: tdc_inline_2
     port map (
       clk_i => clk_b(3),
-      rst_n_i => itf2_bus_rst_n(1),
-      bus_in => itf2_bus_in(1),
-      bus_out => itf2_bus_out(1),
+      rst_n_i => itf2_bus_rst_n(2),
+      bus_in => itf2_bus_in(2),
+      bus_out => itf2_bus_out(2),
       inp_i => io_in(FIN + 4));
   
   i_fd2_2: fd_hd
     port map (
       clk_i => clk_b(3),
-      rst_n_i => itf2_bus_rst_n(2),
-      bus_in => itf2_bus_in(2),
-      bus_out => itf2_bus_out(2),
+      rst_n_i => itf2_bus_rst_n(1),
+      bus_in => itf2_bus_in(1),
+      bus_out => itf2_bus_out(1),
       out1_o => wio_out(FOUT + 7),
       out2_o => wio_out(FOUT + 8));
 
@@ -329,6 +349,15 @@ begin
       bus_out => itf2_bus_out(3),
       out1_o  => wio_out(FOUT + 9),
       out2_o  => wio_out(FOUT + 10));
+
+  --  Loop to avoid freeze
+  lp_data <= (others => '1');
+  lp_trig <= '0';
+
+  down2_bus_out <= (dato => lp_data,
+                    wack => down2_bus_in.we,
+                    rack => down2_bus_in.re,
+                    trig => lp_trig);
 
   inst_rescue: rescue_top
     port map (
@@ -347,16 +376,15 @@ begin
       port map (
         n_o => z_n,
         s_o => z_s,
-        e_o => z_e,
+        e_o => io_oeb(FOUT - 1 downto 0),
         w_o => z_w,
         clk_i => wb_clk_i,
         clk_o => clk_b);
 
-    wio_out (FOUT - 1 downto 0) <= (others => z_w);
-    wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_e);
-    wio_out (wio_out'left downto FOUT + 16) <= (others => z_e);
+    wio_out (FOUT - 1 downto 0) <= (others => z_s);
+    wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_n);
+    wio_out (wio_out'left downto FOUT + 16) <= (others => z_n);
     io_out <= wio_out;
-    io_oeb (FOUT - 1 downto 0) <= (others => z_s);
-    io_oeb (37 downto FOUT + 16) <= (others => z_s);
+    io_oeb (37 downto FOUT + 16) <= (others => z_w);
   end block;
 end behav;

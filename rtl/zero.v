@@ -42,13 +42,14 @@ endmodule
 `endif //  `ifndef FUNCTIONAL
 
 module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
-   output e_o;
+   output [11:0] e_o;
    output n_o;
    output s_o;
    output w_o;
    input clk_i;
    output [3:0] clk_o;
    wire  w;
+   wire  e_w;
    wire  clk;
 
 `ifdef FUNCTIONAL
@@ -73,10 +74,11 @@ module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
    (* keep *)
    sky130_fd_sc_hd__fill_4 RIGHT2 ();
    sky130_fd_sc_hd__buf_2 RIGHT1a (.A(w), .X(s_o));
-   sky130_fd_sc_hd__buf_2 RIGHT2a (.A(w), .X(e_o));
+   sky130_fd_sc_hd__buf_2 RIGHT2a (.A(w), .X(e_w));
 
    sky130_fd_sc_hd__clkbuf_16 CLKBUF (.A(clk_i), .X(clk));
 `endif
 
+   assign e_o = {12{e_w}};
    assign clk_o = {4{clk}};
 endmodule

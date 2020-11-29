@@ -10,7 +10,7 @@ HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms # delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2
-MACROS=wb_extender_last wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
+MACROS=wb_extender wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
  rtl/opentdc_delay.vhdl \

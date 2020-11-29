@@ -20,7 +20,12 @@ set ::env(FP_SIZING) absolute
 
 # .46*2800  2.72*320
 set ::env(DIE_AREA) "0 0 1288 136"
-set ::env(PL_TARGET_DENSITY) 0.35  ; # 0.3 -> ant:9
+set ::env(PL_TARGET_DENSITY) 0.35
+# 0.3 -> ant:9, 0.35:8+10, 0.37:12+12, 0.33:13+15
+# 0.34:20+20
+
+#set ::env(PL_TARGET_DENSITY_CELLS) 0.2
+#set ::env(CELL_PAD) 12
 
 set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3

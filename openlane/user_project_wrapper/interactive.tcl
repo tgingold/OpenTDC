@@ -19,7 +19,7 @@ set ::env(FP_DEF_TEMPATE) $script_dir/../../def/user_project_wrapper_empty.def
 
 apply_def_template
 
-set x0 [expr 90 * .46]
+set x0 [expr 100 * .46]
 set x1 [expr $x0 + 1200 * .46]  ; # ~ width of tdc
 set x2 [expr $x1 + 1200 * .46]  ; # ~ width of wb_interface
 
@@ -48,20 +48,20 @@ add_macro_placement i_fd3 $x2 $y2 N
 
 #  Extender 2
 set y2_2 [expr ( 1270880 - 33680 ) / 1000 ]
-add_macro_placement i_fd2_2 $x2 $y2_2 N
+add_macro_placement i_fd2_2 1400 $y2_2 N
 
-add_macro_placement i_itf2 $x1 $y2_2 N
-add_macro_placement i_tdc2_0 $x0 $y2_2 N
+add_macro_placement i_itf2 308 1614 N
+add_macro_placement i_tdc2_0 $x0 [expr 440 * 2.72] N
 
-add_macro_placement i_fd2_3 $x2 1838.4 N
+add_macro_placement i_fd2_3 1400 [expr 685 * 2.72]  N
 
-add_macro_placement i_tdc2_1 $x0 1618.4 N
+add_macro_placement i_tdc2_1 $x0 [expr 680 * 2.72] N
 
 
-add_macro_placement b_zero.i_zero 1200 1524 N
+add_macro_placement b_zero.i_zero 1800 1524 N
 
 # x = 4500 * .46
-add_macro_placement inst_rescue 2070.0 68 N
+add_macro_placement inst_rescue 2070.0 81.6 N
 
 manual_macro_placement f
 
