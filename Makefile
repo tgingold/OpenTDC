@@ -244,6 +244,13 @@ gds/wb_extender_last.gds lef/wb_extender_last.lef: src/wb_extender_last.v
 	$(build-flow)
 
 
+src/wb_extender.v: rtl/opentdc_pkg.vhdl rtl/wb_extender.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e wb_extender; write_verilog $@"
+
+gds/wb_extender.gds lef/wb_extender.lef: src/wb_extender.v
+	$(build-flow)
+
+
 # Zero
 
 src/zero.v: rtl/zero.v
