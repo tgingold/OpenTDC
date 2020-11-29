@@ -9,7 +9,7 @@ YOSYS=yosys
 HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms # delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
-TDC_MACROS=tdc_inline_1 tdc_inline_2
+TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3
 MACROS=wb_extender wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
@@ -45,7 +45,8 @@ grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DES
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
-cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
+cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def && \
+cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v gl
 endef
 
 define build-script
@@ -201,6 +202,12 @@ src/tdc_inline_2.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vh
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=3 $^ -e tdc_inline; rename tdc_inline tdc_inline_2; write_verilog $@; write_verilog -blackboxes src/tdc_inline_2_bb.v"
 
 gds/tdc_inline_2.gds lef/tdc_inline_2.lef: src/tdc_inline_2.v src/tdc_inline_2_bb.v
+	$(build-flow)
+
+src/tdc_inline_3.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vhdl
+	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=4 $^ -e tdc_inline; rename tdc_inline tdc_inline_3; write_verilog $@; write_verilog -blackboxes src/tdc_inline_3_bb.v"
+
+gds/tdc_inline_3.gds lef/tdc_inline_3.lef: src/tdc_inline_3.v src/tdc_inline_3_bb.v
 	$(build-flow)
 
 
