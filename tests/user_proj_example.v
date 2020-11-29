@@ -3,5 +3,7 @@
 / SPDX-License-Identifier: Apache-2.0
 */
 
-`include "../openlane/opentdc_wb/user_project_wrapper.v"
-`include "../src/opentdc.v"
+`include "../src/user_project_wrapper.v"
+`include "blackbox.v"
+`include "../src/wb_interface.v"
+`include "../rtl/zero.v"

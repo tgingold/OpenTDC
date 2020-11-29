@@ -17,13 +17,17 @@ BEHAVIOURAL_MODELS = ../../
 
 .SUFFIXES:
 
-%.vvp: %_tb.v %.hex
-	iverilog -DFUNCTIONAL -I $(CARAVEL)/verilog/rtl \
+blackbox.v: ../src/user_project_wrapper_bb.v
+#  Just keep the minimum (to speed up simulation)
+	sed -e '/blackbox/d' -e '/module wb_interface/,/endmodule/d' \
+	  -e '/module zero/,/endmodule/d' < $< > $@
+
+%.vvp: %_tb.v %.hex blackbox.v
+	iverilog -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
+        -I $(CARAVEL)/verilog/rtl \
         -I $(CARAVEL)/verilog/dv/caravel \
 	-I $(PDK_ROOT)/sky130A \
 	$< -o $@
-
-# 	-I $(PDK_PATH) -I $(IP_PATH) -I $(RTL_PATH) \
 
 %.vcd: %.vvp
 	vvp $<
