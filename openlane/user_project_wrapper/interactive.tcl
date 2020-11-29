@@ -47,15 +47,16 @@ set y2 [expr ( 910880 - 33680 ) / 1000 ]
 add_macro_placement i_fd3 $x2 $y2 N
 
 #  Extender 2
-set y2_2 [expr ( 1270880 - 33680 ) / 1000 ]
-add_macro_placement i_fd2_2 1400 $y2_2 N
+set y2_2 [expr ( 1810880 - 33680 ) / 1000 ]
+add_macro_placement i_tdc2_0 300 1150 N
+add_macro_placement i_tdc2_1 1140 1150 N
 
+# NOTE: obstruction for i_itf2 in config.tcl
 add_macro_placement i_itf2 308 1614 N
-add_macro_placement i_tdc2_0 $x0 [expr 440 * 2.72] N
 
-add_macro_placement i_fd2_3 1400 [expr 685 * 2.72]  N
+add_macro_placement i_fd2_2 $x0 $y2_2 FN
+add_macro_placement i_fd2_3 $x2 $y2_2 N
 
-add_macro_placement i_tdc2_1 $x0 [expr 680 * 2.72] N
 
 
 add_macro_placement b_zero.i_zero 1800 1524 N
@@ -98,8 +99,11 @@ foreach domain $power_domains {
 	set ::env(_H_PDN_OFFSET) [expr $::env(_H_PDN_OFFSET)+6*$::env(_WIDTH)]
 }
 
+add_route_obs
 global_routing_or
 detailed_routing
+
+#write_powered_verilog
 
 run_magic
 run_magic_spice_export

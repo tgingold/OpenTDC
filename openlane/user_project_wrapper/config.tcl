@@ -55,3 +55,5 @@ set ::env(EXTRA_LEFS)      "$macros_lef"
 set ::env(EXTRA_GDS_FILES) "$macros_gds"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 
+# Obstruction over wb_extender
+set ::env(GLB_RT_OBS) "met4 308.0 1614.0 1285.63 136.0"

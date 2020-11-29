@@ -211,7 +211,7 @@ begin
       down_bus_out => down0_bus_out,
       down_adr_o   => down0_adr,
       
-      tdc0_inp_i => io_in(FIN + 0),
+      tdc0_inp_i => io_in(31),
     
       tdc1_rst_n => tdc_rst_n(1),
       tdc1_bus_in => tdc_bus_in(1),
@@ -246,7 +246,7 @@ begin
       rst_n_i => tdc_rst_n(1),
       bus_in => tdc_bus_in(1),
       bus_out => tdc_bus_out(1),
-      inp_i => io_in(FIN + 1));
+      inp_i => io_in(30));
   
   i_tdc2: tdc_inline_2
       port map (
@@ -254,7 +254,7 @@ begin
         rst_n_i => tdc_rst_n(2),
         bus_in => tdc_bus_in(2),
         bus_out => tdc_bus_out(2),
-        inp_i => io_in(FIN + 2));
+        inp_i => io_in(29));
   
   --  fd1: macro (fd_hd)
   i_fd1: fd_hd
@@ -316,39 +316,39 @@ begin
       dev3_bus_out => itf2_bus_out(3));
       
 
-  i_tdc2_0: tdc_inline_1
+  i_tdc2_0: tdc_inline_3
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(0),
       bus_in => itf2_bus_in(0),
       bus_out => itf2_bus_out(0),
-      inp_i => io_in(FIN + 3));
+      inp_i => io_in(28));
   
-  i_tdc2_1: tdc_inline_2
-    port map (
-      clk_i => clk_b(3),
-      rst_n_i => itf2_bus_rst_n(2),
-      bus_in => itf2_bus_in(2),
-      bus_out => itf2_bus_out(2),
-      inp_i => io_in(FIN + 4));
-  
-  i_fd2_2: fd_hd
+  i_tdc2_1: tdc_inline_3
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(1),
       bus_in => itf2_bus_in(1),
       bus_out => itf2_bus_out(1),
-      out1_o => wio_out(FOUT + 7),
-      out2_o => wio_out(FOUT + 8));
+      inp_i => io_in(27));
+  
+  i_fd2_2: fd_hs
+    port map (
+      clk_i => clk_b(3),
+      rst_n_i => itf2_bus_rst_n(2),
+      bus_in  => itf2_bus_in(2),
+      bus_out => itf2_bus_out(2),
+      out1_o  => wio_out(FOUT + 7),
+      out2_o  => wio_out(FOUT + 8));
 
-  i_fd2_3: fd_hs
+  i_fd2_3: fd_hd
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(3),
-      bus_in  => itf2_bus_in(3),
+      bus_in => itf2_bus_in(3),
       bus_out => itf2_bus_out(3),
-      out1_o  => wio_out(FOUT + 9),
-      out2_o  => wio_out(FOUT + 10));
+      out1_o => wio_out(FOUT + 9),
+      out2_o => wio_out(FOUT + 10));
 
   --  Loop to avoid freeze
   lp_data <= (others => '1');
@@ -366,7 +366,7 @@ begin
       la_data_out => la_data_out,
       la_oen => la_oen,
 
-      tdc_inp_i => io_in(FIN + 3),
+      tdc_inp_i => io_in(12),
       fd_out_o => wio_out (FOUT + 15));
 
   b_zero: block
@@ -383,7 +383,7 @@ begin
 
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
     wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_n);
-    wio_out (wio_out'left downto FOUT + 16) <= (others => z_n);
+    wio_out (wio_out'left downto FOUT + 16) <= (others => z_s);
     io_out <= wio_out;
     io_oeb (37 downto FOUT + 16) <= (others => z_w);
   end block;
