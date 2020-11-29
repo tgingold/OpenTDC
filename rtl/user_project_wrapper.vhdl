@@ -333,23 +333,21 @@ begin
       bus_out => itf2_bus_out(1),
       inp_i => io_in(27));
   
-  i_fd2_2: fd_hs
+  i_fd2_2: fd_hd_25_1
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(2),
       bus_in  => itf2_bus_in(2),
       bus_out => itf2_bus_out(2),
-      out1_o  => wio_out(FOUT + 7),
-      out2_o  => wio_out(FOUT + 8));
+      out_o  => wio_out(FOUT + 7));
 
-  i_fd2_3: fd_hd
+  i_fd2_3: fd_hd_25_1
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf2_bus_rst_n(3),
       bus_in => itf2_bus_in(3),
       bus_out => itf2_bus_out(3),
-      out1_o => wio_out(FOUT + 9),
-      out2_o => wio_out(FOUT + 10));
+      out_o => wio_out(FOUT + 8));
 
   --  Loop to avoid freeze
   lp_data <= (others => '1');
@@ -384,7 +382,7 @@ begin
         clk_o => clk_b);
 
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
-    wio_out (FOUT + 15 downto FOUT + 11) <= (others => z_n);
+    wio_out (FOUT + 15 downto FOUT + 9) <= (others => z_n);
     wio_out (wio_out'left downto FOUT + 17) <= (others => z_w);
     io_out <= wio_out;
     io_oeb (37 downto FOUT + 17) <= (others => z_w);

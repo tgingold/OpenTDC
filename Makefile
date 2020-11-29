@@ -8,7 +8,7 @@ YOSYS=yosys
 
 HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_hd_25_1 # delayline_9_osu_18hs
 
-FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
+FD_MACROS=fd_hd fd_hs fd_ms fd_hd_25_1 fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3
 MACROS=wb_extender wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
@@ -200,8 +200,11 @@ rtl/openfd_comps.vhdl: Makefile
 	echo "      rst_n_i : std_logic;"; \
 	echo "      bus_in : dev_bus_in;"; \
 	echo "      bus_out : out dev_bus_out;"; \
-	echo "      out1_o : out std_logic;"; \
-	echo "      out2_o : out std_logic);"; \
+	case $$M in \
+	 fd_hd_25_1)  echo "      out_o : out std_logic);";; \
+	 *)           echo "      out1_o : out std_logic;"; \
+	              echo "      out2_o : out std_logic);"; \
+	esac; \
 	echo "  end component $$M;"; \
 	echo; \
 	done; \
