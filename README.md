@@ -39,7 +39,8 @@ Particularities of the design:
 
 ## License
 
-Apache 2.0
+The design license is Apache 2.0.
+There is no third-party sources, the design is self-contained.
 
 ## Building
 
@@ -76,6 +77,7 @@ In addition, there is one TDC and one FD in the main block.
 And finally, there is an independant [rescue block](rtl/rescue_top.vhdl) which contains one
 TDC and one FD and connected to the logical analyzer interface.
 
+
 ## Register map
 
 Not documented outside the source files!
@@ -83,6 +85,7 @@ But each device uses 8 words.  A device is either a TDC or a FD, except device 0
 a control device.  You can identify a device by reading at offset 0x1c.
 See [tdc core](rtl/opentdc_core2.vhdl) and [fd core](rtl/openfd_core2.vhdl) source files
 for the registers, and [wb_interface](rtl/wb_interface.vhdl) for the main controller.
+
 
 ## Contributing
 

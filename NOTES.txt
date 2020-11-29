@@ -126,8 +126,8 @@ frequency.
   The conclusion on wires is simple: almost no impact on timing.  Except on
   my personnal timing!
 
-September
----------
+September: OSU library
+----------------------
 
 At the end of September, there was the Fossi dial-up event about OSU cells.
 I initially thought that would be the least interesting talk, because
@@ -151,8 +151,65 @@ adjusting the scripts of the open_pdk project to have a standard place of
 the library files so that openlane can found them easily.  That's not very
 complex.
 
-Then I wanted to use the OSU library in a design.  After fixing some simple
-issues, I quickly got weird error message from tools or even crashes.
+Then I wanted to use the OSU library in a design.  After fixing some
+simple issues, I quickly got weird error message from tools or even
+crashes.
+
+So, this is not plug and play!  This requires a better understanding.
+
+The first issue was an incoherence between the LIB and the LEF files.
+The LIB file contains timing characteristics of each library cell
+while the LEF file gives an abstract layout (details of lower layers
+are not present).  Weirdly, for two cells, the name of the pins were
+different in the two files.  Some tools were confused.  The easy way
+was to change the name in the LIB file, so that it matches the other
+ones.
+
+A second issue was with access point (AP).  This are the locations in
+the cells of the pins.  At least one of the tool, the placer, needs to
+have them aligned on the grid.  This required parameter adjustements.
+Unfortunately, in the second delivery of OSU library, the pins were
+only aligned vertically and deliberatly not aligned horizontally.
+
+The last issue was resolution in DEF and LEF files.  The units used
+by OSU were 1/100 microns, while the foundary unit is the nanometer.
+One of the tool generated incorrect outputs and needed a small change.
+This was changed in the second delivery of OSU in November
+
+This second OSU delivery was very different from the first one: the
+cell names were completely changed and now follows the naming
+convention of the foundary library.  The layout of the files was also
+changed so all the scripts have to adapt.
+
+I was able to create a macro using the 18T_hs variant of the library,
+but it had many DRC issues.  Looking closer, they look like real
+issues, admitted by the designers.  So I won't be able to use those
+macros in my design.
+
+
+October: generating blocks
+--------------------------
+
+I started to write some HDL code for my design, but quickly enough
+I realized that the place and route result was irregular for my
+timing elements (the tap line and the delay line).
+
+So my idea was simple: let's create a very regular placement for
+them.  But I haven't seen an easy way for that.  So create a
+simple tool that generates a small macro for these elements.
+
+That was a very fun idea, as I had to understand the files format.
+That's also one of my favourite approach: be able to read the files.
+
+So I started to write a python script (see in the tools/ directory)
+to directly generate the DEF file of a tap line.  Then use this
+file as an input to the OpenLANE chain to generate a GDS file.
+
+[ now: manual place, use API, use magic ]
+[ So naive: cannot deal with too many configs ]
+
+November: the whole design
+--------------------------
 
 [ Clocking ]
 
@@ -164,10 +221,16 @@ issues, I quickly got weird error message from tools or even crashes.
 
 [ bug magic: cell with FN orient ]
 
-[ crisis time...]
+[ crisis time: macros issues, drc, lvs, antenna]
 
-OSU library
------------
+[ Incorrect cells ]
+
+[ antenna vs LVS ]
+
+
+[ STA and memory ]
+
+[ DRC issues ]
 
 Magic
 -----
