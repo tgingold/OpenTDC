@@ -45,20 +45,21 @@ grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DES
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
-cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def && \
-cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v gl
+cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
 endef
 
 define build-script
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -it -file $$DESIGN/interactive.tcl ) && \
-$(build-status)
+$(build-status) && \
+cp openlane/$$DESIGN/runs/user/results/synthesis/$$DESIGN.synthesis.v gl
 endef
 
 define build-flow
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
-$(build-status)
+$(build-status) && \
+cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v gl
 endef
 
 define yosys_fd
