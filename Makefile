@@ -6,7 +6,7 @@ MKDIR=mkdir
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
-HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms # delayline_9_osu_18hs
+HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_hd_25_1 # delayline_9_osu_18hs
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3
@@ -163,6 +163,13 @@ src/fd_ms.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/
 	$(yosys_fd)
 
 gds/fd_ms.gds lef/fd_ms.lef: src/fd_ms.v src/fd_ms_bb.v gds/delayline_9_ms.gds
+	$(build-flow)
+
+
+src/fd_hd_25_1.v: $(VHDL_COMMON_SRCS) $(VHDL_TAPLINE_SRCS) rtl/openfd_core2.vhdl rtl/fd_hd_25_1.vhdl
+	$(yosys_fd)
+
+gds/fd_hd_25_1.gds lef/fd_hd_25_1.lef: src/fd_hd_25_1.v src/fd_hd_25_1_bb.v gds/delayline_9_hd_25_1.gds
 	$(build-flow)
 
 
