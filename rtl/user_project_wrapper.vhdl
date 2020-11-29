@@ -156,7 +156,8 @@ architecture behav of user_project_wrapper is
       la_oen : std_logic_vector(127 downto 0);
 
       tdc_inp_i : std_logic;
-      fd_out_o : out std_logic);
+      fd_out_o : out std_logic;
+      fd_oen_o : out std_logic);
   end component;
 
   signal tdc_bus_in: dev_in_array (NTDC downto 1);
@@ -367,7 +368,8 @@ begin
       la_oen => la_oen,
 
       tdc_inp_i => io_in(12),
-      fd_out_o => wio_out (FOUT + 15));
+      fd_out_o => wio_out (FOUT + 16),
+      fd_oen_o => io_oeb (FOUT + 16));
 
   b_zero: block
     signal z_n, z_s, z_e, z_w : std_logic;
@@ -382,9 +384,9 @@ begin
         clk_o => clk_b);
 
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
-    wio_out (FOUT + 14 downto FOUT + 11) <= (others => z_n);
-    wio_out (wio_out'left downto FOUT + 16) <= (others => z_s);
+    wio_out (FOUT + 15 downto FOUT + 11) <= (others => z_n);
+    wio_out (wio_out'left downto FOUT + 17) <= (others => z_w);
     io_out <= wio_out;
-    io_oeb (37 downto FOUT + 16) <= (others => z_w);
+    io_oeb (37 downto FOUT + 17) <= (others => z_w);
   end block;
 end behav;

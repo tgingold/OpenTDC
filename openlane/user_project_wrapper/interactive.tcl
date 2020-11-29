@@ -48,14 +48,14 @@ add_macro_placement i_fd3 $x2 $y2 N
 
 #  Extender 2
 set y2_2 [expr ( 1810880 - 33680 ) / 1000 ]
-add_macro_placement i_tdc2_0 300 1150 N
-add_macro_placement i_tdc2_1 1140 1150 N
+add_macro_placement i_tdc2_0 200 1150 N
+add_macro_placement i_tdc2_1 1040 1150 N
 
 # NOTE: obstruction for i_itf2 in config.tcl
-add_macro_placement i_itf2 308 1614 N
+add_macro_placement i_itf2 208 1614 N
 
 add_macro_placement i_fd2_2 $x0 $y2_2 FN
-add_macro_placement i_fd2_3 $x2 $y2_2 N
+add_macro_placement i_fd2_3 1040 $y2_2 N
 
 
 
