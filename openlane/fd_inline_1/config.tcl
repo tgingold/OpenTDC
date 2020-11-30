@@ -9,8 +9,8 @@ set macros [list]
 source $script_dir/../fd-common/fd-config.tcl
 
 set ::env(FP_SIZING) absolute
-set ::env(DIE_AREA) "0 0 280 140"
+set ::env(DIE_AREA) "0 0 280 108.8"
 
 set ::env(FP_PIN_ORDER_CFG) $script_dir/../fd_hd_25_1/pin_order.cfg
 
-set ::env(PL_TARGET_DENSITY) 0.35
+set ::env(PL_TARGET_DENSITY) 0.40
