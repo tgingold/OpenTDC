@@ -19,6 +19,9 @@ set ::env(FP_DEF_TEMPATE) $script_dir/../../def/user_project_wrapper_empty.def
 
 apply_def_template
 
+#
+# Main interface
+#
 set x0 [expr 100 * .46]
 set x1 [expr $x0 + 1200 * .46]  ; # ~ width of tdc
 set x2 [expr $x1 + 1200 * .46]  ; # ~ width of wb_interface
@@ -26,51 +29,65 @@ set x2 [expr $x1 + 1200 * .46]  ; # ~ width of wb_interface
 # From pdn.def runs/user/tmp/floorplan/pdn.def
 # x = .460 * 4100
 set y0 [expr ( 190880 - 33680 ) / 1000.0 ]
-add_macro_placement i_fd1 $x2 $y0 N
+add_macro_placement i_fd0_1 $x2 $y0 N
 
 # in macro: VPWR at 27290
-add_macro_placement i_itf $x1 $y0 N
+add_macro_placement i_itf0 $x1 $y0 N
 
 # fd_hd at 27290, x = .460 * 400
-add_macro_placement i_tdc1 $x0 $y0 N
+add_macro_placement i_tdc0_1 $x0 $y0 N
 
 # x = .460 * 5400
 set y1 [expr ( 550880 - 33680 ) / 1000.0 ]
-add_macro_placement i_fd2 $x2 $y1 N
+add_macro_placement i_fd0_2 $x2 $y1 N
 
 # VPWR at 1099550
 #  x = .460 * 2500 = 1104.0
-add_macro_placement i_tdc2 $x0 636.14 N
+add_macro_placement i_tdc0_2 $x0 636.14 N
 
 # x = .460 * 5400
 set y2 [expr ( 910880 - 33680 ) / 1000.0 ]
-add_macro_placement i_fd3 $x2 $y2 N
+add_macro_placement i_fd0_3 $x2 $y2 N
 
 #
 #  Extender 2
 #
 set y2_2 [expr ( 1990880 + 30880 - 231200) / 1000.0 ]
-add_macro_placement i_tdc2_0 200 1150 N
-add_macro_placement i_tdc2_1 1040 1150 N
+add_macro_placement i_tdc2_0 100 1170 N
+add_macro_placement i_tdc2_1 940 1170 N
 
 # NOTE: obstruction for i_itf2 in config.tcl
-add_macro_placement i_itf2 208 1614 N
+add_macro_placement i_itf2 108 1614 N
 
-add_macro_placement i_fd2_2 200 $y2_2 FS
-add_macro_placement i_fd2_3 1040 $y2_2 FS
+add_macro_placement i_fd2_2 100 $y2_2 FS
+add_macro_placement i_fd2_3 940 $y2_2 FS
 
 #
 #  Extender 3
 #
 set y3_2 [expr ( 3070880 + 30880 - 231200) / 1000.0 ]
-add_macro_placement i_tdc3_0 200 2050 N
-add_macro_placement i_tdc3_1 1040 2050 N
+add_macro_placement i_tdc3_0 100 2050 N
+add_macro_placement i_tdc3_1 940 2050 N
 
 # NOTE: obstruction for i_itf3 in config.tcl
-add_macro_placement i_itf3 208 2514 N
+add_macro_placement i_itf3 108 2514 N
 
-add_macro_placement i_fd3_2 200 $y3_2 FS
-add_macro_placement i_fd3_3 1040 $y3_2 FS
+add_macro_placement i_fd3_2 100 $y3_2 FS
+add_macro_placement i_fd3_3 940 $y3_2 FS
+
+
+#
+#  Extender 4
+#
+set y4_2 [expr ( 2170880 - 30880) / 1000.0 ]
+add_macro_placement i_tdc4_0 2420 2850 S
+add_macro_placement i_tdc4_1 1580 2850 S
+
+# NOTE: obstruction for i_itf4 in config.tcl
+add_macro_placement i_itf4 1588 2514 S
+
+add_macro_placement i_fd4_2 2420 $y4_2 FN
+add_macro_placement i_fd4_3 1580 $y4_2 FN
 
 
 #
