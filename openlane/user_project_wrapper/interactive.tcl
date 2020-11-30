@@ -59,35 +59,37 @@ add_macro_placement i_tdc2_1 940 1170 N
 # NOTE: obstruction for i_itf2 in config.tcl
 add_macro_placement i_itf2 108 1614 N
 
-add_macro_placement i_fd2_2 100 $y2_2 FS
+add_macro_placement i_fd2_2 100 1785 FS
 add_macro_placement i_fd2_3 940 $y2_2 FS
 
 #
 #  Extender 3
 #
-set y3_2 [expr ( 3070880 + 30880 - 231200) / 1000.0 ]
+set y3_3_2 [expr ( 2890880 - 33680 ) / 1000.0 ]
+set y3_3_3 [expr ( 3070880 + 30880 - 231200) / 1000.0 ]
 add_macro_placement i_tdc3_0 100 2050 N
 add_macro_placement i_tdc3_1 940 2050 N
 
 # NOTE: obstruction for i_itf3 in config.tcl
 add_macro_placement i_itf3 108 2514 N
 
-add_macro_placement i_fd3_2 100 $y3_2 FS
-add_macro_placement i_fd3_3 940 $y3_2 FS
+add_macro_placement i_fd3_2 100 $y3_3_2 FN
+add_macro_placement i_fd3_3 940 $y3_3_3 FS
 
 
 #
 #  Extender 4
 #
-set y4_2 [expr ( 2170880 - 30880) / 1000.0 ]
+set y4_2hd [expr ( 2170880 - 20240) / 1000.0 ]
+set y4_2ms [expr ( 2170880 - 33680) / 1000.0 ]
 add_macro_placement i_tdc4_0 2420 2850 S
 add_macro_placement i_tdc4_1 1580 2850 S
 
 # NOTE: obstruction for i_itf4 in config.tcl
 add_macro_placement i_itf4 1588 2514 S
 
-add_macro_placement i_fd4_2 2420 $y4_2 FN
-add_macro_placement i_fd4_3 1580 $y4_2 FN
+add_macro_placement i_fd4_2 2330 $y4_2ms FN
+add_macro_placement i_fd4_3 1580 $y4_2hd FN
 
 
 #
@@ -134,9 +136,9 @@ foreach domain $power_domains {
 }
 
 # Use run_routing instead ?
+write_verilog $::env(yosys_result_file_tag)_preroute.v
 add_route_obs
 global_routing_or
-write_verilog $::env(yosys_result_file_tag)_preroute.v
 detailed_routing
 
 #write_powered_verilog
