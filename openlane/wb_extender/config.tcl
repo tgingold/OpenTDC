@@ -18,9 +18,9 @@ set ::env(CLOCK_PERIOD) "20"
 
 set ::env(FP_SIZING) absolute
 
-# .46*2800  2.72*320
-set ::env(DIE_AREA) "0 0 1288 136"
-set ::env(PL_TARGET_DENSITY) 0.35
+# .46*2800  2.72*50
+set ::env(DIE_AREA) "0 0 1288.8 141.44"
+set ::env(PL_TARGET_DENSITY) 0.351
 # 0.3 -> ant:9, 0.35:8+10, 0.37:12+12, 0.33:13+15
 # 0.34:20+20
 
