@@ -303,10 +303,10 @@ gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
 verilog: $(foreach v,$(MACROS),src/$(v).v) src/user_project_wrapper.v
 
 add-spdx-src:
-	cd src; \
-	for f in *.v; do if ! grep -q SPDX $$f ; then \
-	sed -i -e '1i//SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>' \
-	-e '1i//SPDX-License-Identifier: Apache-2.0' $$f; \
+	for f in src/*.v gl/*.v ; do if ! grep -q SPDX $$f ; then \
+	 (echo '//SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>'; \
+	 echo '//SPDX-License-Identifier: Apache-2.0'; \
+	 cat $$f ) > $$f.tmp; mv $$f.tmp $$f; \
 	fi; done
 
 # Aboard
@@ -320,9 +320,13 @@ gds/caravel.gds: # gds/user_project_wrapper.gds
 	cd $(CARAVEL); make ship PDK_ROOT=$(PDK_ROOT)
 	cp $(CARAVEL)/gds/caravel_out.gds $@
 
+# Compress for github.
+
 uncompress:
+	gunzip gds/*.gds.gz def/*.def.gz lef/*.lef.gz gl/*.v.gz
 
 compress:
+	gzip -9 gds/*.gds def/*.def lef/*.lef gl/*.v
 
 verify:
 #	At some point, this should be automatic.  But we are not yet there.
