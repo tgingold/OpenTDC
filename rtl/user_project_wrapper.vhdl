@@ -180,6 +180,11 @@ architecture behav of user_project_wrapper is
   signal down2_bus_out : dev_bus_out;
   signal down2_adr : std_logic_vector (4 downto 0);
 
+  signal down3_rst_n : std_logic;
+  signal down3_bus_in : dev_bus_in;
+  signal down3_bus_out : dev_bus_out;
+  signal down3_adr : std_logic_vector (4 downto 0);
+
   signal lp_data : std_logic_vector (31 downto 0);
   
   signal rst_time_n : std_logic;
@@ -187,6 +192,10 @@ architecture behav of user_project_wrapper is
   signal itf2_bus_rst_n : std_logic_vector(3 downto 0);
   signal itf2_bus_in: dev_in_array (3 downto 0);
   signal itf2_bus_out: dev_out_array (3 downto 0);
+
+  signal itf3_bus_rst_n : std_logic_vector(3 downto 0);
+  signal itf3_bus_in: dev_in_array (3 downto 0);
+  signal itf3_bus_out: dev_out_array (3 downto 0);
 
   signal wio_out : std_logic_vector(37 downto 0);
 
@@ -292,6 +301,8 @@ begin
       out1_o => wio_out(FOUT + 5),
       out2_o => wio_out(FOUT + 6));
 
+  --  Extender 2
+  
   i_itf2 : wb_extender
     port map (
       clk_i => clk_b(3),
@@ -354,10 +365,74 @@ begin
       bus_out => itf2_bus_out(3),
       out_o => wio_out(FOUT + 8));
 
+  --  Extender 3
+  
+  i_itf3 : wb_extender
+    port map (
+      clk_i => clk_b(3),
+      up_rst_n_i => down2_rst_n,
+      up_bus_in  => down2_bus_in,
+      up_bus_out => down2_bus_out,
+      up_adr_i   => down2_adr,
+
+      down_rst_n_o => down3_rst_n,
+      down_bus_in  => down3_bus_in,
+      down_bus_out => down3_bus_out,
+      down_adr_o   => down3_adr,
+      
+      dev0_rst_n   => itf3_bus_rst_n(0),
+      dev0_bus_in  => itf3_bus_in(0),
+      dev0_bus_out => itf3_bus_out(0),
+
+      dev1_rst_n   => itf3_bus_rst_n(1),
+      dev1_bus_in  => itf3_bus_in(1),
+      dev1_bus_out => itf3_bus_out(1),
+
+      dev2_rst_n   => itf3_bus_rst_n(2),
+      dev2_bus_in  => itf3_bus_in(2),
+      dev2_bus_out => itf3_bus_out(2),
+
+      dev3_rst_n   => itf3_bus_rst_n(3),
+      dev3_bus_in  => itf3_bus_in(3),
+      dev3_bus_out => itf3_bus_out(3));
+      
+
+  i_tdc3_0: tdc_inline_3
+    port map (
+      clk_i => clk_b(3),
+      rst_n_i => itf3_bus_rst_n(0),
+      bus_in  => itf3_bus_in(0),
+      bus_out => itf3_bus_out(0),
+      inp_i   => io_in(26));
+  
+  i_tdc3_1: tdc_inline_3
+    port map (
+      clk_i => clk_b(3),
+      rst_n_i => itf3_bus_rst_n(1),
+      bus_in  => itf3_bus_in(1),
+      bus_out => itf3_bus_out(1),
+      inp_i   => io_in(25));
+  
+  i_fd3_2: fd_hd_25_1
+    port map (
+      clk_i => clk_b(3),
+      rst_n_i => itf3_bus_rst_n(2),
+      bus_in  => itf3_bus_in(2),
+      bus_out => itf3_bus_out(2),
+      out_o   => wio_out(FOUT + 9));
+
+  i_fd3_3: fd_hd_25_1
+    port map (
+      clk_i => clk_b(3),
+      rst_n_i => itf3_bus_rst_n(3),
+      bus_in  => itf3_bus_in(3),
+      bus_out => itf3_bus_out(3),
+      out_o   => wio_out(FOUT + 10));
+
   --  Loop to avoid freeze
   lp_data <= (others => one);
 
-  down2_bus_out <= (dato => lp_data,
+  down3_bus_out <= (dato => lp_data,
                     wack => down2_bus_in.we,
                     rack => down2_bus_in.re,
                     trig => gnd);
@@ -388,7 +463,7 @@ begin
 
     gnd <= z_n;
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
-    wio_out (FOUT + 15 downto FOUT + 9) <= (others => z_n);
+    wio_out (FOUT + 15 downto FOUT + 11) <= (others => z_n);
     wio_out (wio_out'left downto FOUT + 17) <= (others => z_w);
     io_out <= wio_out;
     io_oeb (37 downto FOUT + 17) <= (others => z_w);

@@ -25,7 +25,7 @@ set x2 [expr $x1 + 1200 * .46]  ; # ~ width of wb_interface
 
 # From pdn.def runs/user/tmp/floorplan/pdn.def
 # x = .460 * 4100
-set y0 [expr ( 190880 - 33680 ) / 1000 ]
+set y0 [expr ( 190880 - 33680 ) / 1000.0 ]
 add_macro_placement i_fd1 $x2 $y0 N
 
 # in macro: VPWR at 27290
@@ -35,7 +35,7 @@ add_macro_placement i_itf $x1 $y0 N
 add_macro_placement i_tdc1 $x0 $y0 N
 
 # x = .460 * 5400
-set y1 [expr ( 550880 - 33680 ) / 1000 ]
+set y1 [expr ( 550880 - 33680 ) / 1000.0 ]
 add_macro_placement i_fd2 $x2 $y1 N
 
 # VPWR at 1099550
@@ -43,11 +43,13 @@ add_macro_placement i_fd2 $x2 $y1 N
 add_macro_placement i_tdc2 $x0 636.14 N
 
 # x = .460 * 5400
-set y2 [expr ( 910880 - 33680 ) / 1000 ]
+set y2 [expr ( 910880 - 33680 ) / 1000.0 ]
 add_macro_placement i_fd3 $x2 $y2 N
 
+#
 #  Extender 2
-set y2_2 [expr ( 1810880 - 33680 ) / 1000 ]
+#
+set y2_2 [expr ( 1990880 + 30880 - 231200) / 1000.0 ]
 add_macro_placement i_tdc2_0 200 1150 N
 add_macro_placement i_tdc2_1 1040 1150 N
 
@@ -56,6 +58,19 @@ add_macro_placement i_itf2 208 1614 N
 
 add_macro_placement i_fd2_2 200 $y2_2 FS
 add_macro_placement i_fd2_3 1040 $y2_2 FS
+
+#
+#  Extender 3
+#
+set y3_2 [expr ( 2890880 + 30880 - 231200) / 1000.0 ]
+add_macro_placement i_tdc3_0 200 2050 N
+add_macro_placement i_tdc3_1 1040 2050 N
+
+# NOTE: obstruction for i_itf3 in config.tcl
+add_macro_placement i_itf3 208 2514 N
+
+add_macro_placement i_fd3_2 200 $y3_2 FS
+add_macro_placement i_fd3_3 1040 $y3_2 FS
 
 
 
