@@ -3,6 +3,8 @@
 -- SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>
 -- SPDX-License-Identifier: Apache-2.0
 
+use std.textio.all;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -36,8 +38,8 @@ architecture behav of tb_proj is
   signal inps : std_logic_vector(37 downto 0);
   signal outs : std_logic_vector(37 downto 0);
 
-  alias inp1 : std_logic is inps (21);
-  alias inp2 : std_logic is inps (22);
+  alias inp1 : std_logic is inps (31);
+  alias inp2 : std_logic is inps (30);
   alias out0 : std_logic is outs (12);
   alias out1i : std_logic is outs (13);
   alias out1r : std_logic is outs (14);
@@ -45,7 +47,7 @@ architecture behav of tb_proj is
 
   signal fd0_time : time;
   signal fd1_itime : time;
-  signal fd1_rtime : time;     
+  signal fd1_rtime : time;
 
   signal done : std_logic := '0';
 
@@ -109,7 +111,7 @@ architecture behav of tb_proj is
     ndelays := (fd_time - ncycles * cycle) / 100 ps;
     report "ncycles=" & natural'image(ncycles)
       & ", ndelays=" & natural'image(ndelays);
-    
+
     report "fd coarse=" & to_hstring(coarse)
       & "=" & natural'image(to_integer(unsigned(coarse)));
 
@@ -119,7 +121,7 @@ architecture behav of tb_proj is
     assert ndelays = fine
       report "(21) bad fine time for fd" severity failure;
   end wait_fd_check;
-  
+
 begin
 --  inps (inps'left downto 2) <= (others => '0');
 
@@ -153,10 +155,11 @@ begin
 
   process
     variable d32, d32_a : std_logic_vector (31 downto 0);
-    variable fd0, fd1 : std_logic_vector (31 downto 0);
+    variable fd0, fd1, adr : std_logic_vector (31 downto 0);
     variable ncycles : natural;
     variable ndelays : natural;
   begin
+    report "Start";
     done <= '0';
 
     rst_time_n <= '1';
@@ -170,6 +173,8 @@ begin
       exit when wb_rst = '0';
     end loop;
 
+    report "end of reset";
+
     --  Read id
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0000", d32);
     assert d32 = x"54_64_63_01" report "(1) bad opentdc id" severity failure;
@@ -181,7 +186,7 @@ begin
     fd0 := (31 downto 13 => '0') & std_logic_vector(unsigned(d32 (23 downto 16)) + 1) & b"000_00";
 
     report "fd0 address: " & to_hstring(fd0);
-    
+
     --  Read cycles
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0004", d32);
     report "cycles=" & to_hstring(d32) & ", now=" & natural'image(now / cycle);
@@ -192,7 +197,7 @@ begin
 
     --  Check status
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0008", d32);
-    --  report "status=" & to_hstring(d32);
+    report "status=" & to_hstring(d32);
     assert (d32 and x"0000_0003") = x"0000_0000" report "(4) bad status" severity failure;
 
     --  Start tdc 0 and 1 (set restart bits).
@@ -271,7 +276,7 @@ begin
       report "(18) bad tdc2 scan val #6" severity failure;
 
     --------------- FD 0
-    
+
     --  Program fd0.
     report "FD0";
     wb32_write32 (wb_clk, wbs_out, wbs_in, fd0 or x"0000_000c", x"0000_0027");
@@ -333,19 +338,20 @@ begin
     report "fd mini tap: " & to_hstring(d32);
     assert d32 = x"0000_001f"
       report "(27.0) bad minitap value" severity failure;
-    
+
     wb32_write32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0018", x"0000_00c3");
     wb32_read32 (wb_clk, wbs_out, wbs_in, fd1 or x"0000_0004", d32);
     report "fd mini tap: " & to_hstring(d32);
     assert d32 = x"0000_00c0"
       report "(27.1) bad minitap value" severity failure;
-    
+
     --  TODO: read back regs.
 
     --  Extender
 
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_011c", d32);
-    assert d32 = x"00_c8_00_0B"
+    report "dev2_0 id: " & to_hstring(d32);
+    assert d32 = x"00_c8_00_07"
       report "(30) bad init value for areg" severity failure;
 
     -- Test unhandled address (must not freeze)
@@ -356,7 +362,9 @@ begin
       report "(31) expect all 1 for unhandled address" severity failure;
 
     ---------------- wb_interface
-    
+
+    report "check wb_interface";
+
     --  Check register access
     wb32_read32 (wb_clk, wbs_out, wbs_in, x"0000_0018", d32);
     assert d32 = x"10_20_30_40"
@@ -376,6 +384,21 @@ begin
     assert d32 = x"01_21_03_04"
       report "(40.3) bad partial write value for areg" severity failure;
 
+    --  List modules.
+    for i in 0 to (2 + 1 + 1) * 4 - 1 loop
+      adr := std_logic_vector (to_unsigned(i, 27)) & b"1_1100";
+      wb32_read32 (wb_clk, wbs_out, wbs_in, adr, d32);
+      write (output, "module " & natural'image(i) & " id: " & to_hstring(d32) & " ");
+      case d32 (1 downto 0) is
+        when "00" => write (output, string'("CTRL"));
+        when "01" => write (output, string'("FD  "));
+        when "11" => write (output, string'("TDC "));
+        when "10" => write (output, string'("n/a "));
+        when others => write (output, string'("??? "));
+      end case;
+      write (output, string'(1 => LF));
+    end loop;
+    
     --  OK
     report "Test OK" severity note;
     done <= '1';
@@ -399,6 +422,7 @@ begin
       la_data_in   => (others => '0'),
       la_data_out  => open,
       la_oen       => (others => '0'),
-      inp_i        => inps,
-      out_o        => outs);
+      analog_io    => (others => '0'),
+      io_in        => inps,
+      io_out       => outs);
 end behav;

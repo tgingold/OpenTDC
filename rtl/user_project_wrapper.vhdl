@@ -433,8 +433,8 @@ begin
   lp_data <= (others => one);
 
   down3_bus_out <= (dato => lp_data,
-                    wack => down2_bus_in.we,
-                    rack => down2_bus_in.re,
+                    wack => down3_bus_in.we,
+                    rack => down3_bus_in.re,
                     trig => gnd);
 
   inst_rescue: rescue_top
