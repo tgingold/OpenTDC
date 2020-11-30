@@ -62,7 +62,7 @@ add_macro_placement i_fd2_3 1040 $y2_2 FS
 #
 #  Extender 3
 #
-set y3_2 [expr ( 2890880 + 30880 - 231200) / 1000.0 ]
+set y3_2 [expr ( 3070880 + 30880 - 231200) / 1000.0 ]
 add_macro_placement i_tdc3_0 200 2050 N
 add_macro_placement i_tdc3_1 1040 2050 N
 
@@ -73,7 +73,9 @@ add_macro_placement i_fd3_2 200 $y3_2 FS
 add_macro_placement i_fd3_3 1040 $y3_2 FS
 
 
-
+#
+# Misc: zero & rescue
+#
 add_macro_placement b_zero.i_zero 1800 1524 N
 
 # x = 4500 * .46
@@ -114,8 +116,10 @@ foreach domain $power_domains {
 	set ::env(_H_PDN_OFFSET) [expr $::env(_H_PDN_OFFSET)+6*$::env(_WIDTH)]
 }
 
+# Use run_routing instead ?
 add_route_obs
 global_routing_or
+write_verilog $::env(yosys_result_file_tag)_preroute.v
 detailed_routing
 
 #write_powered_verilog
