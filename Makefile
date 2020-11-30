@@ -52,7 +52,7 @@ define build-script
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -it -file $$DESIGN/interactive.tcl ) && \
 $(build-status) && \
-cp openlane/$$DESIGN/runs/user/results/synthesis/$$DESIGN.synthesis.v gl
+cp openlane/$$DESIGN/runs/user/results/synthesis/$$DESIGN.synthesis_preroute.v gl
 endef
 
 define build-flow
