@@ -41,9 +41,10 @@ module sky130_fd_sc_hd__clkbuf_16 (A, X);
 endmodule
 `endif //  `ifndef FUNCTIONAL
 
-module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
+module zero(n_o, s_o, w_o, e_o, n1_o, clk_i, clk_o);
    output [11:0] e_o;
    output n_o;
+   output n1_o;
    output s_o;
    output w_o;
    input clk_i;
@@ -54,6 +55,7 @@ module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
 
 `ifdef FUNCTIONAL
    assign n_o = 0;
+   assign n1_o = 1;
    assign s_o = 0;
    assign w_o = 0;
    assign e_o = 0;
@@ -68,7 +70,7 @@ module zero(n_o, s_o, w_o, e_o, clk_i, clk_o);
    (* keep *)
    sky130_fd_sc_hd__fill_4 LEFT2 ();
    (* keep *)
-   sky130_fd_sc_hd__conb_1 ZEROA (.LO(w));
+   sky130_fd_sc_hd__conb_1 ZEROA (.LO(w), .HI(n1_o));
    (* keep *)
    sky130_fd_sc_hd__fill_4 RIGHT1 ();
    (* keep *)

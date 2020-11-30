@@ -143,7 +143,9 @@ architecture behav of user_project_wrapper is
 
   component zero is
     port (e_o : out std_logic_vector(11 downto 0);
-          n_o, s_o, w_o : out std_logic;
+          n_o : out std_logic;
+          n1_o : out std_logic;
+          s_o, w_o : out std_logic;
           clk_i : std_logic;
           clk_o : out std_logic_vector(3 downto 0));
   end component;
@@ -179,7 +181,6 @@ architecture behav of user_project_wrapper is
   signal down2_adr : std_logic_vector (4 downto 0);
 
   signal lp_data : std_logic_vector (31 downto 0);
-  signal lp_trig : std_logic;
   
   signal rst_time_n : std_logic;
 
@@ -190,6 +191,10 @@ architecture behav of user_project_wrapper is
   signal wio_out : std_logic_vector(37 downto 0);
 
   signal clk_b : std_logic_vector (3 downto 0);
+
+  --  Cannot use gates in top-level (no rails).
+  signal one : std_logic;
+  signal gnd : std_logic;
 begin
   rst_time_n <= io_in(37);
 
@@ -350,13 +355,12 @@ begin
       out_o => wio_out(FOUT + 8));
 
   --  Loop to avoid freeze
-  lp_data <= (others => '1');
-  lp_trig <= '0';
+  lp_data <= (others => one);
 
   down2_bus_out <= (dato => lp_data,
                     wack => down2_bus_in.we,
                     rack => down2_bus_in.re,
-                    trig => lp_trig);
+                    trig => gnd);
 
   inst_rescue: rescue_top
     port map (
@@ -375,12 +379,14 @@ begin
     i_zero: zero
       port map (
         n_o => z_n,
+        n1_o => one,
         s_o => z_s,
         e_o => io_oeb(FOUT - 1 downto 0),
         w_o => z_w,
         clk_i => wb_clk_i,
         clk_o => clk_b);
 
+    gnd <= z_n;
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
     wio_out (FOUT + 15 downto FOUT + 9) <= (others => z_n);
     wio_out (wio_out'left downto FOUT + 17) <= (others => z_w);
