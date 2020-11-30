@@ -201,7 +201,7 @@ begin
         null;
       else
         if (wbs_stb_i = '1' and wbs_cyc_i = '1')
-          and wbs_adr_i (9 downto 7) /= "00"
+          and wbs_adr_i (9 downto 8) /= "00"
         then
           down_bus_in.adr <= wbs_adr_i (4 downto 2);
           down_bus_in.dati <= wbs_dat_i;
@@ -343,7 +343,7 @@ begin
     devs_out(FTDC + 1) <= tdc1_bus_out;
   end generate;
   
-  g_tdc2: if NTDC >= 2 generate
+  g_tdc2: if NTDC >= 3 generate
     tdc2_rst_n <= rst_n;
     tdc2_bus_in <= devs_in_d(FTDC + 2);
     devs_out(FTDC + 2) <= tdc2_bus_out;
