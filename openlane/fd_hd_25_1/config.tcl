@@ -13,7 +13,7 @@ set ::env(FP_SIZING) absolute
 set x [expr 1036 * 0.46]
 set ::env(DIE_AREA) "0 0 $x 231.2"
 
-set ::env(PL_TARGET_DENSITY) 0.32
+set ::env(PL_TARGET_DENSITY) 0.30
 
 #set ::env(FILL_INSERTION) 0
 
