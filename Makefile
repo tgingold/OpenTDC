@@ -201,7 +201,8 @@ rtl/openfd_comps.vhdl: Makefile
 	echo "      bus_in : dev_bus_in;"; \
 	echo "      bus_out : out dev_bus_out;"; \
 	case $$M in \
-	 fd_hd_25_1)  echo "      out_o : out std_logic);";; \
+	 fd_hd_25_1|fd_inline_1) \
+	              echo "      out_o : out std_logic);";; \
 	 *)           echo "      out1_o : out std_logic;"; \
 	              echo "      out2_o : out std_logic);"; \
 	esac; \
