@@ -22,6 +22,8 @@ ${GHDL:-ghdl} -c --std=08 \
  ../rtl/fd_hd.vhdl \
  ../rtl/fd_ms.vhdl \
  ../rtl/fd_hd_25_1.vhdl \
+ ../rtl/fd_inline.vhdl \
+ ../rtl/fd_inline_1.vhdl \
  ../rtl/tdc_inline.vhdl \
  ../rtl/tdc_inline_1.vhdl \
  ../rtl/tdc_inline_2.vhdl \

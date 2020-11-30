@@ -325,6 +325,8 @@ uncompress:
 compress:
 
 verify:
+#	At some point, this should be automatic.  But we are not yet there.
+	echo "Tests are in tb/ and tests/"
 
 clean:
 	$(RM) -f gds/*.gds lef/*.lef def/*.def mag/*.mag
