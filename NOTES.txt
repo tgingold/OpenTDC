@@ -274,6 +274,87 @@ look at the DEF file, look at the pin place and use that number in the macro
 placement file.  To be investigated later.  Also might worth to check if
 klayout might help.
 
+
+Complaints
+----------------
+
+GHDL: A missing warning (comparison always false/true) makes me lost a
+couple of hours.  Direct instantiation could be a blackbox.
+
+Yosys: Non-fully simplified output for assign makes me write
+work-arounds.  This has been fixed.
+
+skywater: Your sky130_fd_sc_hd__clkdlybuf4s15_1 cell doesn't pass DRC
+so we cannot use it.
+
+OpenSTA: Memory requirement is too high.  This almost froze my linux
+machine (Ok, only 8 GB in a docker container).
+
+io_place: Your configuration must accept comment, you must be more
+flexible (allow holes, allow to specify pitch).  May need more
+warning.
+
+manual_macro_place: Need a lot of time to correctly align macro.
+
+tapcell: The output is not always valid (in case of holes due to
+macro).
+
+CTS: Too slow.  We need to handle macros.
+
+placement: Sometimes we need to manually place cells.  Needs more
+flexibility.  How to place DFF near pins ?
+
+pdn: I am not sure I really fully understand the config file...
+All the straps must be considered as pins (and not only the first two).
+
+fastroute/tritonRoute:  Sometimes the decision is really stupid.
+Required manual obstruction.
+
+magic: DRC is slow (and was buggy), GDS output is slow.  Would be nice
+if I was able to edit the DEF file.  The GUI is so 80's, but that's OK!
+For placing macros, rastnet would be nice.
+
+flow.tcl: the whole output must be logged, inclusing stderr. Colors
+are evil.
+
+netgen:  There are reports I haven't understood (circuits are OK but
+not top pins).
+
+diode insertion: Doesn't work.  All the strategies fail.
+
+iverilog: A little bit too slow.
+
+
+Conclusion
+----------
+
+Lot's of fun, lot's of work.
+At the end I created something, with some level of confidence.
+
+It is not exactely what I initially planned to do.  Less features.
+
+I had to learn the tools, how they work, what they can do, what they
+cannot do.
+
+I had to learn the constraints of designing.
+
+Using macros was a good idea: they are small and thefore they can be
+quickly harden (a few minutes).  So I can iterate.  Divide and conquer.
+But macros have constraints: minimum size so that they can be
+connected to the power strips.
+
+We have work.  We have to improve the tools.  We have to write
+tutorials and tips.
+
+After this fun experience, I am ready for the next iteration!
+
+Thanks to Efabless and Google.
+
+Annex
+-----
+
+Some random notes...
+
 26 gpios:
 37, 36: (far) internals FD + TDC
 35, 34, 33, 32: (far)
