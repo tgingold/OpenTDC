@@ -18,7 +18,7 @@ set ::env(FP_SIZING) absolute
 
 set ::env(DESIGN_IS_CORE) 0
 
-set ::env(PL_TARGET_DENSITY) .30  ; # y=690, density = .35 -> ant:1
+set ::env(PL_TARGET_DENSITY) .35  ; # y=690, density = .35 -> ant:1
 
 set ::env(DIE_AREA) "0 0 690.0 326.2"
 
