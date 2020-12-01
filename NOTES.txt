@@ -279,10 +279,13 @@ Complaints
 ----------------
 
 GHDL: A missing warning (comparison always false/true) makes me lost a
-couple of hours.  Direct instantiation could be a blackbox.
+couple of hours.  Direct instantiation could be a blackbox. You should
+give a name to the cells when possible.
 
 Yosys: Non-fully simplified output for assign makes me write
-work-arounds.  This has been fixed.
+work-arounds.  This has been fixed.  Also, I have seen weird
+optimization in a structural design (elimination of conb_1) that was
+worked-around by adding a keep attribute.
 
 skywater: Your sky130_fd_sc_hd__clkdlybuf4s15_1 cell doesn't pass DRC
 so we cannot use it.
@@ -318,7 +321,8 @@ flow.tcl: the whole output must be logged, inclusing stderr. Colors
 are evil.
 
 netgen:  There are reports I haven't understood (circuits are OK but
-not top pins).
+not top pins).  I am not sure I can trust LVS about power and that's
+very annoying as that's the main value.
 
 diode insertion: Doesn't work.  All the strategies fail.
 
