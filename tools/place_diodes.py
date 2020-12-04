@@ -184,7 +184,7 @@ class DiodeInserter:
 			# Determine the span of the signal
 			if not force:
 				span = self.net_span(net)
-				if span < 50000:
+				if span < 70000:
 					continue
 
 			print(f"Insert diode on net {net.getName():s}")
