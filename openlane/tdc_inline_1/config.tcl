@@ -13,7 +13,7 @@ set ::env(FP_SIZING) absolute
 #set ::env(DIE_AREA) "0 0 828 380"
 set ::env(DIE_AREA) "0 0 414 340"
 
-set ::env(PL_RESIZER_OVERBUFFER) 1
+#set ::env(PL_RESIZER_OVERBUFFER) 1
 set ::env(PL_TARGET_DENSITY) 0.4
 
 set ::env(DESIGN_IS_CORE) 0
