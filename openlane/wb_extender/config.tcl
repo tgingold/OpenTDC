@@ -22,6 +22,9 @@ set ::env(FP_SIZING) absolute
 set ::env(DIE_AREA) "0 0 1288.0 130.56"
 set ::env(PL_TARGET_DENSITY) 0.25
 
+# Do not zeroize
+set ::env(MAGIC_ZEROIZE_ORIGIN) 0
+
 #set ::env(PL_TARGET_DENSITY_CELLS) 0.2
 #set ::env(CELL_PAD) 12
 

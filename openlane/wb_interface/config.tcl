@@ -32,7 +32,7 @@ set ::env(GLB_RT_OVERFLOW_ITERS) 20
 
 set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(GLB_RT_MAX_DIODE_INS_ITERS) 3
-set ::env(PL_RESIZER_OVERBUFFER) 1
+# set ::env(PL_RESIZER_OVERBUFFER) 1
 
 # Avoid weird optims
 set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 0
