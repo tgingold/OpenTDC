@@ -53,35 +53,44 @@ architecture behav of wb_extender is
 begin
   process (clk_i)
   begin
-    if up_rst_n_i = '0' then
-      ubus_in <= null_dev_bus_in;
-      up_bus_out <= null_dev_bus_out;
-      dev0_rst_n <= '0';
-      dev1_rst_n <= '0';
-      dev2_rst_n <= '0';
-      dev3_rst_n <= '0';
-      down_rst_n_o <= '0';
-    elsif rising_edge(clk_i) then
-      ubus_in <= up_bus_in;
-      up_bus_out <= ubus_out;
-      uadr <= up_adr_i;
-      dev0_rst_n <= '1';
-      dev1_rst_n <= '1';
-      dev2_rst_n <= '1';
-      dev3_rst_n <= '1';
-      down_rst_n_o <= '1';
+    if rising_edge(clk_i) then
+      if up_rst_n_i = '0' then
+        --  TODO: partial async reset ?
+        ubus_in <= null_dev_bus_in;
+        up_bus_out <= null_dev_bus_out;
+        dev0_rst_n <= '0';
+        dev1_rst_n <= '0';
+        dev2_rst_n <= '0';
+        dev3_rst_n <= '0';
+        down_rst_n_o <= '0';
+      else
+        ubus_in <= up_bus_in;
+        up_bus_out <= ubus_out;
+        uadr <= up_adr_i;
+        dev0_rst_n <= '1';
+        dev1_rst_n <= '1';
+        dev2_rst_n <= '1';
+        dev3_rst_n <= '1';
+        down_rst_n_o <= '1';
+      end if;
     end if;
   end process;
 
   process (clk_i)
   begin
     if rising_edge(clk_i) then
-      dev0_bus_in <= null_dev_bus_in;
-      dev1_bus_in <= null_dev_bus_in;
-      dev2_bus_in <= null_dev_bus_in;
-      dev3_bus_in <= null_dev_bus_in;
-      down_bus_in <= null_dev_bus_in;
-      ubus_out <= null_dev_bus_out;
+      dev0_bus_in.we  <= '0';
+      dev0_bus_in.re  <= '0';
+      dev1_bus_in.we  <= '0';
+      dev1_bus_in.re  <= '0';
+      dev2_bus_in.we  <= '0';
+      dev2_bus_in.re  <= '0';
+      dev3_bus_in.we  <= '0';
+      dev3_bus_in.re  <= '0';
+      down_bus_in.re <= '0';
+      down_bus_in.we <= '0';
+      ubus_out.rack <= '0';
+      ubus_out.wack <= '0';
 
       if up_rst_n_i = '0' then
         tfr <= '0';
