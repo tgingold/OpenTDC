@@ -9,6 +9,8 @@ set ::env(FP_PIN_ORDER_CFG) $script_dir/pin_order.cfg
 set ::env(VERILOG_FILES) "$script_dir/../../src/rescue_top.v"
 set ::env(VERILOG_FILES_BLACKBOX) "$script_dir/../../src/$::env(DESIGN_NAME)_bb.v"
 
+set ::env(BASE_SDC_FILE) "$script_dir/rescue_top.sdc"
+
 # mgmt core uses 50, so we have a margin
 set ::env(CLOCK_PERIOD) "20"
 set ::env(CLOCK_PORT) "clk_i"
@@ -20,7 +22,7 @@ set ::env(DESIGN_IS_CORE) 0
 
 set ::env(PL_TARGET_DENSITY) .35  ; # y=690, density = .35 -> ant:1
 
-set ::env(DIE_AREA) "0 0 690.0 326.2"
+set ::env(DIE_AREA) "0 0 736.0 223.04"
 
 set ::env(DIODE_INSERTION_STRATEGY) 3
 # set ::env(RUN_SPEF_EXTRACTION) 0
