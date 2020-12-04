@@ -19,10 +19,8 @@ set ::env(CLOCK_PERIOD) "20"
 set ::env(FP_SIZING) absolute
 
 # .46*2800  2.72*50
-set ::env(DIE_AREA) "0 0 1288.8 141.44"
-set ::env(PL_TARGET_DENSITY) 0.351
-# 0.3 -> ant:9, 0.35:8+10, 0.37:12+12, 0.33:13+15
-# 0.34:20+20
+set ::env(DIE_AREA) "0 0 1288.0 130.56"
+set ::env(PL_TARGET_DENSITY) 0.25
 
 #set ::env(PL_TARGET_DENSITY_CELLS) 0.2
 #set ::env(CELL_PAD) 12
@@ -32,7 +30,7 @@ set ::env(DIODE_INSERTION_STRATEGY) 3
 #set ::env(PL_RESIZER_OVERBUFFER) 1
 
 # Avoid weird optims
-set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
+#set ::env(PL_OPENPHYSYN_OPTIMIZATIONS) 1
 
 # Too much memory
-set ::env(RUN_SPEF_EXTRACTION) 0
+set ::env(RUN_SPEF_EXTRACTION) 1
