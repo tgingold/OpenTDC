@@ -57,7 +57,7 @@ endef
 
 define build-flow
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
-(cd openlane; /openLANE_flow/openlane/flow.tcl -design $$DESIGN -tag user -overwrite) && \
+(cd openlane; /openLANE_flow/openlane/flow.tcl -it -file my_flow.tcl -design $$DESIGN) && \
 $(build-status) && \
 cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v gl
 endef
