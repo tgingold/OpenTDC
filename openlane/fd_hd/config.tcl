@@ -11,9 +11,9 @@ source $script_dir/../fd-common/fd-config.tcl
 # area: 90*.46  120*2.72
 set ::env(FP_SIZING) absolute
 set x [expr 1186 * 0.46]
-set ::env(DIE_AREA) "0 0 $x 231.2"
+set ::env(DIE_AREA) "0 0 $x 244.8"
 
-set ::env(PL_TARGET_DENSITY) 0.32
+set ::env(PL_TARGET_DENSITY) 0.24
 
 #set ::env(FILL_INSERTION) 0
 
