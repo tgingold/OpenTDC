@@ -82,13 +82,13 @@ add_macro_placement i_fd3_3 940 $y3_3_3 FS
 #
 set y4_2hd [expr ( 2170880 - 20240) / 1000.0 ]
 set y4_2ms [expr ( 2170880 - 33680) / 1000.0 ]
-add_macro_placement i_tdc4_0 2420 2850 S
+add_macro_placement i_tdc4_0 2300 2850 N
 add_macro_placement i_tdc4_1 1580 2850 S
 
 # NOTE: obstruction for i_itf4 in config.tcl
 add_macro_placement i_itf4 1588 2514 S
 
-add_macro_placement i_fd4_2 2330 $y4_2ms FN
+add_macro_placement i_fd4_2 2230 $y4_2ms FN
 add_macro_placement i_fd4_3 1580 $y4_2hd FN
 
 
@@ -104,7 +104,7 @@ manual_macro_placement f
 
 run_placement
 
-set ::env(_SPACING) 1.6
+set ::env(_SPACING) 1.7
 set ::env(_WIDTH) 3
 
 # We only use vccd1/vssd1
