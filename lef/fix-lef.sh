@@ -1,0 +1,1 @@
+for f in *.lef.orig; do b=`basename $f .lef.orig`; PYTHONPATH=../../openlane/scripts/spef_extractor/ python3 ../tools/fix_power_pin.py --def_file=../def/$b.def --lef_file=$b.lef.orig --layer=met4 --pin VPWR VGND -o $b.lef.new; done
