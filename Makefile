@@ -45,8 +45,9 @@ grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DES
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.mag mag && \
 cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def && \
-cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v verilog/gl
+cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v verilog/gl/$$DESIGN.v
 endef
 
 define build-script
@@ -311,7 +312,7 @@ gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
 verilog: $(foreach v,$(MACROS),src/$(v).v) src/user_project_wrapper.v
 
 add-spdx-src:
-	for f in src/*.v gl/*.v ; do if ! grep -q SPDX $$f ; then \
+	for f in src/*.v verilog/gl/*.v ; do if ! grep -q SPDX $$f ; then \
 	 (echo '//SPDX-FileCopyrightText: (c) 2020 Tristan Gingold <tgingold@free.fr>'; \
 	 echo '//SPDX-License-Identifier: Apache-2.0'; \
 	 cat $$f ) > $$f.tmp; mv $$f.tmp $$f; \
@@ -326,12 +327,36 @@ gds/caravel.gds: # gds/user_project_wrapper.gds
 	if [ "$(PDK_ROOT)" = "" ]; then echo "Define PDK_ROOT!"; exit 1; fi
 	cp gds/user_project_wrapper.gds $(CARAVEL)/gds
 	cd $(CARAVEL); make ship PDK_ROOT=$(PDK_ROOT)
-	cp $(CARAVEL)/gds/caravel_out.gds $@
+	cp $(CARAVEL)/gds/caravel.gds $@
+	mkdir -p mag
+	cp $(CARAVEL)/mag/caravel.mag mag/caravel.mag
+
+CARAVEL_OUT=gpio_control_block simple_por storage mgmt_core user_id_programming mgmt_protect DFFRAM digital_pll mgmt_protect_hv chip_io
+CARAVEL_EXTRA_MAG=\
+ sky130_fd_pr__cap_mim_m3_1_WRT4AW.mag \
+ sky130_fd_pr__cap_mim_m3_2_W5U4AW.mag \
+ sky130_fd_pr__nfet_g5v0d10v5_PKVMTM.mag \
+ sky130_fd_pr__nfet_g5v0d10v5_TGFUGS.mag \
+ sky130_fd_pr__nfet_g5v0d10v5_ZK8HQC.mag \
+ sky130_fd_pr__pfet_g5v0d10v5_3YBPVB.mag \
+ sky130_fd_pr__pfet_g5v0d10v5_YEUEBV.mag \
+ sky130_fd_pr__pfet_g5v0d10v5_YUHPBG.mag \
+ sky130_fd_pr__pfet_g5v0d10v5_YUHPXE.mag \
+ sky130_fd_pr__pfet_g5v0d10v5_ZEUEFZ.mag \
+ sky130_fd_pr__res_xhigh_po_0p69_S5N9F3.mag \
+ sky130_fd_sc_hvl__lsbufhv2lv_1_wrapped.mag \
+ sram_1rw1r_32_256_8_sky130.mag
+
+import-caravel:
+	cp $(CARAVEL)/verilog/gl/caravel.v verilog/gl
+	cp $(foreach f,$(CARAVEL_OUT),$(CARAVEL)/verilog/gl/$(f).v) verilog/gl
+	cp $(foreach f,$(CARAVEL_OUT),$(CARAVEL)/mag/$(f).mag) mag/
+	cp $(foreach f,$(CARAVEL_EXTRA_MAG),$(CARAVEL)/mag/$(f)) mag/
 
 # Compress for github.
 
 uncompress:
-	gunzip gds/*.gds.gz def/*.def.gz lef/*.lef.gz gl/*.v.gz
+	gunzip gds/*.gds.gz def/*.def.gz lef/*.lef.gz mag/*.mag.gz verilog/gl/*.v.gz
 
 compress:
 	gzip -9 gds/*.gds def/*.def lef/*.lef gl/*.v
