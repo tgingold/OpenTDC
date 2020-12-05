@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2020  Sylvain Munaut <tnt@246tNt.com>
+# SPDX-FileCopyrightText: Copyright (C) 2020  Sylvain Munaut <tnt@246tNt.com>
 # SPDX-License-Identifier: Apache-2.0
 #
 
