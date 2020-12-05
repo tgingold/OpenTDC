@@ -45,21 +45,20 @@ grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DES
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
 cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
-cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def
+cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def && \
+cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v verilog/gl
 endef
 
 define build-script
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -it -file $$DESIGN/interactive.tcl ) && \
-$(build-status) && \
-cp openlane/$$DESIGN/runs/user/results/synthesis/$$DESIGN.synthesis_preroute.v gl
+$(build-status)
 endef
 
 define build-flow
 DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 (cd openlane; /openLANE_flow/openlane/flow.tcl -it -file my_flow.tcl -design $$DESIGN) && \
-$(build-status) && \
-cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v gl
+$(build-status)
 endef
 
 define yosys_fd
@@ -142,6 +141,15 @@ rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/macros/$(
 	done; \
 	echo "end opendelay_comps;"; \
 	} > $@
+
+# Tap lines (experimental)
+
+openlane/macros/tapline_200_x4_cbuf2_hd.def openlane/macros/tapline_200_x4_cbuf2_hd.vhdl:
+	$(MKDIR) -p $(dir $@)
+	cd $(dir $@); ../../tools/gen_tapline.py -n tapline_200_x4_cbuf2_hd -l 200 -g 4 -c s1 -d cbuf_2 -t fd_hd
+
+gds/tapline_200_x4_cbuf2_hd.gds: openlane/macros/tapline_200_x4_cbuf2_hd.def
+	cd openlane/macros; ./openlane-all.sh $(notdir $<)
 
 # Fine delays
 
