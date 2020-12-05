@@ -17,20 +17,21 @@ BEHAVIOURAL_MODELS = ../../
 
 .SUFFIXES:
 
-blackbox.v: ../src/user_project_wrapper_bb.v
+functional/blackbox.v: ../src/user_project_wrapper_bb.v
 #  Just keep the minimum (to speed up simulation)
 	sed -e '/blackbox/d' -e '/module wb_interface/,/endmodule/d' \
 	  -e '/module zero/,/endmodule/d' < $< > $@
 
-%.vvp: %_tb.v %.hex blackbox.v
-	iverilog -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
+functional.vvp: main_tb.v main.hex functional/blackbox.v
+	iverilog -DSIM -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
+	-Ifunctional/ \
         -I $(CARAVEL)/verilog/rtl \
         -I $(CARAVEL)/verilog/dv/caravel \
 	-I $(PDK_ROOT)/sky130A \
 	$< -o $@
 
-%.vcd: %.vvp
-	vvp $<
+functional.out: functional.vvp
+	vvp $< | tee $@
 
 %.elf: %.c $(FIRMWARE_PATH)/sections.lds $(FIRMWARE_PATH)/start.s
 	$(CC) -mabi=ilp32 -march=rv32imc -I$(FIRMWARE_PATH) -Wl,-Bstatic,-T,$(FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(FIRMWARE_PATH)/start.s $<
