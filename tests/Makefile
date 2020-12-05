@@ -33,6 +33,34 @@ functional.vvp: main_tb.v main.hex functional/blackbox.v
 functional.out: functional.vvp
 	vvp $< | tee $@
 
+gl.vvp: main_tb.v main.hex gl/wb_interface.simple.v
+	iverilog -DSIM -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
+	-DWRAPPER_USE_POWER_PINS \
+	-Igl/ \
+        -I $(CARAVEL)/verilog/rtl \
+        -I $(CARAVEL)/verilog/dv/caravel \
+	-I $(PDK_ROOT)/sky130A \
+	$< -o $@
+
+gl.i: main_tb.v main.hex gl/wb_interface.simple.v
+	iverilog -E -DSIM -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
+	-Igl/ \
+        -I $(CARAVEL)/verilog/rtl \
+        -I $(CARAVEL)/verilog/dv/caravel \
+	-I $(PDK_ROOT)/sky130A \
+	$< -o $@
+
+gl.out: gl.vvp
+	vvp $< | tee $@
+
+gl/wb_interface.simple.v: ../verilog/gl/wb_interface.lvs.powered.v
+	yosys -p "read_verilog $<; \
+	 delete t:sky130_fd_sc_hd__diode_2; \
+	 delete t:sky130_fd_sc_hd__decap*; \
+	 delete t:sky130_fd_sc_hd__fill*; \
+	 delete t:sky130_fd_sc_hd__tapvpwrvgnd_1; \
+	 write_verilog -noattr $@"
+
 %.elf: %.c $(FIRMWARE_PATH)/sections.lds $(FIRMWARE_PATH)/start.s
 	$(CC) -mabi=ilp32 -march=rv32imc -I$(FIRMWARE_PATH) -Wl,-Bstatic,-T,$(FIRMWARE_PATH)/sections.lds,--strip-debug -ffreestanding -nostdlib -o $@ $(FIRMWARE_PATH)/start.s $<
 
