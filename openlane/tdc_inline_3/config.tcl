@@ -16,7 +16,7 @@ set ::env(DIE_AREA) "0 0 460 408"
 
 # Can change the cells!
 #set ::env(PL_RESIZER_OVERBUFFER) 1
-set ::env(PL_TARGET_DENSITY) 0.35
+set ::env(PL_TARGET_DENSITY) 0.32
 
 set ::env(DESIGN_IS_CORE) 0
 
@@ -24,3 +24,5 @@ set ::env(DIODE_INSERTION_STRATEGY) 3
 
 # Too much memory
 set ::env(RUN_SPEF_EXTRACTION) 0
+
+set ::env(MAGIC_ZEROIZE_ORIGIN) 0

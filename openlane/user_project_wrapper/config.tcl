@@ -33,7 +33,7 @@ set ::env(FP_IO_HTHICKNESS_MULT) 4
 # Need to fix a FastRoute bug for this to work, but it's good
 # for a sense of "isolation"
 set ::env(MAGIC_ZEROIZE_ORIGIN) 0
-set ::env(MAGIC_WRITE_FULL_LEF) 1
+#set ::env(MAGIC_WRITE_FULL_LEF) 1
 
 set ::env(PL_TARGET_DENSITY) 0.005
 
@@ -56,4 +56,4 @@ set ::env(EXTRA_GDS_FILES) "$macros_gds"
 set ::env(MACRO_PLACEMENT_CFG) $script_dir/macro_placement.cfg
 
 # Obstruction over wb_extender 2, 3, 4
-set ::env(GLB_RT_OBS) "met4 108.0 1614.0 1285.63 136.0, met4 108 2514 1285.63 136, met4 1588 2514 1285.63 136"
+set ::env(GLB_RT_OBS) "met4 108.0 1614.0 1285.63 130.56, met4 108 2514 1285.63 130.56, met4 1588 2514 1285.63 130.56"

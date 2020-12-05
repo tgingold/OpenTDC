@@ -15,3 +15,5 @@ set ::env(FP_PIN_ORDER_CFG) $script_dir/../fd_hd_25_1/pin_order.cfg
 
 set ::env(PL_TARGET_DENSITY) 0.40
 set ::env(DESIGN_IS_CORE) 0
+
+set ::env(MAGIC_ZEROIZE_ORIGIN) 0
