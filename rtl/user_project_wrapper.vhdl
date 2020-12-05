@@ -489,7 +489,7 @@ begin
 
   i_fd4_2: fd_ms
     port map (
-      clk_i => clk_b(2),
+      clk_i => clk_b(3),
       rst_n_i => itf4_bus_rst_n(2),
       bus_in  => itf4_bus_in(2),
       bus_out => itf4_bus_out(2),

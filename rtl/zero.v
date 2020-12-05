@@ -39,6 +39,12 @@ module sky130_fd_sc_hd__clkbuf_16 (A, X);
    input A;
    output X;
 endmodule
+
+(* blackbox *)
+module sky130_fd_sc_hd__clkbuf_1 (A, X);
+   input A;
+   output X;
+endmodule
 `endif //  `ifndef FUNCTIONAL
 
 module zero(n_o, s_o, w_o, e_o, n1_o, clk_i, clk_o);
@@ -50,7 +56,6 @@ module zero(n_o, s_o, w_o, e_o, n1_o, clk_i, clk_o);
    input clk_i;
    output [3:0] clk_o;
    wire  w;
-   wire  e_w;
    wire  clk;
 
 `ifdef FUNCTIONAL
@@ -60,7 +65,7 @@ module zero(n_o, s_o, w_o, e_o, n1_o, clk_i, clk_o);
    assign w_o = 0;
    assign e_o = 0;
    assign clk = clk_i;
-
+   assign clk_o = {4{clk}};
 `else
 
    sky130_fd_sc_hd__buf_2 LEFT1a (.A(w), .X(w_o));
@@ -76,11 +81,13 @@ module zero(n_o, s_o, w_o, e_o, n1_o, clk_i, clk_o);
    (* keep *)
    sky130_fd_sc_hd__fill_4 RIGHT2 ();
    sky130_fd_sc_hd__buf_2 RIGHT1a (.A(w), .X(s_o));
-   sky130_fd_sc_hd__buf_2 RIGHT2a (.A(w), .X(e_w));
+   sky130_fd_sc_hd__buf_2 RIGHT2a[11:0] (.A(w), .X(e_o));
 
-   sky130_fd_sc_hd__clkbuf_16 CLKBUF (.A(clk_i), .X(clk));
+   sky130_fd_sc_hd__clkbuf_1 CLKBUF (.A(clk_i), .X(clk));
+   sky130_fd_sc_hd__clkbuf_16 CLKBUF_0 (.A(clk_i), .X(clk_o[0]));
+   sky130_fd_sc_hd__clkbuf_16 CLKBUF_1 (.A(clk_i), .X(clk_o[1]));
+   sky130_fd_sc_hd__clkbuf_16 CLKBUF_2 (.A(clk_i), .X(clk_o[2]));
+   sky130_fd_sc_hd__clkbuf_16 CLKBUF_3 (.A(clk_i), .X(clk_o[3]));
 `endif
 
-   assign e_o = {12{e_w}};
-   assign clk_o = {4{clk}};
 endmodule
