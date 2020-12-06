@@ -4,7 +4,7 @@
 */
 
 `include "blackbox.v"
-`include "../verilog/gl/zero.synthesis_preroute.v"
+`include "../verilog/gl/zero.v"
 //`include "../verilog/gl/wb_interface.lvs.powered.v"
 `include "wb_interface.simple.v"
-`include "../verilog/gl/user_project_wrapper.power.v"
+`include "../verilog/gl/user_project_wrapper.v"

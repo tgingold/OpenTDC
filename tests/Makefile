@@ -53,7 +53,7 @@ gl.i: main_tb.v main.hex gl/wb_interface.simple.v
 gl.out: gl.vvp
 	vvp $< | tee $@
 
-gl/wb_interface.simple.v: ../verilog/gl/wb_interface.lvs.powered.v
+gl/wb_interface.simple.v: ../verilog/gl/wb_interface.v
 	yosys -p "read_verilog $<; \
 	 delete t:sky130_fd_sc_hd__diode_2; \
 	 delete t:sky130_fd_sc_hd__decap*; \
