@@ -43,10 +43,10 @@ define build-status
 echo "Status $$DESIGN" && \
 grep -F "Circuits match uniquely." openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.log ; \
 grep -F COUNT openlane/$$DESIGN/runs/user/logs/magic/magic.drc.log && \
-cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds && \
-cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef && \
-cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.mag mag && \
-cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.gds gds/ && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.lef lef/ && \
+cp openlane/$$DESIGN/runs/user/results/magic/$$DESIGN.mag mag/ && \
+cp openlane/$$DESIGN/runs/user/results/routing/$$DESIGN.def def/ && \
 cp openlane/$$DESIGN/runs/user/results/lvs/$$DESIGN.lvs.powered.v verilog/gl/$$DESIGN.v
 endef
 
