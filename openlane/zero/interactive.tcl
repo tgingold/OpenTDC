@@ -14,8 +14,6 @@ run_floorplan
 
 run_placement
 
-gen_pdn
-
 set y 57.120
 
 set x [expr 44 * 0.46]
@@ -32,6 +30,8 @@ add_macro_placement RIGHT2 $x $y N
 manual_macro_placement f
 
 run_routing
+write_powered_verilog
+set_netlist $::env(lvs_result_file_tag).powered.v
 
 run_magic
 run_magic_spice_export

@@ -27,18 +27,16 @@ proc my_prep {args} {
 }
 
 proc my_flow_route {args} {
-	run_synthesis
-	run_floorplan
-	run_placement
+    run_synthesis
+    run_floorplan
+    run_placement
     run_cts
     insert_diode
-	gen_pdn
-	run_routing
-   if { $::env(LVS_INSERT_POWER_PINS) } {
-		write_powered_verilog
-		set_netlist $::env(lvs_result_file_tag).powered.v
+    run_routing
+    if { $::env(LVS_INSERT_POWER_PINS) } {
+        write_powered_verilog
+        set_netlist $::env(lvs_result_file_tag).powered.v
     }
-
 }
 
 proc my_flow_gen_check {args} {

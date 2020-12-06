@@ -38,7 +38,7 @@ set ::env(MAGIC_PAD) 1
 set ::env(PLACE_SITE_WIDTH) 4
 set ::env(PLACE_SITE_HEIGHT) 4
 
-set filename $script_dir/../$::env(DESIGN_NAME).tcl
+set filename $::env(DESIGN_NAME)/$::env(DESIGN_NAME).tcl
 puts "sourcing $filename"
 source $filename
 
