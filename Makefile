@@ -62,6 +62,17 @@ DESIGN=$(basename $(notdir $<) .v) && echo "Building $$DESIGN" && \
 $(build-status)
 endef
 
+define fix-lef
+DESIGN=$(basename $(notdir $<) .v) && echo "Fixing LEF $$DESIGN" && \
+cd lef; ./fix-lef.sh $$DESIGN.lef
+endef
+
+define build-macro
+DESIGN=$(basename $(notdir $<) .def) && echo "Building $$DESIGN" && \
+(cd openlane; /openLANE_flow/openlane/flow.tcl -it -file macros/build.tcl -design $$DESIGN -config_file macros/config.tcl) && \
+$(build-status)
+endef
+
 define yosys_fd
 DESIGN=$(notdir $(basename $@ .v)); $(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl $^ -e $$DESIGN; write_verilog $@; write_verilog -blackboxes src/$${DESIGN}_bb.v"
 endef
@@ -69,12 +80,12 @@ endef
 all: gds/user_project_wrapper.gds
 
 # Create macros: generate the sources and gds
-macros:
-	cd openlane/macros; ./build-src.sh && ./openlane-all.sh
+macros: $(foreach m,$(HARD_MACROS),gds/$(m).gds)
+
 
 # Project
 
-gds/user_project_wrapper.gds: src/user_project_wrapper.v # openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
+gds/user_project_wrapper.gds: src/user_project_wrapper.v openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
 	$(build-script)
 
 src/user_project_wrapper.v: rtl/user_project_wrapper.vhdl rtl/opentdc_pkg.vhdl rtl/openfd_comps.vhdl rtl/opentdc_comps.vhdl
@@ -86,58 +97,58 @@ openlane/user_project_wrapper/macros.tcl: Makefile
 
 # Delay lines
 
-openlane/macros/delayline_9_ms.def openlane/macros/delayline_9_ms_comp.vhdl:
+openlane/delayline_9_ms/delayline_9_ms.def openlane/delayline_9_ms/delayline_9_ms_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_ms -l 9 -t fd_ms -d dly4_1
 
-gds/delayline_9_ms.gds: openlane/macros/delayline_9_ms.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/delayline_9_ms.gds: openlane/delayline_9_ms/delayline_9_ms.def
+	$(build-macro)
 
 
-openlane/macros/delayline_9_hs.def openlane/macros/delayline_9_hs_comp.vhdl:
+openlane/delayline_9_hs/delayline_9_hs.def openlane/delayline_9_hs/delayline_9_hs_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hs -l 9 -t fd_hs -d dly4_1
 
-gds/delayline_9_hs.gds: openlane/macros/delayline_9_hs.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/delayline_9_hs.gds: openlane/delayline_9_hs/delayline_9_hs.def
+	$(build-macro)
 
 
-openlane/macros/delayline_9_hd.def openlane/macros/delayline_9_hd_comp.vhdl:
-	$(MKDIR) -p $(dir $@)
+openlane/delayline_9_hd/delayline_9_hd.def openlane/delayline_9_hd/delayline_9_hd_comp.vhdl:
 # Note: OK: cdly15_2, cdly25_1
 #       KO: cdly15_1, cdly18_1
+	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd -l 9 -d cdly15_2
 
-gds/delayline_9_hd.gds: openlane/macros/delayline_9_hd.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/delayline_9_hd.gds: openlane/delayline_9_hd/delayline_9_hd.def
+	$(build-macro)
 
 
-openlane/macros/delayline_9_hd_25_1.def openlane/macros/delayline_9_hd_25_1_comp.vhdl:
+openlane/delayline_9_hd_25_1/delayline_9_hd_25_1.def openlane/delayline_9_hd_25_1/delayline_9_hd_25_1_comp.vhdl:
 	$(MKDIR) -p $(dir $@)
 # Note: OK: cdly15_2, cdly25_1
 #       KO: cdly15_1, cdly18_1
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_hd_25_1 -l 9 -d cdly25_1
 
-gds/delayline_9_hd_25_1.gds: openlane/macros/delayline_9_hd_25_1.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/delayline_9_hd_25_1.gds: openlane/delayline_9_hd_25_1/delayline_9_hd_25_1.def
+	$(build-macro)
 
 
-openlane/macros/delayline_9_osu_18hs.def:
+openlane/delayline_9_osu_18hs/delayline_9_osu_18hs.def:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_delayline.py -n delayline_9_osu_18hs -l 9 --tech osu_18T_hs --delay buf_1
 
-gds/delayline_9_osu_18hs.gds: openlane/macros/delayline_9_osu_18hs.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/delayline_9_osu_18hs.gds: openlane/delayline_9_osu_18hs/delayline_9_osu_18hs.def
+	$(build-macro)
 
 
-rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/macros/$(x)_comp.vhdl)
+rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/$(x)/$(x)_comp.vhdl)
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
 	echo; \
 	echo "package opendelay_comps is"; \
 	for M in $(HARD_MACROS); do \
-	cat openlane/macros/$${M}_comp.vhdl; \
+	cat openlane/$${M}/$${M}_comp.vhdl; \
 	echo; \
 	done; \
 	echo "end opendelay_comps;"; \
@@ -145,12 +156,13 @@ rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/macros/$(
 
 # Tap lines (experimental)
 
-openlane/macros/tapline_200_x4_cbuf2_hd.def openlane/macros/tapline_200_x4_cbuf2_hd.vhdl:
+openlane/tapline_200_x4_cbuf2_hd/tapline_200_x4_cbuf2_hd.def openlane/tapline_200_x4_cbuf2_hd/tapline_200_x4_cbuf2_hd.vhdl:
 	$(MKDIR) -p $(dir $@)
 	cd $(dir $@); ../../tools/gen_tapline.py -n tapline_200_x4_cbuf2_hd -l 200 -g 4 -c s1 -d cbuf_2 -t fd_hd
 
-gds/tapline_200_x4_cbuf2_hd.gds: openlane/macros/tapline_200_x4_cbuf2_hd.def
-	cd openlane/macros; ./openlane-all.sh $(notdir $<)
+gds/tapline_200_x4_cbuf2_hd.gds: openlane/tapline_200_x4_cbuf2_hd/tapline_200_x4_cbuf2_hd.def
+	$(build-macro)
+
 
 # Fine delays
 
@@ -194,6 +206,7 @@ src/fd_inline_1.v: $(VHDL_COMMON_SRCS) rtl/opentdc_sync.vhdl rtl/opentdc_tapline
 
 gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
 	$(build-flow)
+	$(fix-lef)
 
 rtl/openfd_comps.vhdl: Makefile
 	{ \
@@ -228,18 +241,21 @@ src/tdc_inline_1.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vh
 
 gds/tdc_inline_1.gds lef/tdc_inline_1.lef: src/tdc_inline_1.v src/tdc_inline_1_bb.v
 	$(build-flow)
+	$(fix-lef)
 
 src/tdc_inline_2.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=3 $^ -e tdc_inline; rename tdc_inline tdc_inline_2; write_verilog $@; write_verilog -blackboxes src/tdc_inline_2_bb.v"
 
 gds/tdc_inline_2.gds lef/tdc_inline_2.lef: src/tdc_inline_2.v src/tdc_inline_2_bb.v
 	$(build-flow)
+	$(fix-lef)
 
 src/tdc_inline_3.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vhdl
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=4 $^ -e tdc_inline; rename tdc_inline tdc_inline_3; write_verilog $@; write_verilog -blackboxes src/tdc_inline_3_bb.v"
 
 gds/tdc_inline_3.gds lef/tdc_inline_3.lef: src/tdc_inline_3.v src/tdc_inline_3_bb.v
 	$(build-flow)
+	$(fix-lef)
 
 
 rtl/opentdc_comps.vhdl: Makefile
@@ -271,7 +287,7 @@ src/wb_interface.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) $(VHDL_FD_EXTRA_S
 
 gds/wb_interface.gds lef/wb_interface.lef: src/wb_interface.v src/wb_interface_bb.v
 	$(build-flow)
-
+	$(fix-lef)
 
 # WB extender
 
@@ -287,6 +303,7 @@ src/wb_extender.v: rtl/opentdc_pkg.vhdl rtl/wb_extender.vhdl
 
 gds/wb_extender.gds lef/wb_extender.lef: src/wb_extender.v
 	$(build-flow)
+	$(fix-lef)
 
 
 # Zero
@@ -305,7 +322,7 @@ src/rescue_top.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) $(VHDL_FD_EXTRA_SRC
 
 gds/rescue_top.gds lef/rescue_top.lef: src/rescue_top.v src/rescue_top_bb.v
 	$(build-flow)
-
+	$(fix-lef)
 
 #  Source generation
 
@@ -359,12 +376,12 @@ uncompress:
 	gunzip gds/*.gds.gz def/*.def.gz lef/*.lef.gz mag/*.mag.gz verilog/gl/*.v.gz
 
 compress:
-	gzip -9 gds/*.gds def/*.def lef/*.lef gl/*.v
+	gzip -9 gds/*.gds def/*.def lef/*.lef verilog/gl/*.v
 
 verify:
 #	At some point, this should be automatic.  But we are not yet there.
 	echo "Tests are in tb/ and tests/"
 
 clean:
-	$(RM) -f gds/*.gds lef/*.lef def/*.def mag/*.mag
+	$(RM) -f gds/*.gds* lef/*.lef* def/*.def* mag/*.mag* verilog/gl/*.v*
 
