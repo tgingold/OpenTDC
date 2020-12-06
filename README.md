@@ -44,9 +44,16 @@ There is no third-party sources, the design is self-contained.
 
 ## Building
 
-As most of the sources are in VHDL, you need to first synthesis them and generate very
-simple verilog.  This verilog will be the source for OpenLANE.  This is done with
-the [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin).
+First generate the hard macros in an OpenLANE docker shell:
+
+```bash
+  make macros
+```
+
+As most of the sources are in VHDL, you then need to synthesis them
+and generate very simple verilog.  This verilog will be the source for
+OpenLANE.  This is done with the
+[ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin).
 
 ```bash
   make verilog
