@@ -11,5 +11,5 @@ for f in $*; do
     echo "Fixing $f"
     PYTHONPATH=../../openlane/scripts/spef_extractor/ python3 ../tools/fix_power_pin.py --def_file=../def/$b.def --lef_file=$b.lef.orig --layer=met4 --pin VPWR VGND -o $f;
     echo "Diffs:"
-    diff -w $f.orig $f
+    diff -w $f.orig $f || true
 done
