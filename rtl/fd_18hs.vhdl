@@ -16,8 +16,8 @@ entity fd_18hs is
     clk_i : std_logic;
     rst_n_i : std_logic;
 
-    bus_in : tdc_bus_in;
-    bus_out : out tdc_bus_out;
+    bus_in : dev_bus_in;
+    bus_out : out dev_bus_out;
 
     out_o : out std_logic);
 end fd_18hs;
