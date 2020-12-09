@@ -370,6 +370,13 @@ import-caravel:
 	cp $(foreach f,$(CARAVEL_OUT),$(CARAVEL)/mag/$(f).mag) mag/
 	cp $(foreach f,$(CARAVEL_EXTRA_MAG),$(CARAVEL)/mag/$(f)) mag/
 
+export-caravel:
+	cp verilog/gl/*.v* $(CARAVEL)/verilog/gl/
+	cp mag/*.mag* $(CARAVEL)/mag/
+	cp lef/*.lef* $(CARAVEL)/lef/
+	cp def/*.def* $(CARAVEL)/def/
+	cp gds/*.gds* $(CARAVEL)/gds/
+
 # Compress for github.
 
 uncompress:
