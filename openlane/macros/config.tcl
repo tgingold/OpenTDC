@@ -47,3 +47,10 @@ set ::env(FP_PDN_VOFFSET) 0
 set ::env(FP_PDN_VPITCH) 26.640
 set ::env(FP_PDN_HOFFSET) 9.2
 set ::env(FP_PDN_HPITCH) 180
+
+set filename $::env(DESIGN_NAME)/config.tcl
+if {[file exists $filename]} {
+    puts "sourcing $filename"
+    source $filename
+}
+

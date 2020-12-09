@@ -6,7 +6,7 @@ MKDIR=mkdir
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
-HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_hd_25_1 delayline_9_osu_18hs
+HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_hd_25_1 delayline_9_osu_18hs tapline_200_x4_cbuf2_hd
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_hd_25_1 fd_inline_1
 TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3
@@ -162,6 +162,7 @@ openlane/tapline_200_x4_cbuf2_hd/tapline_200_x4_cbuf2_hd.def openlane/tapline_20
 
 gds/tapline_200_x4_cbuf2_hd.gds: openlane/tapline_200_x4_cbuf2_hd/tapline_200_x4_cbuf2_hd.def
 	$(build-macro)
+	$(fix-lef)
 
 
 # Fine delays
@@ -254,6 +255,13 @@ src/tdc_inline_3.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_inline.vh
 	$(YOSYS) -m $(GHDL_PLUGIN) -p "ghdl -gcell=4 $^ -e tdc_inline; rename tdc_inline tdc_inline_3; write_verilog $@; write_verilog -blackboxes src/tdc_inline_3_bb.v"
 
 gds/tdc_inline_3.gds lef/tdc_inline_3.lef: src/tdc_inline_3.v src/tdc_inline_3_bb.v
+	$(build-flow)
+	$(fix-lef)
+
+src/tdc_hd_cbuf2_x4.v: $(VHDL_COMMON_SRCS) $(VHDL_TDC_EXTRA_SRCS) rtl/tdc_hd_cbuf2_x4.vhdl
+	$(yosys_fd)
+
+gds/tdc_hd_cbuf2_x4.gds lef/tdc_hd_cbuf2_x4.lef: src/tdc_hd_cbuf2_x4.v src/tdc_hd_cbuf2_x4_bb.v
 	$(build-flow)
 	$(fix-lef)
 
