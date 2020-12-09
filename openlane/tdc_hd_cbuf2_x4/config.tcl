@@ -11,13 +11,12 @@ source $script_dir/../tdc-common/tdc-config.tcl
 set ::env(FP_PIN_ORDER_CFG) $script_dir/../tdc_inline_3/pin_order.cfg
 
 set ::env(FP_SIZING) absolute
-# y=2.72 * 150
-set h [expr 200 * 2.72]
-set ::env(DIE_AREA) "0 0 690 544"
+set h [expr 160 * 2.72]
+set ::env(DIE_AREA) "0 0 690 $h"
 
 # Can change the cells!
 #set ::env(PL_RESIZER_OVERBUFFER) 1
-set ::env(PL_TARGET_DENSITY) 0.32
+set ::env(PL_TARGET_DENSITY) 0.30
 
 set ::env(DESIGN_IS_CORE) 0
 
