@@ -29,9 +29,14 @@ set ::env(MAGIC_ZEROIZE_ORIGIN) 0
 set x [expr 40 * 0.46]
 set chan [open $script_dir/macro_placement.cfg w]
 
-set y [expr 30 * 2.72]
-puts $chan "inst_rtaps $x $y S"
-set y [expr 110 * 2.72]
+set y [expr 31.5 * 2.72]
+puts $chan "inst_rtaps $x $y FS"
+set y [expr 111.5 * 2.72]
 puts $chan "inst_itaps $x $y N"
 
 close $chan
+
+# Align power
+set ::env(FP_PDN_VOFFSET) [expr $x + 15.30]
+
+set ::env(PDN_CFG) $script_dir/pdn.tcl
