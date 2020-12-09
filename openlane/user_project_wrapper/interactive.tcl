@@ -67,13 +67,13 @@ add_macro_placement i_fd2_3 940 $y2_2 FS
 #
 set y3_3_2 [expr ( 2890880 - 33680 ) / 1000.0 ]
 set y3_3_3 [expr ( 3070880 + 30880 - 231200) / 1000.0 ]
-add_macro_placement i_tdc3_0 100 2050 N
+add_macro_placement i_tdc3_0 80 2000 N
 add_macro_placement i_tdc3_1 940.23 2050 N
 
 # NOTE: obstruction for i_itf3 in config.tcl
 add_macro_placement i_itf3 108 2514 N
 
-add_macro_placement i_fd3_2 100 $y3_3_2 FN
+add_macro_placement i_fd3_2 140 $y3_3_2 N
 add_macro_placement i_fd3_3 940 $y3_3_3 FS
 
 
@@ -83,7 +83,7 @@ add_macro_placement i_fd3_3 940 $y3_3_3 FS
 set y4_2hd [expr ( 2170880 - 20240) / 1000.0 ]
 set y4_2ms [expr ( 2170880 - 33680) / 1000.0 ]
 add_macro_placement i_tdc4_0 2300 2850 N
-add_macro_placement i_tdc4_1 1580.23 2850 S
+add_macro_placement i_tdc4_1 1580.23 2850 FS
 
 # NOTE: obstruction for i_itf4 in config.tcl
 add_macro_placement i_itf4 1588.23 2514 S

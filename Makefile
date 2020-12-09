@@ -6,10 +6,12 @@ MKDIR=mkdir
 GHDL_PLUGIN=ghdl.so
 YOSYS=yosys
 
+MAINTAINER=#
+
 HARD_MACROS=delayline_9_hd delayline_9_hs delayline_9_ms delayline_9_hd_25_1 delayline_9_osu_18hs tapline_200_x4_cbuf2_hd
 
 FD_MACROS=fd_hd fd_hs fd_ms fd_hd_25_1 fd_inline_1
-TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3
+TDC_MACROS=tdc_inline_1 tdc_inline_2 tdc_inline_3 tdc_hd_cbuf2_x4
 MACROS=wb_extender wb_interface rescue_top zero $(FD_MACROS) $(TDC_MACROS)
 
 VHDL_COMMON_SRCS=\
@@ -85,14 +87,14 @@ macros: $(foreach m,$(HARD_MACROS),gds/$(m).gds)
 
 # Project
 
-gds/user_project_wrapper.gds: src/user_project_wrapper.v openlane/user_project_wrapper/macros.tcl $(foreach m,$(MACROS),gds/$(m).gds)
+gds/user_project_wrapper.gds: src/user_project_wrapper.v openlane/user_project_wrapper/macros.tcl # $(foreach m,$(MACROS),gds/$(m).gds)
 	$(build-script)
 
 src/user_project_wrapper.v: rtl/user_project_wrapper.vhdl rtl/opentdc_pkg.vhdl rtl/openfd_comps.vhdl rtl/opentdc_comps.vhdl
 	$(yosys_fd)
 #	$(YOSYS) -p "read_verilog $^; hierarchy -top user_project_wrapper; flatten; opt_clean -purge; splitnets; write_verilog -noattr $@"
 
-openlane/user_project_wrapper/macros.tcl: Makefile
+openlane/user_project_wrapper/macros.tcl: $(MAINTAINER) Makefile
 	echo 'set macros [list $(foreach n,$(MACROS),"$(n)")]' > $@
 
 # Delay lines
@@ -141,7 +143,7 @@ gds/delayline_9_osu_18hs.gds: openlane/delayline_9_osu_18hs/delayline_9_osu_18hs
 	$(build-macro)
 
 
-rtl/opendelay_comps.vhdl: Makefile $(foreach x,$(HARD_MACROS),openlane/$(x)/$(x)_comp.vhdl)
+rtl/opendelay_comps.vhdl: $(MAINTAINER) Makefile $(foreach x,$(HARD_MACROS),openlane/$(x)/$(x)_comp.vhdl)
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
@@ -209,7 +211,7 @@ gds/fd_inline_1.gds lef/fd_inline_1.lef: src/fd_inline_1.v src/fd_inline_1_bb.v
 	$(build-flow)
 	$(fix-lef)
 
-rtl/openfd_comps.vhdl: Makefile
+rtl/openfd_comps.vhdl: $(MAINTAINER) Makefile
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
@@ -266,7 +268,7 @@ gds/tdc_hd_cbuf2_x4.gds lef/tdc_hd_cbuf2_x4.lef: src/tdc_hd_cbuf2_x4.v src/tdc_h
 	$(fix-lef)
 
 
-rtl/opentdc_comps.vhdl: Makefile
+rtl/opentdc_comps.vhdl: $(MAINTAINER) Makefile
 	{ \
 	echo "library ieee;"; \
 	echo "use ieee.std_logic_1164.all;"; \
@@ -391,12 +393,12 @@ uncompress:
 	gunzip gds/*.gds.gz def/*.def.gz lef/*.lef.gz mag/*.mag.gz verilog/gl/*.v.gz
 
 compress:
-	gzip -9 gds/*.gds def/*.def lef/*.lef verilog/gl/*.v
+	gzip -9 gds/*.gds def/*.def lef/*.lef mag/*.mag verilog/gl/*.v
 
 verify:
 #	At some point, this should be automatic.  But we are not yet there.
 	echo "Tests are in tb/ and tests/"
 
 clean:
-	$(RM) -f gds/*.gds* lef/*.lef* def/*.def* mag/*.mag* verilog/gl/*.v*
+	$(RM) -f gds/*.gds* lef/*.lef* def/*.def* mag/*.mag* verilog/gl/*.v* src/*.v
 

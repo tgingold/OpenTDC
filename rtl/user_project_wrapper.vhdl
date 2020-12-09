@@ -406,7 +406,7 @@ begin
       dev3_bus_out => itf3_bus_out(3));
 
 
-  i_tdc3_0: tdc_inline_1
+  i_tdc3_0: tdc_hd_cbuf2_x4
     port map (
       clk_i => clk_b(2),
       rst_n_i => itf3_bus_rst_n(0),
@@ -479,7 +479,7 @@ begin
       bus_out => itf4_bus_out(0),
       inp_i   => io_in(24));
 
-  i_tdc4_1: tdc_inline_3
+  i_tdc4_1: tdc_hd_cbuf2_x4
     port map (
       clk_i => clk_b(3),
       rst_n_i => itf4_bus_rst_n(1),

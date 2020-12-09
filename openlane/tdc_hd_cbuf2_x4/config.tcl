@@ -39,3 +39,6 @@ close $chan
 set ::env(FP_PDN_VOFFSET) [expr $x + 15.30]
 
 set ::env(PDN_CFG) $script_dir/pdn.tcl
+
+# Avoid to use metal5
+set ::env(GLB_RT_MAXLAYER) 5
