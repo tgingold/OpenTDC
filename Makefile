@@ -387,6 +387,15 @@ export-caravel:
 	cp def/*.def* $(CARAVEL)/def/
 	cp gds/*.gds* $(CARAVEL)/gds/
 
+export-files:
+	for F in $(FILES); do \
+	cp verilog/gl/$$F.v $(CARAVEL)/verilog/gl/; \
+	cp mag/$$F.mag $(CARAVEL)/mag/; \
+	cp lef/$$F.lef $(CARAVEL)/lef/; \
+	cp def/$$F.def $(CARAVEL)/def/; \
+	cp gds/$$F.gds $(CARAVEL)/gds/ ;\
+	done
+
 # Compress for github.
 
 uncompress:
