@@ -537,6 +537,10 @@ begin
         clk_o => clk_b);
 
     gnd <= z_n;
+
+    --  FOUT(12) .. FOUT+15(27): controlled by oen
+    --  FOUT+16(28): controlled by resuce
+    --  FOUT+27(29) .. 37: 1
     wio_out (FOUT - 1 downto 0) <= (others => z_s);
     wio_out (FOUT + 15 downto FOUT + 15) <= (others => z_n);
     wio_out (wio_out'left downto FOUT + 17) <= (others => z_w);
