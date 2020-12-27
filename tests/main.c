@@ -6,7 +6,7 @@
 
 #include "defs.h"
 
-#define RESCUE 1
+#define RESCUE 0 /* Keep in sync with main_tb.v */
 
 struct dev0 {
   uint32_t id;
@@ -301,7 +301,7 @@ void main()
       PUTC('\n');
     }
 
-    if (0) {
+    if (1) {
       // Test TDC1 & FD4
 
       //  Enable TDC1 (detect on rising edge)

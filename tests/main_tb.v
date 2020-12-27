@@ -29,7 +29,7 @@
 `include "caravel.v"
 `include "spiflash.v"
 
-`define RESCUE
+//`define RESCUE
 
 module main_tb;
 	reg clock;
@@ -72,11 +72,11 @@ module main_tb;
 	end
 
 	initial begin
-	   $dumpfile("main.vcd");
+	   //$dumpfile("main.vcd");
            //$dumpvars(1, uut.padframe.mprj_pads); //.area2_io_pad[1]);
            //$dumpvars(0, uut.mprj.io_out);
            //$dumpvars(2, uut.mprj.i_tdc2_0);
-	   $dumpvars(1, uut.mprj.inst_rescue);
+	   //$dumpvars(1, uut.mprj.inst_rescue);
 
 		$display("Wait for test o/p");
 		repeat (150) begin
