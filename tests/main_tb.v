@@ -47,11 +47,11 @@ module main_tb;
 	wire SDO;
    wire    [25:0]  dev_io;
    reg             tdc1, tdc2, tdc3, tdc8, tdc9, tdc12, tdc_rescue;
-   
+
 
    assign checkbits = mprj_io[11:5];
    assign dev_io = mprj_io[37:12];
-   
+
    assign uart_tx = mprj_io[6];
 
    assign mprj_io[31] = tdc1;
@@ -118,7 +118,7 @@ module main_tb;
          tdc1 <= 1;
       end
    end
-   
+
    always @(dev_io[1]) begin
       if (dev_io[1] == 1'b1) begin
          $display("fd5->tdc2, tdc3 pulse at %t", $time);
@@ -134,7 +134,7 @@ module main_tb;
          tdc8 <= 1;
       end
    end
-   
+
    always @(dev_io[8]) begin
       if (dev_io[8] == 1'b1) begin
          $display("fd11->tdc9 pulse at %t", $time);
@@ -155,7 +155,7 @@ module main_tb;
    end
 	always @(checkbits) begin
            //$display("checkbits: %b", checkbits);
-           
+
 		if(checkbits == 8'h01) begin
 			$display("Test started");
 		end
@@ -175,7 +175,7 @@ module main_tb;
 
    always @(dev_io)
      $display("IO: %b at %t", dev_io, $time);
-   
+
 	wire VDD3V3;
 	wire VDD1V8;
 	wire VSS;

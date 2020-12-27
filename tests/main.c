@@ -13,7 +13,7 @@ struct dev0 {
   uint32_t cur_cycles;
   uint32_t tdc_trig;
   uint32_t oen;
-  
+
   uint32_t rst_time;
   uint32_t unused;
   uint32_t areg;
@@ -116,7 +116,7 @@ configure_io(void)
 
     // TDC 1
     reg_mprj_io_31 = GPIO_MODE_USER_STD_INPUT_NOPULL;
-        
+
     // FD 5
     reg_mprj_io_13 = GPIO_MODE_USER_STD_OUTPUT;
     reg_mprj_io_14 = GPIO_MODE_USER_STD_OUTPUT;
@@ -130,7 +130,7 @@ configure_io(void)
     // FD 7
     reg_mprj_io_17 = GPIO_MODE_USER_STD_OUTPUT;
     reg_mprj_io_18 = GPIO_MODE_USER_STD_OUTPUT;
-    
+
     // FD 10
     reg_mprj_io_19 = GPIO_MODE_USER_STD_OUTPUT;
 
@@ -157,7 +157,7 @@ configure_io(void)
       reg_mprj_io_28 = GPIO_MODE_USER_STD_OUTPUT;
       reg_mprj_io_12 = GPIO_MODE_USER_STD_INPUT_NOPULL;
     }
-    
+
     // Now, apply the configuration
     reg_mprj_xfer = 1;
     while (reg_mprj_xfer == 1);
@@ -181,7 +181,7 @@ run_fd (const char *name, volatile struct fd_core *fd)
 {
   unsigned cyc;
   unsigned config;
-  
+
   print(name);
   print(": ");
   config = fd->config;
@@ -284,7 +284,7 @@ void main()
       puthex4(reg_la0_data);
       PUTC('\n');
     }
-    
+
     if (0) {
       /* Disp dev0.  */
       print("Id: ");
@@ -303,7 +303,7 @@ void main()
 
     if (0) {
       // Test TDC1 & FD4
-      
+
       //  Enable TDC1 (detect on rising edge)
       DEV->tdc1.status = 0x10100;
 
@@ -374,7 +374,7 @@ void main()
       print("st: ");
       puthex4(DEV->fd7.status);
       PUTC('\n');
-      
+
       cyc = DEV->dev0.cur_cycles;
       DEV->fd7.fine = 25;
       DEV->fd7.coarse = cyc + 320;
@@ -404,7 +404,7 @@ void main()
       run_fd("FD10", &DEV->fd10);
       disp_tdc("TDC8", &DEV->tdc8);
     }
-    
+
     if (0) {
       //  FD11 + TDC9
 
@@ -421,7 +421,7 @@ void main()
       run_fd("FD11", &DEV->fd11);
       disp_tdc("TDC9", &DEV->tdc9);
     }
-    
+
     if (0) {
       //  FD15 + TDC12
 
@@ -438,7 +438,7 @@ void main()
       run_fd("FD15", &DEV->fd15);
       disp_tdc("TDC12", &DEV->tdc12);
     }
-    
+
     PUTC('o');
     PUTC('k');
     reg_mprj_datal = 0x02 << 5;
