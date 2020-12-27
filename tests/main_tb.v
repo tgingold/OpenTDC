@@ -28,9 +28,10 @@
 
 `include "caravel.v"
 `include "spiflash.v"
-`include "tbuart.v"
 
-module uart_tb;
+`define RESCUE
+
+module main_tb;
 	reg clock;
 	reg RSTB;
 	reg power1, power2;
@@ -41,12 +42,28 @@ module uart_tb;
 	wire flash_io0;
 	wire flash_io1;
 	wire [37:0] mprj_io;
-	wire [15:0] checkbits;
+	wire [6:0] checkbits;
 	wire uart_tx;
 	wire SDO;
+   wire    [25:0]  dev_io;
+   reg             tdc1, tdc2, tdc3, tdc8, tdc9, tdc12, tdc_rescue;
+   
 
-	assign checkbits = mprj_io[8:0];
-	assign uart_tx = mprj_io[6];
+   assign checkbits = mprj_io[11:5];
+   assign dev_io = mprj_io[37:12];
+   
+   assign uart_tx = mprj_io[6];
+
+   assign mprj_io[31] = tdc1;
+   assign mprj_io[30] = tdc2;
+   assign mprj_io[29] = tdc3;
+`ifdef RESCUE
+   assign mprj_io[12] = tdc_rescue;
+`else
+   assign mprj_io[28] = tdc8; // Also used by rescue FD
+`endif
+   assign mprj_io[27] = tdc9;
+   assign mprj_io[26] = tdc12;
 
 	always #12.5 clock <= (clock === 1'b0);
 
@@ -55,8 +72,11 @@ module uart_tb;
 	end
 
 	initial begin
-	//	$dumpfile("main.vcd");
-	//	$dumpvars(1, uut.mprj);
+	   $dumpfile("main.vcd");
+           //$dumpvars(1, uut.padframe.mprj_pads); //.area2_io_pad[1]);
+           //$dumpvars(0, uut.mprj.io_out);
+           //$dumpvars(2, uut.mprj.i_tdc2_0);
+	   $dumpvars(1, uut.mprj.inst_rescue);
 
 		$display("Wait for test o/p");
 		repeat (150) begin
@@ -73,7 +93,7 @@ module uart_tb;
 		#2000;
 	end
 
-	initial begin		// Power-up sequence
+   	initial begin		// Power-up sequence
 		power1 <= 1'b0;
 		power2 <= 1'b0;
 		#200;
@@ -82,23 +102,80 @@ module uart_tb;
 		power2 <= 1'b1;
 	end
 
+   initial begin
+      tdc1 <= 0;
+      tdc2 <= 0;
+      tdc3 <= 0;
+      tdc8 <= 0;
+      tdc9 <= 0;
+      tdc12 <= 0;
+      tdc_rescue <= 0;
+   end
+
+   always @(dev_io[0]) begin
+      if (dev_io[0] == 1'b1) begin
+         $display("fd4->tdc1 pulse at %t", $time);
+         tdc1 <= 1;
+      end
+   end
+   
+   always @(dev_io[1]) begin
+      if (dev_io[1] == 1'b1) begin
+         $display("fd5->tdc2, tdc3 pulse at %t", $time);
+         tdc2 <= 1;
+         # 25;
+         tdc3 <= 1;
+      end
+   end
+
+   always @(dev_io[7]) begin
+      if (dev_io[7] == 1'b1) begin
+         $display("fd10->tdc8 pulse at %t", $time);
+         tdc8 <= 1;
+      end
+   end
+   
+   always @(dev_io[8]) begin
+      if (dev_io[8] == 1'b1) begin
+         $display("fd11->tdc9 pulse at %t", $time);
+         tdc9 <= 1;
+      end
+   end
+   always @(dev_io[11]) begin
+      if (dev_io[11] == 1'b1) begin
+         $display("fd15->tdc12 pulse at %t", $time);
+         tdc12 <= 1;
+      end
+   end
+   always @(dev_io[16]) begin
+      if (dev_io[16] == 1'b1) begin
+         $display("rescue pulse at %t", $time);
+         tdc_rescue <= 1;
+      end
+   end
 	always @(checkbits) begin
-		if(checkbits == 16'h101) begin
+           //$display("checkbits: %b", checkbits);
+           
+		if(checkbits == 8'h01) begin
 			$display("Test started");
 		end
-		else if(checkbits[8] == 0) begin
-			$display("console: %s", checkbits[7:0]);
-		end
-		else if(checkbits == 16'h102) begin
+		else if(checkbits == 8'h02) begin
 			$display("Test passed");
 			$finish;
                 end
-		else if(checkbits == 16'h103) begin
+		else if(checkbits == 8'h7f) begin
 			$display("Test failed");
 			$finish;
 		end
+                else if (checkbits != 0) begin
+			$write("%s", checkbits);
+                        $fflush;
+                end
 	end
 
+   always @(dev_io)
+     $display("IO: %b at %t", dev_io, $time);
+   
 	wire VDD3V3;
 	wire VDD1V8;
 	wire VSS;
@@ -143,9 +220,4 @@ module uart_tb;
 		.io3()			// not used
 	);
 
-	// Testbench UART
-	tbuart tbuart (
-		.ser_rx(uart_tx)
-	);
-		
 endmodule
