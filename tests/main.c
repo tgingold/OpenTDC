@@ -16,7 +16,7 @@
 #if USE_UART
 #define PUTC(c) reg_uart_data = c
 #else
-#define PUTC(c) reg_mprj_datal = (0xa1000000 | ((c & 0xff) << 16))
+#define PUTC(c) reg_mprj_datal = (0xa1000000 | (c & 0xff))
 #endif
 
 static void putchar(int c)
@@ -34,39 +34,19 @@ static void print(const char *p)
 static void
 configure_io(void)
 {
-    // Configure I/O:  High 16 bits of user area used for a 16-bit
-    // word to write and be detected by the testbench verilog.
-    // Only serial Tx line is used in this testbench.  It connects
-    // to mprj_io[6].  Since all lines of the chip are input or
-    // high impedence on startup, the I/O has to be configured
-    // for output
+  //  Configure I/O: bit 0-7 are used for character output
+  //  bit 8 as status
 
-    reg_mprj_io_31 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_30 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_29 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_28 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_27 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_26 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_25 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_24 = GPIO_MODE_MGMT_STD_OUTPUT;
-
-    reg_mprj_io_23 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_22 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_21 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_20 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_19 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_18 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_17 = GPIO_MODE_MGMT_STD_OUTPUT;
-    reg_mprj_io_16 = GPIO_MODE_MGMT_STD_OUTPUT;
-
+    reg_mprj_io_0 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_1 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_2 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_3 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_4 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_5 = GPIO_MODE_MGMT_STD_OUTPUT;
     reg_mprj_io_6 = GPIO_MODE_MGMT_STD_OUTPUT;
+    reg_mprj_io_7 = GPIO_MODE_MGMT_STD_OUTPUT;
 
-    // Set clock to 64 kbaud and enable the UART.  It is important to do this
-    // before applying the configuration, or else the Tx line initializes as
-    // zero, which indicates the start of a byte to the receiver.
-
-    reg_uart_clkdiv = 625;
-    reg_uart_enable = 1;
+    reg_mprj_io_8 = GPIO_MODE_MGMT_STD_OUTPUT;
 
     // Now, apply the configuration
     reg_mprj_xfer = 1;
@@ -96,7 +76,7 @@ void main()
     configure_io();
 
     // Start test
-    reg_mprj_datal = 0xa0000000;
+    reg_mprj_datal = 0x101;
 
     PUTC('S');
     if (PRJ_BASE[0] != 0x54646301)
@@ -120,10 +100,10 @@ void main()
 
     PUTC('o');
     PUTC('k');
-    reg_mprj_datal = 0xab000000;
+    reg_mprj_datal = 0x102;
     return;
 
  error:
     PUTC('X');
-    reg_mprj_datal = 0xac000000;
+    reg_mprj_datal = 0x1ff;
 }

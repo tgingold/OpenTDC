@@ -45,7 +45,7 @@ module uart_tb;
 	wire uart_tx;
 	wire SDO;
 
-	assign checkbits = mprj_io[31:16];
+	assign checkbits = mprj_io[8:0];
 	assign uart_tx = mprj_io[6];
 
 	always #12.5 clock <= (clock === 1'b0);
@@ -83,17 +83,17 @@ module uart_tb;
 	end
 
 	always @(checkbits) begin
-		if(checkbits == 16'hA000) begin
+		if(checkbits == 16'h101) begin
 			$display("Test started");
 		end
-		else if(checkbits[15:8] == 8'hA1) begin
+		else if(checkbits[8] == 0) begin
 			$display("console: %s", checkbits[7:0]);
 		end
-		else if(checkbits == 16'hAB00) begin
+		else if(checkbits == 16'h102) begin
 			$display("Test passed");
 			$finish;
                 end
-		else if(checkbits == 16'hAC00) begin
+		else if(checkbits == 16'h103) begin
 			$display("Test failed");
 			$finish;
 		end
