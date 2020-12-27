@@ -55,6 +55,14 @@ module rescue_top(la_data_in, la_oen, clk_i, tdc_inp_i, la_data_out, fd_out_o, f
   input tdc_inp_i;
 endmodule
 
+module tdc_hd_cbuf2_x4(clk_i, rst_n_i, bus_in, inp_i, bus_out);
+  input [41:0] bus_in;
+  output [34:0] bus_out;
+  input clk_i;
+  input inp_i;
+  input rst_n_i;
+endmodule
+
 module tdc_inline_1(clk_i, rst_n_i, bus_in, inp_i, bus_out);
   input [41:0] bus_in;
   output [34:0] bus_out;

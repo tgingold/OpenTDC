@@ -97,6 +97,16 @@ module tdc_inline_3(clk_i, rst_n_i, bus_in, inp_i, bus_out, VGND, VPWR);
   input rst_n_i;
 endmodule
 
+module tdc_hd_cbuf2_x4(clk_i, rst_n_i, bus_in, inp_i, bus_out, VGND, VPWR);
+   input VGND;
+   input VPWR;
+  input [41:0] bus_in;
+  output [34:0] bus_out;
+  input clk_i;
+  input inp_i;
+  input rst_n_i;
+endmodule
+
 module wb_extender(down_bus_out, down_rst_n_o, down_bus_in, down_adr_o, clk_i, up_rst_n_i, up_bus_in, up_adr_i, dev0_bus_out, dev1_bus_out, dev2_bus_out, dev3_bus_out, up_bus_out, dev0_rst_n, dev0_bus_in, dev1_rst_n, dev1_bus_in, dev2_rst_n, dev2_bus_in, dev3_rst_n, dev3_bus_in, VGND, VPWR);
    input VGND;
    input VPWR;
