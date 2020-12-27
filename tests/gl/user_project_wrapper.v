@@ -6,7 +6,7 @@
 `define FD_MS_BB
 
 `include "blackbox.v"
-`include "../verilog/gl/zero.v"
+`include "zero.simple.v"
 
 `ifndef FD_HD_BB
  `include "delayline_9_hd.simple.v"
@@ -44,7 +44,7 @@
 
 `include "wb_interface.simple.v"
 `include "wb_extender.simple.v"
-`include "../verilog/gl/user_project_wrapper.v"
+`include "user_project_wrapper.simple.v"
 //`include "../src/user_project_wrapper.power.v"
 
 `ifndef FD_MS_BB

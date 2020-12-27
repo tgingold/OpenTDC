@@ -2,7 +2,12 @@
 # SPDX-FileCopyrightText: (Based on caravel file by efabless)
 # SPDX-License-Identifier: Apache-2.0
 
+# caravel repo (to get verilog and harness sources)
 CARAVEL=../../caravel_OpenTDC
+
+# gate level verilog sources
+GL=$(CARAVEL)/verilog/gl
+
 CROSS=riscv32-elf-
 
 FIRMWARE_PATH=$(CARAVEL)/verilog/dv/caravel
@@ -41,7 +46,7 @@ functional.i: main_tb.v main.hex functional/blackbox.v
 functional.out: functional.vvp
 	vvp $< | tee $@
 
-gl.vvp: main_tb.v main.hex gl/wb_interface.simple.v gl/wb_extender.simple.v gl/fd_hd.simple.v gl/delayline_9_hd.simple.v gl/tdc_inline_1.simple.v gl/tdc_inline_2.simple.v gl/tdc_inline_3.simple.v gl/fd_hs.simple.v gl/delayline_9_hs.simple.v gl/fd_ms.simple.v gl/delayline_9_ms.simple.v gl/fd_inline_1.simple.v gl/fd_hd_25_1.simple.v gl/delayline_9_hd_25_1.simple.v gl/tdc_hd_cbuf2_x4.simple.v gl/tapline_200_x4_cbuf2_hd.simple.v gl/rescue_top.simple.v
+gl.vvp: main_tb.v main.hex gl/user_project_wrapper.simple.v gl/wb_interface.simple.v gl/wb_extender.simple.v gl/fd_hd.simple.v gl/delayline_9_hd.simple.v gl/tdc_inline_1.simple.v gl/tdc_inline_2.simple.v gl/tdc_inline_3.simple.v gl/fd_hs.simple.v gl/delayline_9_hs.simple.v gl/fd_ms.simple.v gl/delayline_9_ms.simple.v gl/fd_inline_1.simple.v gl/fd_hd_25_1.simple.v gl/delayline_9_hd_25_1.simple.v gl/tdc_hd_cbuf2_x4.simple.v gl/tapline_200_x4_cbuf2_hd.simple.v gl/rescue_top.simple.v gl/zero.simple.v
 	iverilog -DSIM -DFUNCTIONAL -DSPOOF_FAST_FLASH=\"main.hex\" \
 	-DWRAPPER_USE_POWER_PINS \
 	-Igl/ \
@@ -76,55 +81,61 @@ YOSYS_SIMPLE=yosys -p "read_verilog $<; \
 	 delete t:sky130_fd_sc_ms__tapvpwrvgnd_1; \
 	 write_verilog -noattr $@"
 
-gl/wb_interface.simple.v: ../verilog/gl/wb_interface.v
+gl/wb_interface.simple.v: $(GL)/wb_interface.v
 	$(YOSYS_SIMPLE)
 
-gl/wb_extender.simple.v: ../verilog/gl/wb_extender.v
+gl/wb_extender.simple.v: $(GL)/wb_extender.v
 	$(YOSYS_SIMPLE)
 
-gl/rescue_top.simple.v: ../verilog/gl/rescue_top.v
+gl/user_project_wrapper.simple.v: $(GL)/user_project_wrapper.v
 	$(YOSYS_SIMPLE)
 
-gl/fd_hd.simple.v: ../verilog/gl/fd_hd.v
+gl/rescue_top.simple.v: $(GL)/rescue_top.v
 	$(YOSYS_SIMPLE)
 
-gl/delayline_9_hd.simple.v: ../verilog/gl/delayline_9_hd.v
+gl/fd_hd.simple.v: $(GL)/fd_hd.v
 	$(YOSYS_SIMPLE)
 
-gl/fd_hd_25_1.simple.v: ../verilog/gl/fd_hd_25_1.v
+gl/delayline_9_hd.simple.v: $(GL)/delayline_9_hd.v
 	$(YOSYS_SIMPLE)
 
-gl/delayline_9_hd_25_1.simple.v: ../verilog/gl/delayline_9_hd_25_1.v
+gl/fd_hd_25_1.simple.v: $(GL)/fd_hd_25_1.v
 	$(YOSYS_SIMPLE)
 
-gl/tdc_inline_1.simple.v: ../verilog/gl/tdc_inline_1.v
+gl/delayline_9_hd_25_1.simple.v: $(GL)/delayline_9_hd_25_1.v
 	$(YOSYS_SIMPLE)
 
-gl/tdc_inline_2.simple.v: ../verilog/gl/tdc_inline_2.v
+gl/tdc_inline_1.simple.v: $(GL)/tdc_inline_1.v
 	$(YOSYS_SIMPLE)
 
-gl/tdc_inline_3.simple.v: ../verilog/gl/tdc_inline_3.v
+gl/tdc_inline_2.simple.v: $(GL)/tdc_inline_2.v
 	$(YOSYS_SIMPLE)
 
-gl/fd_hs.simple.v: ../verilog/gl/fd_hs.v
+gl/tdc_inline_3.simple.v: $(GL)/tdc_inline_3.v
 	$(YOSYS_SIMPLE)
 
-gl/delayline_9_hs.simple.v: ../verilog/gl/delayline_9_hs.v
+gl/fd_hs.simple.v: $(GL)/fd_hs.v
 	$(YOSYS_SIMPLE)
 
-gl/fd_ms.simple.v: ../verilog/gl/fd_ms.v
+gl/delayline_9_hs.simple.v: $(GL)/delayline_9_hs.v
 	$(YOSYS_SIMPLE)
 
-gl/delayline_9_ms.simple.v: ../verilog/gl/delayline_9_ms.v
+gl/fd_ms.simple.v: $(GL)/fd_ms.v
 	$(YOSYS_SIMPLE)
 
-gl/fd_inline_1.simple.v: ../verilog/gl/fd_inline_1.v
+gl/delayline_9_ms.simple.v: $(GL)/delayline_9_ms.v
 	$(YOSYS_SIMPLE)
 
-gl/tdc_hd_cbuf2_x4.simple.v: ../verilog/gl/tdc_hd_cbuf2_x4.v
+gl/fd_inline_1.simple.v: $(GL)/fd_inline_1.v
 	$(YOSYS_SIMPLE)
 
-gl/tapline_200_x4_cbuf2_hd.simple.v: ../verilog/gl/tapline_200_x4_cbuf2_hd.v
+gl/tdc_hd_cbuf2_x4.simple.v: $(GL)/tdc_hd_cbuf2_x4.v
+	$(YOSYS_SIMPLE)
+
+gl/tapline_200_x4_cbuf2_hd.simple.v: $(GL)/tapline_200_x4_cbuf2_hd.v
+	$(YOSYS_SIMPLE)
+
+gl/zero.simple.v: $(GL)/zero.v
 	$(YOSYS_SIMPLE)
 
 %.elf: %.c $(FIRMWARE_PATH)/sections.lds $(FIRMWARE_PATH)/start.s
